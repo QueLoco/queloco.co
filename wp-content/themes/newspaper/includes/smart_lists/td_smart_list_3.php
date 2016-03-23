@@ -8,19 +8,11 @@ class td_smart_list_3 extends td_smart_list {
     //holds the code for the slide controls (Prev and Next)
     private $slide_controls;
 
-    //holds the title between controls
-    private $smart_list_3_title_between_controls;
-
     private $nr_slide_on_smart_list = 0;
 
 
-    function render_table_of_contents_before($item_id_2_item_array) {
-        $buffy = '';
 
-        return $buffy;
-    }
-
-    function render_before_list_wrap() {
+    protected function render_before_list_wrap() {
         $buffy = '';
 
         if(td_global::$cur_single_template_sidebar_pos == 'no_sidebar') {
@@ -52,32 +44,14 @@ class td_smart_list_3 extends td_smart_list {
     }
 
 
-    function render_list_item($item_array, $current_item_id, $current_item_number, $total_items_number) {
-        //print_r($item_array);
+    protected function render_list_item($item_array, $current_item_id, $current_item_number, $total_items_number) {
         $buffy = '';
 
-        //checking the width of the tile
+        //get the title
         $smart_list_3_title = '';
         if(!empty($item_array['title'])) {
-
-            //if we need to cut the title to a certain length, for top and bottom titles
-            if(mb_strlen($item_array['title'], 'UTF-8') > 59) {
-                $this->smart_list_3_title_between_controls = mb_substr($item_array['title'], 0, 59, 'UTF-8' ) . '...';
-            } else {
-                $this->smart_list_3_title_between_controls = $item_array['title'];
-            }
-
-            //if there are more then 28 chars, add `td-vertical-align-top` class for the main title in the slide
-            $class_verticle_align_top = '';
-            if(mb_strlen($item_array['title'], 'UTF-8') > 28) {
-                $class_verticle_align_top = 'td-vertical-align-top';
-            }
-
-            //converting single and double quotes
-            //we do this twice because if we check the converted (with htmlentities) string the title will be longer because the tags and quotes will become `&lt;`, `&quot;`, etc
             $smart_list_3_title = $item_array['title'];
         }
-
 
         //creating each slide
         $buffy .= '<div class="td-item" id="' . $this->smart_list_tip_3_unique_id . '_item_' . $current_item_id . '">';
@@ -108,17 +82,9 @@ class td_smart_list_3 extends td_smart_list {
                            </figure>';
             }
 
-            //adding description
-            $temp_description = '';
             if(!empty($item_array['description'])) {
 
-                //adding the title to the description; description comes between <p> and </p>, so we need to insert the title after first <p>
-                $temp_description = substr($item_array['description'], 3);
-
-                $buffy .= '<div class="td-sml-description">' . $buffy_image . $temp_description . '</div>';
-
-                //bottom title
-                //$buffy .= '<div class="td-sml3-bottom-title">' . $current_item_number . '. ' . $this->smart_list_3_title_between_controls . '</div>';
+                $buffy .= '<div class="td-sml-description">' . $buffy_image . $item_array['description'] . '</div>';
             }
 
 
@@ -131,7 +97,7 @@ class td_smart_list_3 extends td_smart_list {
     }
 
 
-    function render_after_list_wrap() {
+    protected function render_after_list_wrap() {
         $buffy = '';
 
                 $buffy .= '</div>';

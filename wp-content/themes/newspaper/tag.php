@@ -38,7 +38,7 @@ $current_tag_name = single_tag_title( '', false );
                         <div class="td-pb-span8 td-main-content">
                             <div class="td-ss-main-content">
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php echo __td('Tag', TD_THEME_NAME);?>: <?php echo $current_tag_name ?></span>
                                     </h1>
                                 </div>
@@ -68,7 +68,7 @@ $current_tag_name = single_tag_title( '', false );
                     <div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position; ?>-content">
                         <div class="td-ss-main-content">
                             <div class="td-page-header">
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                     <?php /*<a itemprop="url" href="<?php echo get_tag_link(get_query_var('tag_id'));?>" rel="bookmark" title="<?php echo __td('Posts in ') . $current_tag_name?>">Tag: <?php echo $current_tag_name ?></a>*/?>
                                     <span><?php echo __td('Tag', TD_THEME_NAME);?>: <?php echo $current_tag_name ?></span>
                                 </h1>
@@ -100,7 +100,7 @@ $current_tag_name = single_tag_title( '', false );
                     <div class="td-pb-span12 td-main-content">
                         <div class="td-ss-main-content">
                             <div class="td-page-header">
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                     <?php /*<a itemprop="url" href="<?php echo get_tag_link(get_query_var('tag_id'));?>" rel="bookmark" title="<?php echo __td('Posts in ') . $current_tag_name?>"><?php echo $current_tag_name ?></a>*/?>
                                     <span><?php echo $current_tag_name ?></span>
                                 </h1>

@@ -30,17 +30,15 @@ if (td_util::get_option('tds_logo_on_sticky') != '') {
 	if (!empty($td_mobile_customLogoR)) {
 		//if retina
 		?>
-		<a itemprop="url" class="td-mobile-logo <?php echo $td_sticky_option?>" href="<?php echo esc_url(home_url( '/' )); ?>">
+		<a class="td-mobile-logo <?php echo $td_sticky_option?>" href="<?php echo esc_url(home_url( '/' )); ?>">
 			<img class="td-retina-data" data-retina="<?php echo esc_attr($td_mobile_customLogoR) ?>" src="<?php echo $td_mobile_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/>
 		</a>
-		<meta itemprop="name" content="<?php bloginfo('name')?>">
 	<?php
 	} else {
 		//not retina
 		if (!empty($td_mobile_customLogo)) {
 			?>
-			<a itemprop="url" class="td-mobile-logo <?php echo $td_sticky_option?>" href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_mobile_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
-			<meta itemprop="name" content="<?php bloginfo('name')?>">
+			<a class="td-mobile-logo <?php echo $td_sticky_option?>" href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_mobile_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
 		<?php
 		}
 	}
@@ -49,17 +47,15 @@ if (td_util::get_option('tds_logo_on_sticky') != '') {
 	if (!empty($td_header_logoR)) {
 		//if retina
 		?>
-		<a itemprop="url" class="td-header-logo <?php echo $td_sticky_option?>" href="<?php echo esc_url(home_url( '/' )); ?>">
+		<a class="td-header-logo <?php echo $td_sticky_option?>" href="<?php echo esc_url(home_url( '/' )); ?>">
 			<img class="td-retina-data" data-retina="<?php echo esc_attr($td_header_logoR) ?>" src="<?php echo $td_header_logo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/>
 		</a>
-		<meta itemprop="name" content="<?php bloginfo('name')?>">
 	<?php
 	} else {
 		//not retina
 		if (!empty($td_header_logo)) {
 			?>
-			<a itemprop="url" class="td-header-logo <?php echo $td_sticky_option?>" href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_header_logo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
-			<meta itemprop="name" content="<?php bloginfo('name')?>">
+			<a class="td-header-logo <?php echo $td_sticky_option?>" href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_header_logo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
 		<?php
 		}
 	}
@@ -67,17 +63,15 @@ if (td_util::get_option('tds_logo_on_sticky') != '') {
 	if (!empty($td_mobile_customLogoR)) {
 		//if retina
 		?>
-		<a itemprop="url" href="<?php echo esc_url(home_url( '/' )); ?>">
+		<a href="<?php echo esc_url(home_url( '/' )); ?>">
 			<img class="td-retina-data" data-retina="<?php echo esc_attr($td_mobile_customLogoR) ?>" src="<?php echo $td_mobile_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/>
 		</a>
-		<meta itemprop="name" content="<?php bloginfo('name')?>">
 	<?php
 	} else {
 		//not retina
 		if (!empty($td_mobile_customLogo)) {
 			?>
-			<a itemprop="url" href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_mobile_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
-			<meta itemprop="name" content="<?php bloginfo('name')?>">
+			<a href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_mobile_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
 		<?php
 		}
 	}

@@ -12,6 +12,7 @@
 
 .td-category-header {
   background-color: #fff;
+  clear: both;
 
   .td-container {
     position: relative;
@@ -249,6 +250,14 @@
     /* responsive portrait phone */
     @media (max-width: @responsive_p_phone_max) {
       padding-bottom: 40px;
+    }
+  }
+
+  // fix load more button on category pages
+  .td-main-content .td-load-more-wrap {
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+        margin-bottom: 26px;
     }
   }
 }
@@ -894,7 +903,6 @@
 .td_category_template_8 {
   .td-category-header {
     position: relative;
-    //background-color: rgb(113, 113, 113);
     background-color: rgba(0,0,0,0.5);
     margin-bottom: 0;
 

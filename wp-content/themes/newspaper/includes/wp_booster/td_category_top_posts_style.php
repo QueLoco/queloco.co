@@ -26,7 +26,10 @@ abstract class td_category_top_posts_style {
      */
     protected function render_posts_to_buffer() {
         // get the global category top posts grid style setting
-        $td_grid_style = td_util::get_option('tds_category_td_grid_style');
+
+	    $td_grid_style = td_util::get_option('tds_category_td_grid_style');
+	    $limit = td_api_category_top_posts_style::_helper_get_posts_shown_in_the_loop();
+	    $block_name = td_api_category_top_posts_style::get_key(get_class($this), 'td_block_name');
 
         // overwrite the $td_grid_style if the setting for this category was changed
         $td_grid_style_per_category_setting = td_util::get_category_option(td_global::$current_category_obj->cat_ID, 'tdc_category_td_grid_style');
@@ -35,9 +38,16 @@ abstract class td_category_top_posts_style {
         }
 
 
+
+        // we have to have a default grid, there seems to be a problem with the grid styles
+        if (empty($td_grid_style)) {
+            $td_grid_style = 'td-grid-style-1';
+        }
+
+
         //parameters to filter to for big grid
         $atts_for_big_grid = array(
-            'limit' => td_api_category_top_posts_style::_helper_get_posts_shown_in_the_loop(),
+            'limit' => $limit,
             'category_id' => td_global::$current_category_obj->cat_ID,
             'sort' => get_query_var('filter_by'),
             'td_grid_style' => $td_grid_style
@@ -45,9 +55,9 @@ abstract class td_category_top_posts_style {
 
 
         //show the big grid
-        $block_name = td_api_category_top_posts_style::get_key(get_class($this), 'td_block_name');
-        $this->rendered_block_buffer = td_global_blocks::get_instance($block_name)->render($atts_for_big_grid);
-        $this->rendered_posts_count = td_global_blocks::get_instance($block_name)->td_query->post_count;
+	    $block_instance = td_global_blocks::get_instance($block_name);
+	    $this->rendered_block_buffer = $block_instance->render($atts_for_big_grid);
+        $this->rendered_posts_count = $block_instance->td_query->post_count;
 
         if ($this->rendered_posts_count > 0) {
             td_global::$custom_no_posts_message = false;

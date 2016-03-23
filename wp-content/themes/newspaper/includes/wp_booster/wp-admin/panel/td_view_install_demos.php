@@ -117,10 +117,21 @@ die;
     <h1><?php echo TD_THEME_NAME ?> demos</h1>
     <div class="about-text">
         <p>
-            Newspaper brings you six  unique designs for your website. Our demos were carefully tested so you don’t have to create everything from scratch.  With the theme demos you know exactly which predefined templates is perfectly designed to start build upon. Each demo is fully customizable (fonts, colors and layouts) -
+            <?php echo TD_THEME_NAME ?> brings you a number of unique designs for your website. Our demos were carefully tested so you don’t have to create everything from scratch.  With the theme demos you know exactly which predefined templates is perfectly designed to start build upon. Each demo is fully customizable (fonts, colors and layouts) -
             <a href="<?php echo TD_THEME_DEMO_DOC_URL?>" target="_blank">read more</a>.
         </p>
     </div>
+
+
+	<?php if (!is_plugin_active('js_composer/js_composer.php')) { ?>
+		<div class="td-admin-box-text td-admin-required-plugins">
+			<div class="td-admin-required-plugins-wrap">
+				<p><strong>Please install Visual Composer.</strong></p>
+				<p>Visual Composer is a required plugin for this theme to work best.</p>
+				<a class="button button-primary" href="admin.php?page=td_theme_plugins">Go to plugin installer</a>
+			</div>
+		</div>
+	<?php } ?>
     <hr/>
 
 
@@ -163,7 +174,15 @@ die;
                         ?>
                         <p>Include content</p>
                     </div>
-                    <p class="td-installed-text">Demo installed!</p>
+                        <p class="td-installed-text">
+	                    <?php
+	                    if (!empty(td_global::$demo_list[$demo_id]['demo_installed_text'])) {
+		                    echo td_global::$demo_list[$demo_id]['demo_installed_text'];
+	                    } else {
+		                    echo 'Demo installed!';
+	                    }
+	                    ?>
+	                    </p>
 				</div>
 
 				<div class="theme-actions">

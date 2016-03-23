@@ -181,6 +181,69 @@
   }
 }
 
+.vc_tta-container .vc_tta-color-grey.vc_tta-tabs-position-top.vc_tta-style-classic {
+  margin-bottom: 22px;
+
+  .td_block_wrap {
+    padding-bottom: 0;
+
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+        padding-bottom: 12px;
+    }
+  }
+
+  .vc_tta-panels-container .vc_tta-panels {
+    background-color: transparent;
+    border: none;
+  }
+
+  .vc_tta-tabs-container {
+    margin-bottom: 26px !important;
+    margin-right: 0;
+    border-bottom: 2px solid @td_theme_color;
+    display: block;
+
+    .vc_tta-tabs-list {
+      padding: 0;
+    }
+
+    .vc_tta-tab {
+      margin: 0;
+
+      &.vc_active > a,
+      &:hover > a {
+        border-color: transparent;
+        background-color: @td_theme_color;
+        color: #fff;
+      }
+
+      > a {
+        border-color: transparent;
+        background-color: #fff;
+        color: #222;
+        padding: 6px 12px 5px 12px !important;
+        font-family: @font3;
+        font-size: 14px;
+        line-height: 15px;
+        font-weight: 400;
+        white-space: nowrap;
+        border-radius: 0;
+      }
+    }
+  }
+
+  .vc_tta-panel-heading {
+    display: none;
+  }
+
+  .vc_tta-panel-body {
+    padding: 0;
+    border-color: transparent;
+    background-color: transparent;
+  }
+}
+
 
 
 /*

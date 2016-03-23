@@ -10,6 +10,24 @@ $td_top_retina_logo = td_util::get_option('tds_logo_upload_r');
 $td_footer_text = td_util::get_option('tds_footer_text');
 $td_footer_email = td_util::get_option('tds_footer_email');
 
+
+$td_logo_alt = td_util::get_option('tds_logo_alt');
+$td_footer_logo_alt = td_util::get_option('tds_footer_logo_alt');
+$td_logo_title = td_util::get_option('tds_logo_title');
+$td_footer_logo_title = td_util::get_option('tds_footer_logo_title');
+
+
+
+// if there's no footer logo alt set use the alt from the header logo
+if (empty($td_footer_logo_alt)) {
+	$td_footer_logo_alt = $td_logo_alt;
+}
+
+// if there's no footer logo title set use the title from the header logo
+if (empty($td_footer_logo_title)) {
+	$td_footer_logo_title = $td_logo_title;
+}
+
 $td_social_enabled = '';
 if(td_util::get_option('tds_footer_social') != 'no') {
 	$td_social_enabled = 'td-pb-span5';

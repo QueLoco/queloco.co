@@ -27,10 +27,6 @@ class td_block_ad_box extends td_block {
 
         $buffy = '';
 
-	    if (!empty($spot_title)) {
-		    $buffy .= '<div class="td-adspot-title">' . $spot_title . '</div>';
-	    }
-
         if (!empty($ad_array[$spot_id]['current_ad_type'])) {
 
 
@@ -87,6 +83,7 @@ class td_block_ad_box extends td_block {
             array(
                 'spot_id' => '', //header / sidebar etc
                 'align' => '', //align left or right in inline content
+                'spot_title' => ''
             ), $atts));
 
 
@@ -191,6 +188,62 @@ class td_block_ad_box extends td_block {
 
 	            'p_w' => '300',  // phone width
 	            'p_h' => '250'   // phone height
+            ),
+
+            'post_style_12' => array (
+                'm_w' => '728',  // big monitor - width
+                'm_h' => '90',  // big monitor - height
+
+                'tl_w' => '728', // tablet_landscape width
+                'tl_h' => '90', // tablet_landscape height
+
+                'tp_w' => '728', // tablet_portrait width
+                'tp_h' => '90', // tablet_portrait height
+
+                'p_w' => '300',  // phone width
+                'p_h' => '250'   // phone height
+            ),
+
+            'smart_list_6' => array (
+                'm_w' => '468',  // big monitor - width
+                'm_h' => '60',  // big monitor - height
+
+                'tl_w' => '468', // tablet_landscape width
+                'tl_h' => '60', // tablet_landscape height
+
+                'tp_w' => '300', // tablet_portrait width
+                'tp_h' => '250', // tablet_portrait height
+
+                'p_w' => '300',  // phone width
+                'p_h' => '250'   // phone height
+            ),
+
+            'smart_list_7' => array (
+                'm_w' => '468',  // big monitor - width
+                'm_h' => '60',  // big monitor - height
+
+                'tl_w' => '468', // tablet_landscape width
+                'tl_h' => '60', // tablet_landscape height
+
+                'tp_w' => '300', // tablet_portrait width
+                'tp_h' => '250', // tablet_portrait height
+
+                'p_w' => '300',  // phone width
+                'p_h' => '250'   // phone height
+            ),
+
+            'smart_list_8' => array (
+                'm_w' => '468',  // big monitor - width
+                'm_h' => '60',  // big monitor - height
+
+                'tl_w' => '468', // tablet_landscape width
+                'tl_h' => '60', // tablet_landscape height
+
+                'tp_w' => '300', // tablet_portrait width
+                'tp_h' => '250', // tablet_portrait height
+
+                'p_w' => '300',  // phone width
+                'p_h' => '250'   // phone height
             ),
 
             'footer_top' => array (
@@ -386,6 +439,9 @@ class td_block_ad_box extends td_block {
         //google async script
         $buffy .= '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>';
 
+
+
+
         $buffy .= '<div class="td-g-rec td-g-rec-id-' . $spot_id . $align . '">' . "\n";
             $buffy .= '<script type="text/javascript">' . "\n";
 
@@ -400,7 +456,7 @@ class td_block_ad_box extends td_block {
                 $buffy .= '
                     if ( td_screen_width >= 1140 ) {
                         /* large monitors */
-                        document.write(\'<ins class="adsbygoogle" style="display:inline-block;width:' . $default_ad_sizes[$spot_id]['m_w'] . 'px;height:' . $default_ad_sizes[$spot_id]['m_h'] . 'px" data-ad-client="' . $ad_array['g_data_ad_client'] . '" data-ad-slot="' . $ad_array['g_data_ad_slot'] . '"></ins>\');
+                        document.write(\'' . (!empty($spot_title) ? ('<span class="td-adspot-title">' . $spot_title . '</span>') : '') . '<ins class="adsbygoogle" style="display:inline-block;width:' . $default_ad_sizes[$spot_id]['m_w'] . 'px;height:' . $default_ad_sizes[$spot_id]['m_h'] . 'px" data-ad-client="' . $ad_array['g_data_ad_client'] . '" data-ad-slot="' . $ad_array['g_data_ad_slot'] . '"></ins>\');
                         (adsbygoogle = window.adsbygoogle || []).push({});
                     }
             ';
@@ -411,7 +467,7 @@ class td_block_ad_box extends td_block {
 			    $buffy .= '
 	                    if ( td_screen_width >= 1019  && td_screen_width < 1140 ) {
 	                        /* landscape tablets */
-                        document.write(\'<ins class="adsbygoogle" style="display:inline-block;width:' . $default_ad_sizes[$spot_id]['m_w'] . 'px;height:' . $default_ad_sizes[$spot_id]['m_h'] . 'px" data-ad-client="' . $ad_array['g_data_ad_client'] . '" data-ad-slot="' . $ad_array['g_data_ad_slot'] . '"></ins>\');
+                        document.write(\'' . (!empty($spot_title) ? ('<span class="td-adspot-title">' . $spot_title . '</span>') : '') . '<ins class="adsbygoogle" style="display:inline-block;width:' . $default_ad_sizes[$spot_id]['tl_w'] . 'px;height:' . $default_ad_sizes[$spot_id]['tl_h'] . 'px" data-ad-client="' . $ad_array['g_data_ad_client'] . '" data-ad-slot="' . $ad_array['g_data_ad_slot'] . '"></ins>\');
 	                        (adsbygoogle = window.adsbygoogle || []).push({});
 	                    }
 	                ';
@@ -422,7 +478,7 @@ class td_block_ad_box extends td_block {
                 $buffy .= '
                     if ( td_screen_width >= 768  && td_screen_width < 1019 ) {
                         /* portrait tablets */
-                        document.write(\'<ins class="adsbygoogle" style="display:inline-block;width:' . $default_ad_sizes[$spot_id]['tp_w'] . 'px;height:' . $default_ad_sizes[$spot_id]['tp_h'] . 'px" data-ad-client="' . $ad_array['g_data_ad_client'] . '" data-ad-slot="' . $ad_array['g_data_ad_slot'] . '"></ins>\');
+                        document.write(\'' . (!empty($spot_title) ? ('<span class="td-adspot-title">' . $spot_title . '</span>') : '') . '<ins class="adsbygoogle" style="display:inline-block;width:' . $default_ad_sizes[$spot_id]['tp_w'] . 'px;height:' . $default_ad_sizes[$spot_id]['tp_h'] . 'px" data-ad-client="' . $ad_array['g_data_ad_client'] . '" data-ad-slot="' . $ad_array['g_data_ad_slot'] . '"></ins>\');
                         (adsbygoogle = window.adsbygoogle || []).push({});
                     }
                 ';
@@ -432,7 +488,7 @@ class td_block_ad_box extends td_block {
                 $buffy .= '
                     if ( td_screen_width < 768 ) {
                         /* Phones */
-                        document.write(\'<ins class="adsbygoogle" style="display:inline-block;width:' . $default_ad_sizes[$spot_id]['p_w'] . 'px;height:' . $default_ad_sizes[$spot_id]['p_h'] . 'px" data-ad-client="' . $ad_array['g_data_ad_client'] . '" data-ad-slot="' . $ad_array['g_data_ad_slot'] . '"></ins>\');
+                        document.write(\'' . (!empty($spot_title) ? ('<span class="td-adspot-title">' . $spot_title . '</span>') : '') . '<ins class="adsbygoogle" style="display:inline-block;width:' . $default_ad_sizes[$spot_id]['p_w'] . 'px;height:' . $default_ad_sizes[$spot_id]['p_h'] . 'px" data-ad-client="' . $ad_array['g_data_ad_client'] . '" data-ad-slot="' . $ad_array['g_data_ad_slot'] . '"></ins>\');
                         (adsbygoogle = window.adsbygoogle || []).push({});
                     }
                 ';
@@ -470,14 +526,12 @@ class td_block_ad_box extends td_block {
             array(
                 'spot_id' => '', //header / sidebar etc
                 'align' => '', //align left or right in inline content
+                'spot_title' => ''
 
             ), $atts));
 
 
         $buffy = '';
-
-
-
 
         $buffy .= '<div class="td-a-rec td-a-rec-id-' . $spot_id . $align . ' '
             . ((!empty($ad_array['disable_m'])) ? ' td-rec-hide-on-m' : '')
@@ -485,6 +539,9 @@ class td_block_ad_box extends td_block {
             . ((!empty($ad_array['disable_tp'])) ? ' td-rec-hide-on-tp' : '')
             . ((!empty($ad_array['disable_p'])) ? ' td-rec-hide-on-p' : '')
             . '">';
+            if (!empty($spot_title)) {
+                $buffy .= '<span class="td-adspot-title">' . $spot_title . '</span>';
+            }
             $buffy .= do_shortcode(stripslashes($ad_array['ad_code']));
         $buffy .= '</div>';
 

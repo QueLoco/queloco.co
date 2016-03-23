@@ -12,7 +12,7 @@ class td_module_slide extends td_module {
         $buffy = '';
 
         $buffy .= '<div class="td-sbig-title-wrap">';
-        $buffy .='<a class="noSwipe" itemprop="url" href="' . $this->href . '" rel="bookmark" title="' . $this->title_attribute . '">';
+        $buffy .='<a class="noSwipe" href="' . $this->href . '" rel="bookmark" title="' . $this->title_attribute . '">';
         $buffy .= $this->get_title();
         $buffy .='</a>';
         $buffy .= '</div>';
@@ -23,7 +23,7 @@ class td_module_slide extends td_module {
     function render($td_column_number, $td_post_count, $td_unique_id_slide) {
         $buffy = '';
 
-        $buffy .= '<div id="' . $td_unique_id_slide . '_item_' . $td_post_count . '" class = "' . $this->get_module_classes(array("td-image-gradient")) . '" ' . $this->get_item_scope()  . '>';
+        $buffy .= '<div id="' . $td_unique_id_slide . '_item_' . $td_post_count . '" class = "' . $this->get_module_classes(array("td-image-gradient")) . '">';
         switch ($td_column_number) {
             case '1': //one column layout
                 $buffy .= $this->get_image('td_324x400');
@@ -46,7 +46,9 @@ class td_module_slide extends td_module {
                 $buffy .= '<div class="td-module-meta-info">';
                     $buffy .= $this->get_author();
                     $buffy .= $this->get_date();
-                    $buffy .= '<div class="td-post-views"><i class="td-icon-views"></i>' . td_page_views::get_page_views($this->post->ID) . '</div>';
+                    if (td_util::get_option('tds_p_show_views') != 'hide') {
+                        $buffy .= '<div class="td-post-views"><i class="td-icon-views"></i>' . td_page_views::get_page_views( $this->post->ID ) . '</div>';
+                    }
                     $buffy .= $this->get_comments();
                 $buffy .= '</div>';
             $buffy .= '</div>';
@@ -93,10 +95,7 @@ class td_module_slide extends td_module {
         if (td_util::get_option('tds_p_show_comments') != 'hide') {
             $buffy .= '<div class="td-post-comments"><i class="td-icon-comments"></i>';
             $buffy .= '<a href="' . get_comments_link($this->post->ID) . '">';
-            if (is_plugin_active('facebook-comments-plugin/facebook-comments.php'))
-                $buffy .= '<fb:comments-count href="'.get_permalink($this->post->ID).'"></fb:comments-count>';
-            else
-                $buffy .= get_comments_number($this->post->ID);
+            $buffy .= get_comments_number($this->post->ID);
             $buffy .= '</a>';
             $buffy .= '</div>';
         }

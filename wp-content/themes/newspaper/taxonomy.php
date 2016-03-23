@@ -19,10 +19,17 @@ $loop_sidebar_position = td_util::get_taxonomy_option($current_term_obj->taxonom
 if (empty($loop_module_id)) {
     $loop_module_id = 1; // module_1 is the default
 }
+
+// sidebar position used to align the breadcrumb on sidebar left + sidebar first on mobile issue
+$td_sidebar_position = '';
+if($loop_sidebar_position == 'sidebar_left') {
+    $td_sidebar_position = 'td-sidebar-left';
+}
+
 ?>
 
     <div class="td-main-content-wrap">
-        <div class="td-container">
+        <div class="td-container <?php echo $td_sidebar_position; ?>">
             <div class="td-crumb-container">
                 <?php echo td_page_generator::get_taxonomy_breadcrumbs($current_term_obj); // get the breadcrumbs - /includes/wp_booster/td_page_generator.php ?>
             </div>
@@ -37,7 +44,7 @@ if (empty($loop_module_id)) {
                         <div class="td-pb-span8 td-main-content">
                             <div class="td-ss-main-content">
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php echo $current_term_obj->name ?></span>
                                     </h1>
                                 </div>
@@ -57,10 +64,10 @@ if (empty($loop_module_id)) {
 
                     case 'sidebar_left':
                         ?>
-                        <div class="td-pb-span8 td-main-content td-sidebar-left-content">
+                        <div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position ?>-content">
                             <div class="td-ss-main-content">
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php echo $current_term_obj->name ?></span>
                                     </h1>
                                 </div>
@@ -83,7 +90,7 @@ if (empty($loop_module_id)) {
                         <div class="td-pb-span12 td-main-content">
                             <div class="td-ss-main-content">
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php echo $current_term_obj->name ?></span>
                                     </h1>
                                 </div>

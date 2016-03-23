@@ -411,6 +411,7 @@
   font-size: 12px;
   position: relative;
   transition: background-color 0.2s ease-in !important;
+  transform: translateZ(0);
   img {
     position: absolute;
     right:5px;
@@ -480,14 +481,6 @@
 }
 #td-panel-ads .td_textarea_control {
   height: 175px;
-}
-
-#td-panel-custom-css .td-custom-css .td_textarea_control {
-  height: 175px;
-}
-
-#td-panel-custom-javascript .td-custom-javascript .td_textarea_control {
-  height: 275px;
 }
 
 /*
@@ -615,6 +608,15 @@ title one row controls
   margin-bottom: 30px;
 }
 
+.td-box-section-title {
+  font-size: 16px;
+  text-align: center;
+  position: relative;
+  font-weight: bold;
+  margin-bottom: 23px;
+  text-decoration: underline;
+}
+
 
 // the notice that appears when there are no settings available -> like no CPT installed
 .td-panel-no-settings-found {
@@ -696,4 +698,25 @@ title one row controls
   }
 }
 
+
+/*  ----------------------------------------------------------------------------
+    code editor  (css editor and js editor)
+*/
+
+.td-code-editor-textarea {
+  display:none;
+}
+
+.td-code-editor-wrap {
+  .td-code-editor {
+    height: 450px;
+    margin-right: 14px;
+    border: 1px solid #e6e6e6;
+  }
+}
+
+// fix for mobile menu
+#td-mobile-plugin .td-code-editor-wrap .td-code-editor {
+  height: 250px;
+}
 

@@ -13,7 +13,6 @@
     ?>
 </head>
 
-
 <body <?php body_class() ?> itemscope="itemscope" itemtype="<?php echo td_global::$http_or_https?>://schema.org/WebPage">
 
 <?php //this is closing in the footer.php file ?>

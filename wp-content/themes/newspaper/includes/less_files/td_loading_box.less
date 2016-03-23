@@ -1,6 +1,3 @@
-
-
-
 @td_loader_size: 19px;
 @td_loader_gutter:1px;
 
@@ -8,60 +5,48 @@
   position: absolute;
   width: @td_loader_size;
   height: @td_loader_size;
-
-
-
-
-
 }
 
 .td-lb-box-1 {
   top: 0;
   left: 0;
-
 }
 
 .td-lb-box-2 {
   top: 0;
   left: @td_loader_size + @td_loader_gutter;
-  /*background-color: #0011C3;*/
 }
 
 .td-lb-box-3 {
   top: 0;
   left: (@td_loader_size + @td_loader_gutter ) * 2;
-  /*background-color: #0022C3;*/
 }
 
 .td-lb-box-4 {
   top: @td_loader_size + @td_loader_gutter;
-  right: 0px;
-  /*background-color: #0033C3;*/
+  right: 0;
 }
 
 .td-lb-box-5 {
   bottom: 0;
   right: 0;
-  /*background-color: #0044C3;*/
 }
 
 .td-lb-box-6 {
   bottom: 0;
   left: @td_loader_size + @td_loader_gutter;
-  /*background-color: #0055C3;*/
 }
 
 .td-lb-box-7 {
   bottom: 0;
   left: 0;
-  /*background-color: #0066C3;*/
 }
 
 .td-lb-box-8 {
   top: @td_loader_size + @td_loader_gutter;
   left: 0;
-  /*background-color: #0099C3;*/
 }
+
 
 
 
@@ -105,10 +90,78 @@
 }
 
 
-// overwrites the default loader, for load more
-.td-loader-gif-bottom {
+
+
+/*  ----------------------------------------------------------------------------
+    infinite loader - the small loader used on infinite scroll
+*/
+.td-loader-infinite {
   top:auto;
-  bottom: 120px;
+  bottom: 0px;
+
+  @td_loader_size: 19px - 9; // it's like the big one but with 9 fewer pixels
+  @td_loader_gutter:1px;
+
+  .td-lb-box {
+    position: absolute;
+    width: @td_loader_size;
+    height: @td_loader_size;
+  }
+
+  .td-lb-box-1 {
+    top: 0;
+    left: 0;
+  }
+
+  .td-lb-box-2 {
+    top: 0;
+    left: @td_loader_size + @td_loader_gutter;
+  }
+
+  .td-lb-box-3 {
+    top: 0;
+    left: (@td_loader_size + @td_loader_gutter ) * 2;
+  }
+
+  .td-lb-box-4 {
+    top: @td_loader_size + @td_loader_gutter;
+    right: 0;
+  }
+
+  .td-lb-box-5 {
+    bottom: 0;
+    right: 0;
+  }
+
+  .td-lb-box-6 {
+    bottom: 0;
+    left: @td_loader_size + @td_loader_gutter;
+  }
+
+  .td-lb-box-7 {
+    bottom: 0;
+    left: 0;
+  }
+
+  .td-lb-box-8 {
+    top: @td_loader_size + @td_loader_gutter;
+    left: 0;
+  }
+
+  @td_gif_size: @td_loader_size * 3 + @td_loader_gutter * 2;
+  &.td-loader-gif {
+    width: @td_gif_size;
+    height: @td_gif_size;
+    margin-top: -@td_gif_size / 2; /* Half the height */
+    margin-left: -@td_gif_size / 2; /* Half the width */
+  }
+}
+
+
+// overwrites the default loader, for load more
+.td-loader-blocks-load-more {
+  top:auto;
+  bottom: 48px;
 
 }
 

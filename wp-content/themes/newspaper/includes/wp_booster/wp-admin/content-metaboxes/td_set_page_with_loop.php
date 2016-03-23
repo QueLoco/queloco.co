@@ -165,19 +165,21 @@
             function homepage_filter_get_map () {
 
                 //get the generic filter array
-                $generic_filter_array = td_wp_booster_config::get_map_filter_array();
+                $generic_filter_array = td_config::get_map_filter_array();
 
                 //remove items from array
                 $offset = 0;
-                foreach ($generic_filter_array as $field_array) {
+                foreach ($generic_filter_array as &$field_array) {
                     if ($field_array['param_name'] == "hide_title") {
                         array_splice($generic_filter_array, $offset, 1);
+                    } else if ($field_array['param_name'] == 'limit') {
+	                    $field_array['value'] = 10;
                     }
                     $offset++;
                 }
 
-                //change the default limit
-                $generic_filter_array[6]['value'] = 10;
+	            //change the default limit
+                //$generic_filter_array[6]['value'] = 10;
 
                 //add the show featured posts in the loop setting
                 array_push ($generic_filter_array,

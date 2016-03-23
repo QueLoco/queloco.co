@@ -6,19 +6,9 @@ class td_smart_list_1 extends td_smart_list {
     private $smart_list_tip_1_unique_id;
     private $nr_slide_on_smart_list = 0;
 
-    function render_table_of_contents_before($item_id_2_item_array) {
-        // placeholder function, it's overwritten - do not delete
-        $buffy = '';
 
-        /*foreach ($item_id_2_item_array as $item_id => $item_name) {
-            $buffy .= '<a href="#" class="td_history" data-history-id="' . get_permalink() . '/' .  $item_id . '">' . $item_name['title'] . '</a>';
-            //$buffy .= '<a href="#' . $item_id . '">' . $item_name['title'] . '</a><br>';
-        }*/
 
-        return $buffy;
-    }
-
-    function render_before_list_wrap() {
+    protected function render_before_list_wrap() {
 
         if(td_global::$cur_single_template_sidebar_pos == 'no_sidebar') {
             $td_class_nr_of_columns = ' td-3-columns ';
@@ -42,18 +32,15 @@ class td_smart_list_1 extends td_smart_list {
     }
 
 
-    function render_list_item($item_array, $current_item_id, $current_item_number, $total_items_number) {
+
+    protected function render_list_item($item_array, $current_item_id, $current_item_number, $total_items_number) {
         //print_r($item_array);
         $buffy = '';
 
-        //checking the width of the tile
+        // get the title
         $smart_list_1_title = '';
         if(!empty($item_array['title'])) {
-            if(mb_strlen($item_array['title'], 'UTF-8') > 55) {
-                $smart_list_1_title = mb_substr($item_array['title'], 0, 55, 'UTF-8' ) . '...';
-            } else {
-                $smart_list_1_title = $item_array['title'];
-            }
+            $smart_list_1_title = $item_array['title'];
         }
 
         //creating each slide
@@ -99,7 +86,7 @@ class td_smart_list_1 extends td_smart_list {
     }
 
 
-    function render_after_list_wrap() {
+    protected function render_after_list_wrap() {
         $buffy = '';
                 $buffy .= '</div>';
             $buffy .= '</div>'; // end ios slider

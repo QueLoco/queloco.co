@@ -11,7 +11,7 @@ class td_module_2 extends td_module {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes();?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes();?>">
             <div class="td-module-image">
                 <?php echo $this->get_image('td_324x160');?>
                 <?php if (td_util::get_option('tds_category_module_2') == 'yes') { echo $this->get_category(); }?>
@@ -32,7 +32,6 @@ class td_module_2 extends td_module {
 
             <?php echo $this->get_quotes_on_blocks();?>
 
-            <?php echo $this->get_item_scope_meta();?>
         </div>
 
         <?php return ob_get_clean();

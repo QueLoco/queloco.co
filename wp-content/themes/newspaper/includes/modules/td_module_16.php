@@ -16,7 +16,7 @@ class td_module_16 extends td_module {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes();?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes();?>">
             <?php echo $this->get_image('thumbnail');?>
 
             <div class="item-details">
@@ -34,7 +34,6 @@ class td_module_16 extends td_module {
                 </div>
             </div>
 
-            <?php echo $this->get_item_scope_meta();?>
         </div>
 
         <?php return ob_get_clean();

@@ -18,18 +18,18 @@ class td_block_19 extends td_block {
 
         $buffy .= '<div class="' . $this->get_block_classes() . '">';
 
-        //get the block title
-        $buffy .= $this->get_block_title();
+	        //get the block title
+	        $buffy .= $this->get_block_title();
 
-        //get the sub category filter for this block
-        $buffy .= $this->get_pull_down_filter();
+	        //get the sub category filter for this block
+	        $buffy .= $this->get_pull_down_filter();
 
-        $buffy .= '<div id=' . $this->block_uid . ' class="td_block_inner td-column-' . $td_column_number . '">';
-        $buffy .= $this->inner($this->td_query->posts, $td_column_number);//inner content of the block
-        $buffy .= '</div>';
+	        $buffy .= '<div id=' . $this->block_uid . ' class="td_block_inner td-column-' . $td_column_number . '">';
+	            $buffy .= $this->inner($this->td_query->posts, $td_column_number);//inner content of the block
+	        $buffy .= '</div>';
 
-        //get the ajax pagination for this block
-        $buffy .= $this->get_block_pagination();
+	        //get the ajax pagination for this block
+	        $buffy .= $this->get_block_pagination();
         $buffy .= '</div> <!-- ./block -->';
         return $buffy;
     }

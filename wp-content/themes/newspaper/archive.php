@@ -48,7 +48,7 @@ if (is_day()) {
                         <div class="td-pb-span8 td-main-content">
                             <div class="td-ss-main-content">
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php echo $td_archive_title; ?></span>
                                     </h1>
                                 </div>
@@ -72,7 +72,7 @@ if (is_day()) {
                     <div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position; ?>-content">
                         <div class="td-ss-main-content">
                             <div class="td-page-header">
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                     <span><?php echo $td_archive_title; ?></span>
                                 </h1>
                             </div>
@@ -95,7 +95,7 @@ if (is_day()) {
                     <div class="td-pb-span12 td-main-content">
                         <div class="td-ss-main-content">
                             <div class="td-page-header">
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                     <span><?php echo $td_archive_title; ?></span>
                                 </h1>
                             </div>

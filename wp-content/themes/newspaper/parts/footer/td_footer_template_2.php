@@ -35,7 +35,7 @@
                 td_util::vc_set_column_number(1);
 
                 echo td_global_blocks::get_instance('td_block_popular_categories')->render(array(
-                    'custom_title' => __td('POPULAR CATEGORIES', TD_THEME_NAME),
+                    'custom_title' => __td('POPULAR CATEGORY', TD_THEME_NAME),
                     'limit' => 9
                 ));
                 ?>

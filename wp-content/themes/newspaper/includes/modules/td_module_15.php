@@ -16,7 +16,7 @@ class td_module_15 extends td_module_single {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes(array_merge(get_post_class())); ?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes(array_merge(get_post_class())); ?>">
             <div class="item-details">
                 <?php echo $this->get_title();?>
 

@@ -25,18 +25,6 @@ if($loop_sidebar_position == 'sidebar_left') {
 }
 
 
-/**
- * detect the page builder
- */
-$td_use_page_builder = false;
-if (method_exists('WPBMap', 'getShortCodes')) {
-    $td_page_builder_short_codes = array_keys(WPBMap::getShortCodes());
-    if (td_util::strpos_array($post->post_content, $td_page_builder_short_codes) === true) {
-        $td_use_page_builder = true;
-    }
-}
-
-
 
 
     //no page builder detected, we load a default page template with sidebar / no sidebar
@@ -51,14 +39,14 @@ if (method_exists('WPBMap', 'getShortCodes')) {
             switch ($loop_sidebar_position) {
                 default:
                     ?>
-                        <div class="td-pb-span8 td-main-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
+                        <div class="td-pb-span8 td-main-content" role="main">
                             <div class="td-ss-main-content">
                                 <?php
                                 if (have_posts()) {
                                 while ( have_posts() ) : the_post();
                                 ?>
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php the_title() ?></span>
                                     </h1>
                                 </div>
@@ -81,7 +69,7 @@ if (method_exists('WPBMap', 'getShortCodes')) {
 
                 case 'sidebar_left':
                     ?>
-                    <div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position; ?>-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
+                    <div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position; ?>-content" role="main">
                         <div class="td-ss-main-content">
                             <?php
 
@@ -89,7 +77,7 @@ if (method_exists('WPBMap', 'getShortCodes')) {
                             while ( have_posts() ) : the_post();
                             ?>
                             <div class="td-page-header">
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                     <span><?php the_title() ?></span>
                                 </h1>
                             </div>
@@ -112,14 +100,14 @@ if (method_exists('WPBMap', 'getShortCodes')) {
 
                 case 'no_sidebar':
                     ?>
-                    <div class="td-pb-span12 td-main-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
+                    <div class="td-pb-span12 td-main-content" role="main">
                         <div class="td-ss-main-content">
                             <?php
                             if (have_posts()) {
                             while ( have_posts() ) : the_post();
                             ?>
                             <div class="td-page-header">
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                     <span><?php the_title() ?></span>
                                 </h1>
                             </div>

@@ -11,7 +11,7 @@ class td_module_mx2 extends td_module {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes();?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes();?>">
 
             <?php echo $this->get_image('td_80x60');?>
 
@@ -24,7 +24,7 @@ class td_module_mx2 extends td_module {
                     <?php //echo $this->get_comments();?>
                 </div>
             </div>
-            <?php echo $this->get_item_scope_meta();?>
+
         </div>
 
         <?php return ob_get_clean();

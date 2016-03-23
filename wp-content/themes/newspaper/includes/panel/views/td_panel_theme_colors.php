@@ -35,6 +35,16 @@ echo td_panel_generator::ajax_box('Main menu', array(
 ?>
 
 
+<!-- MOBILE MENU -->
+<?php
+echo td_panel_generator::ajax_box('Mobile menu', array(
+        'td_ajax_calling_file' => basename(__FILE__),
+        'td_ajax_box_id' => 'td_mobile_menu'
+    )
+);
+?>
+
+
 
 <!-- HEADER COLOR -->
 <?php echo td_panel_generator::box_start('Header', false); ?>
@@ -141,6 +151,25 @@ echo td_panel_generator::ajax_box('Main menu', array(
         ?>
     </div>
 </div>
+
+
+<!-- FOOTER bottom text hover color -->
+<div class="td-box-row">
+    <div class="td-box-description">
+        <span class="td-box-title">FOOTER MENU HOVER COLOR</span>
+        <p>Select footer menu hover/active color</p>
+    </div>
+    <div class="td-box-control-full">
+        <?php
+        echo td_panel_generator::color_picker(array(
+            'ds' => 'td_option',
+            'option_id' => 'tds_footer_bottom_hover_color',
+            'default_color' => '#cccccc'
+        ));
+        ?>
+    </div>
+</div>
+
 
 <?php echo td_panel_generator::box_end();?>
 

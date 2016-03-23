@@ -9,6 +9,7 @@ class td_block_authors extends td_block {
 
         extract(shortcode_atts(
             array(
+                'roles' => '',
                 'sort' => '',
                 'exclude' => '',
                 'include' => ''
@@ -41,6 +42,16 @@ class td_block_authors extends td_block {
             //$td_authors = get_users(array('orderby' => 'post_count', 'order' => 'DESC'));
         }
 
+        if (!empty($roles)) {
+            $roles_in = array();
+            $roles_buffer = explode(',', $roles);
+            foreach ($roles_buffer as $role) {
+                //clear the empty space
+                $roles_in[] = trim($role);
+            }
+            //role__in was added in wp 4.4
+            $get_users_array['role__in'] = $roles_in;
+        }
 
         $td_authors = get_users($get_users_array);
 

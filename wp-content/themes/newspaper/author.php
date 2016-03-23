@@ -45,7 +45,7 @@ td_global::$current_author_obj = $part_cur_auth_obj;
                         <div class="td-pb-span8 td-main-content">
                             <div class="td-ss-main-content">
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php echo $part_cur_auth_obj->display_name; ?></span>
                                     </h1>
                                 </div>
@@ -78,7 +78,7 @@ td_global::$current_author_obj = $part_cur_auth_obj;
                         <div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position; ?>-content">
                             <div class="td-ss-main-content">
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php echo $part_cur_auth_obj->display_name; ?></span>
                                     </h1>
                                 </div>
@@ -111,7 +111,7 @@ td_global::$current_author_obj = $part_cur_auth_obj;
                         <div class="td-pb-span12 td-main-content">
                             <div class="td-ss-main-content">
                                 <div class="td-page-header">
-                                    <h1 itemprop="name" class="entry-title td-page-title">
+                                    <h1 class="entry-title td-page-title">
                                         <span><?php echo $part_cur_auth_obj->display_name; ?></span>
                                     </h1>
                                 </div>

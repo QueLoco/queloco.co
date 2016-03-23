@@ -123,6 +123,7 @@ class td_block_big_grid_8 extends td_block {
                         // group 2
                         if ( $post_count == 2 ) {
                             $buffy .= '</div>';
+                            $buffy .= '<div class="td-big-grid-scroll' . $td_scroll_posts . '">';
                             $buffy .= '<div class="td-grid-columns td-grid-group-2">';
                         }
                         if ( $post_count >= 2 && $post_count <= 4 ) {

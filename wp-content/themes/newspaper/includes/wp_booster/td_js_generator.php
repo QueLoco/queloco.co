@@ -25,8 +25,7 @@ function td_js_generator() {
 
     td_js_buffer::add_variable('tds_smart_sidebar', td_util::get_option('tds_smart_sidebar'));
 
-    td_js_buffer::add_variable('td_theme_v', base64_encode(TD_THEME_VERSION));
-    td_js_buffer::add_variable('td_theme_n', base64_encode(TD_THEME_NAME));
+	td_js_buffer::add_variable('tdThemeName', TD_THEME_NAME);
 
     // magnific popup translations
     td_js_buffer::add_variable('td_magnific_popup_translation_tPrev', __td('Previous (Left arrow key)', TD_THEME_NAME));
@@ -37,10 +36,10 @@ function td_js_generator() {
 
 
     td_js_buffer::add_to_header("
-var td_blocks = []; //here we store all the items for the current page
+var tdBlocksArray = []; //here we store all the items for the current page
 
 //td_block class - each ajax block uses a object of this class for requests
-function td_block() {
+function tdBlock() {
     this.id = '';
     this.block_type = 1; //block type id (1-234 etc)
     this.atts = '';
@@ -50,7 +49,6 @@ function td_block() {
     this.found_posts = 0; //from wp
     this.max_num_pages = 0; //from wp
     this.td_filter_value = ''; //current live filter value
-    this.td_filter_ui_uid = ''; //used to select a item from the drop down filter
     this.is_ajax_running = false;
     this.td_user_action = ''; // load more or infinite loader (used by the animation)
     this.header_color = '';
@@ -67,42 +65,69 @@ function td_block() {
     <script>
         // td_js_generator - mini detector
         (function(){
-            var html_tag = document.getElementsByTagName("html")[0];
+            var htmlTag = document.getElementsByTagName("html")[0];
 
-            if(navigator.userAgent.indexOf("MSIE 10.0") > -1) {
-                html_tag.className+=' ie10';
+            if ( navigator.userAgent.indexOf("MSIE 10.0") > -1 ) {
+                htmlTag.className += ' ie10';
             }
 
-            if(!!navigator.userAgent.match(/Trident.*rv\:11\./)) {
-                html_tag.className+=' ie11';
+            if ( !!navigator.userAgent.match(/Trident.*rv\:11\./) ) {
+                htmlTag.className += ' ie11';
             }
 
-            if (/(iPad|iPhone|iPod)/g.test( navigator.userAgent )) {
-                html_tag.className+=' td-md-is-ios';
+            if ( /(iPad|iPhone|iPod)/g.test(navigator.userAgent) ) {
+                htmlTag.className += ' td-md-is-ios';
             }
 
             var user_agent = navigator.userAgent.toLowerCase();
-            if(user_agent.indexOf("android") > -1) {
-                html_tag.className+=' td-md-is-android';
+            if ( user_agent.indexOf("android") > -1 ) {
+                htmlTag.className += ' td-md-is-android';
             }
 
-            if (navigator.userAgent.indexOf('Mac OS X') != -1) {
-                html_tag.className+=' td-md-is-os-x';
+            if ( -1 !== navigator.userAgent.indexOf('Mac OS X')  ) {
+                htmlTag.className += ' td-md-is-os-x';
             }
 
-            if(/chrom(e|ium)/.test(navigator.userAgent.toLowerCase())) {
-               html_tag.className+=' td-md-is-chrome';
+            if ( /chrom(e|ium)/.test(navigator.userAgent.toLowerCase()) ) {
+               htmlTag.className += ' td-md-is-chrome';
             }
 
-            if (navigator.userAgent.indexOf('Firefox') != -1) {
-                html_tag.className+=' td-md-is-firefox';
+            if ( -1 !== navigator.userAgent.indexOf('Firefox') ) {
+                htmlTag.className += ' td-md-is-firefox';
             }
 
-            if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
-                html_tag.className+=' td-md-is-safari';
+            if ( -1 !== navigator.userAgent.indexOf('Safari') && -1 === navigator.userAgent.indexOf('Chrome') ) {
+                htmlTag.className += ' td-md-is-safari';
             }
 
         })();
+
+
+
+
+        var tdLocalCache = {};
+
+        ( function () {
+            "use strict";
+
+            tdLocalCache = {
+                data: {},
+                remove: function (resource_id) {
+                    delete tdLocalCache.data[resource_id];
+                },
+                exist: function (resource_id) {
+                    return tdLocalCache.data.hasOwnProperty(resource_id) && tdLocalCache.data[resource_id] !== null;
+                },
+                get: function (resource_id) {
+                    return tdLocalCache.data[resource_id];
+                },
+                set: function (resource_id, cachedData) {
+                    tdLocalCache.remove(resource_id);
+                    tdLocalCache.data[resource_id] = cachedData;
+                }
+            };
+        })();
+
     </script>
     <?php
     td_js_buffer::add_to_header(td_util::remove_script_tag(ob_get_clean()));

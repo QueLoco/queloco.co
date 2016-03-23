@@ -9,7 +9,7 @@ class td_module_mx7 extends td_module {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes();?>" <?php echo $this->get_item_scope() ?>>
+        <div class="<?php echo $this->get_module_classes();?>">
             <div class="td-module-image">
                 <?php echo $this->get_image('td_218x150');?>
                 <?php if (td_util::get_option('tds_category_module_mx7') == 'yes') { echo $this->get_category(); }?>
@@ -28,8 +28,6 @@ class td_module_mx7 extends td_module {
                     <?php echo $this->get_excerpt();?>
                 </div>
             </div>
-
-            <?php echo $this->get_item_scope_meta(); ?>
 
         </div>
 

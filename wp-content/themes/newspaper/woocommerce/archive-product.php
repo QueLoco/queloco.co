@@ -20,64 +20,64 @@ if($loop_sidebar_position == 'sidebar_left') {
 }
 
 ?>
-<div class="td-main-content-wrap td-main-page-wrap">
-	<div class="td-container">
-		<div class="td-pb-row">
-		<?php
-		switch ($loop_sidebar_position) {
-			case 'sidebar_left':
-				?>
-				<div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position; ?>-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
-					<div class="td-ss-main-content">
-						<?php
-							//woocommerce_breadcrumb();
-							woocommerce_content();
+	<div class="td-main-content-wrap td-main-page-wrap">
+		<div class="td-container <?php echo $td_sidebar_position; ?>">
+			<div class="td-pb-row">
+				<?php
+				switch ($loop_sidebar_position) {
+					case 'sidebar_left':
 						?>
-					</div>
-				</div>
-				<div class="td-pb-span4 td-main-sidebar" role="complementary">
-					<div class="td-ss-main-sidebar">
-						<?php get_sidebar(); ?>
-					</div>
-				</div>
-				<?php
-				break;
-
-			case 'no_sidebar':
-				?>
-				<div class="td-pb-span12 td-main-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
-					<div class="td-ss-main-content">
+						<div class="td-pb-span4 td-main-sidebar" role="complementary">
+							<div class="td-ss-main-sidebar">
+								<?php get_sidebar(); ?>
+							</div>
+						</div>
+						<div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position; ?>-content" role="main">
+							<div class="td-ss-main-content">
+								<?php
+									//woocommerce_breadcrumb();
+									woocommerce_content();
+								?>
+							</div>
+						</div>
 						<?php
-							//woocommerce_breadcrumb();
-							woocommerce_content();
+						break;
+
+					case 'no_sidebar':
 						?>
-					</div>
-				</div>
-				<?php
-				break;
+						<div class="td-pb-span12 td-main-content" role="main">
+							<div class="td-ss-main-content">
+								<?php
+									//woocommerce_breadcrumb();
+									woocommerce_content();
+								?>
+							</div>
+						</div>
+						<?php
+						break;
 
 
-			default:
-				?>
-					<div class="td-pb-span8 td-main-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
-						<div class="td-ss-main-content">
-							<?php
-								//woocommerce_breadcrumb();
-								woocommerce_content();
-							?>
-						</div>
-					</div>
-					<div class="td-pb-span4 td-main-sidebar" role="complementary">
-						<div class="td-ss-main-sidebar">
-							<?php get_sidebar(); ?>
-						</div>
-					</div>
-				<?php
-				break;
-		}?>
+					default:
+						?>
+							<div class="td-pb-span8 td-main-content" role="main">
+								<div class="td-ss-main-content">
+									<?php
+										//woocommerce_breadcrumb();
+										woocommerce_content();
+									?>
+								</div>
+							</div>
+							<div class="td-pb-span4 td-main-sidebar" role="complementary">
+								<div class="td-ss-main-sidebar">
+									<?php get_sidebar(); ?>
+								</div>
+							</div>
+						<?php
+						break;
+				}?>
+			</div>
 		</div>
-	</div>
-</div> <!-- /.td-main-content-wrap -->
+	</div> <!-- /.td-main-content-wrap -->
 
 <?php
 get_footer();

@@ -335,7 +335,7 @@ msgid "User or email already exists!"
 msgstr ""
 
 #: ../includes/wp_booster/td_translate.php:128
-msgid "Please check you email (index or spam folder), the password was sent there."
+msgid "Please check your email (index or spam folder), the password was sent there."
 msgstr ""
 
 #: ../includes/wp_booster/td_translate.php:129

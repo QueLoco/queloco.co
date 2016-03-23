@@ -38,7 +38,7 @@
   width: @td_container_total_width;
   position:relative;
   right: -@td_col_left_width;
-
+  min-height: 600px;
   background: #ededed url("../images/panel/panel-wrap/menu-shadow-vertical.png") repeat-y;
 }
 
@@ -59,6 +59,7 @@
   width: @td_container_total_width;
   overflow:hidden;
   background-color: rgba(34, 34, 34, 0.3);
+  min-height: 600px;
 }
 
 #td-col-right {
@@ -215,6 +216,16 @@
 /*category breadcrumb*/
 .td-panel-breadcrumb {
   padding: 0 5px 0 9px;
+}
+
+
+#td-panel-theme-colors {
+  .td-box-description {
+    width: 335px;
+  }
+  .td-box-control-full {
+    width: 470px;
+  }
 }
 
 

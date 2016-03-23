@@ -100,6 +100,50 @@
         </div>
     </div>
 
+	<!-- footer logo alt -->
+	<div class="td-box-row">
+		<div class="td-box-description">
+			<span class="td-box-title">LOGO ALT ATTRIBUTE</span>
+			<p><a target="_blank" href="http://www.w3schools.com/tags/att_img_alt.asp">Alt attribute</a> for the logo. This is the alternative text if the logo cannot be displayed. It's useful for SEO and generally is the name of the site.
+				<?php td_util::tooltip_html('
+	                        <h3>Footer Logo ALT:</h3>
+	                        <p>If you don\'t set the footer alt attribute the theme will use the one set for the header logo.</p>
+
+	                ', 'right')?>
+			</p>
+		</div>
+		<div class="td-box-control-full">
+			<?php
+			echo td_panel_generator::input(array(
+				'ds' => 'td_option',
+				'option_id' => 'tds_footer_logo_alt'
+			));
+			?>
+		</div>
+	</div>
+
+	<!-- footer logo title -->
+	<div class="td-box-row">
+		<div class="td-box-description">
+			<span class="td-box-title">LOGO TITLE ATTRIBUTE</span>
+			<p><a target="_blank" href="http://www.w3schools.com/tags/att_global_title.asp">Title attribute</a> for the logo. This attribute specifies extra information about the logo. Most browsers will show a tooltip with this text on logo hover.
+				<?php td_util::tooltip_html('
+	                        <h3>Footer Logo TITLE:</h3>
+	                        <p>If you don\'t set the footer title attribute the theme will use the one set for the header logo.</p>
+
+	                ', 'right')?>
+			</p>
+		</div>
+		<div class="td-box-control-full">
+			<?php
+			echo td_panel_generator::input(array(
+				'ds' => 'td_option',
+				'option_id' => 'tds_footer_logo_title'
+			));
+			?>
+		</div>
+	</div>
+
     <!-- footer text -->
     <div class="td-box-row td-custom-css">
         <div class="td-box-description">
@@ -154,7 +198,108 @@
 <?php echo td_panel_generator::box_end();?>
 
 
+<!-- FOOTER BACKGROUND -->
+<?php echo td_panel_generator::box_start('Footer background', false); ?>
 
+    <!-- BACKGROUND UPLOAD -->
+    <div class="td-box-row">
+        <div class="td-box-description">
+            <span class="td-box-title">FOOTER BACKGROUND</span>
+            <p>Upload a footer background image</p>
+        </div>
+        <div class="td-box-control-full">
+            <?php
+            echo td_panel_generator::upload_image(array(
+                'ds' => 'td_option',
+                'option_id' => 'tds_footer_background_image'
+            ));
+            ?>
+        </div>
+    </div>
+
+    <!-- Background Repeat -->
+    <div class="td-box-row">
+        <div class="td-box-description">
+            <span class="td-box-title">REPEAT</span>
+            <p>How the background image will be displayed</p>
+        </div>
+        <div class="td-box-control-full">
+            <?php
+            echo td_panel_generator::radio_button_control(array(
+                'ds' => 'td_option',
+                'option_id' => 'tds_footer_background_repeat',
+                'values' => array(
+                    array('text' => 'No Repeat', 'val' => ''),
+                    array('text' => 'Tile', 'val' => 'repeat'),
+                    array('text' => 'Tile Horizontally', 'val' => 'repeat-x'),
+                    array('text' => 'Tile Vertically', 'val' => 'repeat-y')
+                )
+            ));
+            ?>
+        </div>
+    </div>
+
+    <!-- Background Size -->
+    <div class="td-box-row">
+        <div class="td-box-description">
+            <span class="td-box-title">SIZE</span>
+            <p>Set the background image size</p>
+        </div>
+        <div class="td-box-control-full">
+            <?php
+            echo td_panel_generator::radio_button_control(array(
+                'ds' => 'td_option',
+                'option_id' => 'tds_footer_background_size',
+                'values' => array(
+                    array('text' => 'Auto', 'val' => ''),
+                    array('text' => 'Full Width', 'val' => '100% auto'),
+                    array('text' => 'Full Height', 'val' => 'auto 100%'),
+                    array('text' => 'Cover', 'val' => 'cover'),
+                    array('text' => 'Contain', 'val' => 'contain')
+                )
+            ));
+            ?>
+        </div>
+    </div>
+
+    <!-- Background position -->
+    <div class="td-box-row">
+        <div class="td-box-description">
+            <span class="td-box-title">POSITION</span>
+            <p>Position your background image</p>
+        </div>
+        <div class="td-box-control-full">
+            <?php
+            echo td_panel_generator::radio_button_control(array(
+                'ds' => 'td_option',
+                'option_id' => 'tds_footer_background_position',
+                'values' => array(
+                    array('text' => 'Bottom', 'val' => ''),
+                    array('text' => 'Center', 'val' => 'center center'),
+                    array('text' => 'Top', 'val' => 'center top')
+                )
+            ));
+            ?>
+        </div>
+    </div>
+
+    <!-- Background opacity -->
+    <div class="td-box-row">
+        <div class="td-box-description">
+            <span class="td-box-title">BACKGROUND OPACITY</span>
+            <p>Set the background image transparency. (Example: 0.3)</p>
+        </div>
+        <div class="td-box-control-full">
+            <?php
+            echo td_panel_generator::input(array(
+                'ds' => 'td_option',
+                'option_id' => 'tds_footer_background_opacity'
+            ));
+            ?>
+        </div>
+    </div>
+
+<?php echo td_panel_generator::box_end();?>
 
 
 <!-- SUB-FOOTER SETTINGS -->

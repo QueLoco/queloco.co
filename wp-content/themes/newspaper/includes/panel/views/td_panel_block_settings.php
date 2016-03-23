@@ -38,7 +38,7 @@
                     <?php
                     echo td_panel_generator::checkbox(array(
                         'ds' => 'td_option',
-                        'option_id' => 'tds_category_' . td_util::get_module_name_from_class($td_module_class),
+                        'option_id' => 'tds_category_' . td_api_module::_helper_get_module_name_from_class($td_module_class),
                         'true_value' => 'yes',
                         'false_value' => ''
                     ));

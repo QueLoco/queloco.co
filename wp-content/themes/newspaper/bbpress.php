@@ -32,14 +32,14 @@ if($loop_sidebar_position == 'sidebar_left') {
 				switch ($loop_sidebar_position) {
 					default:
 						?>
-						<div class="td-pb-span8 td-main-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
+						<div class="td-pb-span8 td-main-content" role="main">
 							<div class="td-ss-main-content">
 								<?php
 								if (have_posts()) {
 									while ( have_posts() ) : the_post();
 										?>
-										<h1 itemprop="name" class="entry-title td-page-title">
-											<a itemprop="url" href="<?php the_permalink()?>" rel="bookmark" title="<?php the_title_attribute() ?>"><?php the_title() ?></a>
+										<h1 class="entry-title td-page-title">
+											<a href="<?php the_permalink()?>" rel="bookmark" title="<?php the_title_attribute() ?>"><?php the_title() ?></a>
 										</h1>
 										<?php
 										the_content();
@@ -58,15 +58,15 @@ if($loop_sidebar_position == 'sidebar_left') {
 
 					case 'sidebar_left':
 						?>
-						<div class="td-pb-span8 td-main-content  <?php echo $td_sidebar_position; ?>-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
+						<div class="td-pb-span8 td-main-content  <?php echo $td_sidebar_position; ?>-content" role="main">
 							<div class="td-ss-main-content">
 								<?php
 
 								if (have_posts()) {
 									while ( have_posts() ) : the_post();
 										?>
-										<h1 itemprop="name" class="entry-title td-page-title">
-											<a itemprop="url" href="<?php the_permalink()?>" rel="bookmark" title="<?php the_title_attribute() ?>"><?php the_title() ?></a>
+										<h1 class="entry-title td-page-title">
+											<a href="<?php the_permalink()?>" rel="bookmark" title="<?php the_title_attribute() ?>"><?php the_title() ?></a>
 										</h1>
 										<?php
 										the_content();
@@ -85,14 +85,14 @@ if($loop_sidebar_position == 'sidebar_left') {
 
 					case 'no_sidebar':
 						?>
-						<div class="td-pb-span12 td-main-content" role="main" itemscope="itemscope" itemprop="mainContentOfPage" itemtype="<?php echo td_global::$http_or_https?>://schema.org/CreativeWork">
+						<div class="td-pb-span12 td-main-content" role="main">
 							<div class="td-ss-main-content">
 								<?php
 								if (have_posts()) {
 									while ( have_posts() ) : the_post();
 										?>
-										<h1 itemprop="name" class="entry-title td-page-title">
-											<a itemprop="url" href="<?php the_permalink()?>" rel="bookmark" title="<?php the_title_attribute() ?>"><?php the_title() ?></a>
+										<h1 class="entry-title td-page-title">
+											<a href="<?php the_permalink()?>" rel="bookmark" title="<?php the_title_attribute() ?>"><?php the_title() ?></a>
 										</h1>
 										<?php
 										the_content();

@@ -144,6 +144,10 @@ class td_block_mega_menu extends td_block {
                 }
 
                 foreach ($td_subcategories as $td_category) {
+                    $this->td_block_template_data['td_pull_down_items'][] = array(
+                        'name' => $td_category->name,
+                        'id' => $td_category->cat_ID
+                    );
                     $buffy .= '<a class="mega-menu-sub-cat-' . $this->block_uid . '"  id="' . td_global::td_generate_unique_id() . '" data-td_block_id="' . $this->block_uid . '" data-td_filter_value="' . $td_category->cat_ID . '" href="' . get_category_link($td_category->cat_ID) . '">' . $td_category->name . '</a>';
                 }
 

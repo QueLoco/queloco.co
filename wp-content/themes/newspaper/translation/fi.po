@@ -290,7 +290,7 @@ msgid "User or email already exists!"
 msgstr "Käyttäjänimi tai sähköpostiosoite on jo käytössä!"
 
 #: no reference:
-msgid "Please check you email (index or spam folder), the password was sent there."
+msgid "Please check your email (index or spam folder), the password was sent there."
 msgstr "Tarkista sähköpostisi (saapuvat tai roskapostikansio), salasana lähetettiin sinne."
 
 #: no reference:

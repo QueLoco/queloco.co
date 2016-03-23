@@ -103,6 +103,15 @@
     }
   }
 }
+// post category tags
+.single {
+  .td-category {
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      margin-bottom: 0;
+    }
+  }
+}
 
 
 /*  ----------------------------------------------------------------------------
@@ -120,7 +129,12 @@
 
     @media (max-width: @responsive_p_tablet_max) {
       font-size: 32px;
-      line-height: 40px;
+      line-height: 36px;
+    }
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      margin-top: 3px;
+      margin-bottom: 9px;
     }
   }
 }
@@ -154,11 +168,6 @@
 header {
   .td-module-meta-info {
     margin-bottom: 16px;
-
-    /* responsive portrait phone */
-    @media (max-width: @responsive_p_phone_max) {
-        margin-bottom: 10px;
-    }
   }
 
   //author name
@@ -228,6 +237,7 @@ header {
 
   a {
     display: inline-block;
+    vertical-align: middle;
   }
 }
 
@@ -266,7 +276,7 @@ header {
   margin-left: 12px;
 }
 
-//facebook
+// facebook
 .td-social-facebook {
   background-color: #516eab;
 
@@ -282,12 +292,12 @@ header {
 }
 
 
-//twitter
+// twitter
 .td-social-twitter {
   background-color: #29c5f6;
 
   .td-icon-twitter {
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .td-social-but-text {
@@ -296,26 +306,52 @@ header {
 }
 
 
-//google
+// google
 .td-social-google {
   background-color: #eb4026;
+  width: 40px;
 
   .td-icon-googleplus {
-    font-size: 15px;
+    font-size: 16px;
     position: relative;
-    top: 2px;
-    left: 1px;
+    top: 0;
+    left: -1px;
+    line-height: 22px;
   }
 }
 
+// pinterest
 .td-social-pinterest {
   background-color: #ca212a;
   margin-right: 0;
+
+  /* responsive portrait phone */
+  @media (max-width: @responsive_p_phone_max) {
+    margin-right: 10px;
+  }
 
   .td-icon-pinterest {
     font-size: 13px;
     position: relative;
     top: 1px;
+  }
+}
+
+// whatsapp
+.td-social-whatsapp {
+  display: none !important;
+  background-color: #7bbf6a;
+  margin-right: 0;
+
+  /* responsive portrait phone */
+  @media (max-width: @responsive_p_phone_max) {
+      display: inline-block !important;
+  }
+
+  i {
+    font-size: 20px;
+    bottom: 2px;
+    right: 2px;
   }
 }
 
@@ -368,11 +404,30 @@ header {
     margin-left: 8px;
     padding-left: 9px;
   }
+
+  .td-social-google {
+    width: 32px;
+
+    i {
+      top: 0;
+      left: -2px;
+    }
+  }
+
+  /* responsive portrait phone */
+  @media (max-width: 480px) {
+    .td-social-but-text {
+      display: none;
+    }
+  }
 }
 // firefox fix
 @-moz-document url-prefix() {
   .td-post-sharing-bottom .td-social-sharing-buttons {
     padding: 7px 9px 4px;
+  }
+  .td-social-google .td-icon-googleplus {
+    line-height: 20px;
   }
 }
 
@@ -427,8 +482,8 @@ header {
   }
 
   .td-post-sharing-top {
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin-top: 15px;
+    margin-bottom: 20px;
   }
 
   .td-post-sharing-bottom {
@@ -437,8 +492,8 @@ header {
 }
 
 
-/* responsive 480px phone */
-@media (max-width: 484px) {
+/* responsive 580px phone */
+@media (max-width: 580px) {
 
   .td-post-sharing-top {
     .td-social-but-text {

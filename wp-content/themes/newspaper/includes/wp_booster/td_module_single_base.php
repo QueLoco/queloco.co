@@ -5,7 +5,10 @@
 class td_module_single_base extends td_module {
 
     var $td_post_theme_settings;
+
     var $is_single; //true if we are on a single page
+
+
 
     function __construct($post = '') {
 
@@ -20,12 +23,11 @@ class td_module_single_base extends td_module {
 
 
 
+
     function get_post_pagination() {
         if (!$this->is_single) {
-            return;
+            return '';
         }
-
-
         return wp_link_pages(array(
             'before' => '<div class="page-nav page-nav-post td-pb-padding-side">',
             'after' => '</div>',
@@ -37,31 +39,26 @@ class td_module_single_base extends td_module {
         ));
     }
 
+
     /**
+     * Gets the article title on single pages and on modules that use this class as a base (module15 on Newsmag for example).
      * @param string $cut_at - not used, it's added to maintain strict standards
      * @return string
      */
     function get_title($cut_at = '') {
-        //just use h1 instead of h3
-        $var_single = 0;
-        if (is_single()) {
-            $var_single = 1;
-        }
-
         $buffy = '';
-        $buffy .= '<h1 itemprop="name" class="entry-title">';
-
-        if ($var_single == 0) {
-            $buffy .='<a itemprop="url" href="' . $this->href . '" rel="bookmark" title="' . $this->title_attribute . '">';
+        if (!empty($this->title)) {
+            $buffy .= '<h1 class="entry-title">';
+            if ($this->is_single === true) {
+                $buffy .= $this->title;
+            } else {
+                $buffy .='<a href="' . $this->href . '" rel="bookmark" title="' . $this->title_attribute . '">';
+                $buffy .= $this->title;
+                $buffy .='</a>';
+            }
+            $buffy .= '</h1>';
         }
 
-        $buffy .= $this->title;
-
-        if ($var_single == 0) {
-            $buffy .='</a>';
-        }
-
-        $buffy .= '</h1>';
         return $buffy;
     }
 
@@ -70,7 +67,7 @@ class td_module_single_base extends td_module {
         $buffy = '';
         if (td_util::get_option('tds_p_show_author_name') != 'hide') {
             $buffy .= '<div class="td-post-author-name">' . __td('By', TD_THEME_NAME) . ' ';
-            $buffy .= '<a itemprop="author" href="' . get_author_posts_url($this->post->post_author) . '">' . get_the_author_meta('display_name', $this->post->post_author) . '</a>' ;
+            $buffy .= '<a href="' . get_author_posts_url($this->post->post_author) . '">' . get_the_author_meta('display_name', $this->post->post_author) . '</a>' ;
 
             if (td_util::get_option('tds_p_show_author_name') != 'hide' and td_util::get_option('tds_p_show_date') != 'hide') {
                 $buffy .= ' - ';
@@ -113,16 +110,15 @@ class td_module_single_base extends td_module {
         if (get_post_format($this->post->ID) == 'video') {
             //if it's a video post...
             $td_post_video = get_post_meta($this->post->ID, 'td_post_video', true);
-            $td_video_support = new td_video_support();
 
             //render the video if the post has a video in the featured video section of the post
             if (!empty($td_post_video['td_video'])) {
-                return $td_video_support->renderVideo($td_post_video['td_video']);
+                return td_video_support::render_video($td_post_video['td_video']);
             }
         } else {
             //if it's a normal post, show the default thumb
 
-            if ($this->post_has_thumb) {
+            if (!is_null($this->post_thumb_id)) {
                 //get the featured image id + full info about the 640px wide one
                 $featured_image_id = get_post_thumbnail_id($this->post->ID);
                 $featured_image_info = td_util::attachment_get_full_info($featured_image_id, $thumbType);
@@ -138,14 +134,14 @@ class td_module_single_base extends td_module {
                     if ($show_td_modal_image != 'no_modal') {
                         //wrap the image_html with a link + add td-modal-image class
                         $image_html = '<a href="' . $featured_image_full_size_src['src'] . '" data-caption="' . esc_attr($featured_image_info['caption'], ENT_QUOTES) . '">';
-                        $image_html .= '<img width="' . $featured_image_info['width'] . '" height="' . $featured_image_info['height'] . '" itemprop="image" class="entry-thumb td-modal-image" src="' . $featured_image_info['src'] . '" alt="' . $featured_image_info['alt']  . '" title="' . $featured_image_info['title'] . '"/>';
+                        $image_html .= '<img width="' . $featured_image_info['width'] . '" height="' . $featured_image_info['height'] . '" class="entry-thumb td-modal-image" src="' . $featured_image_info['src'] . '" alt="' . $featured_image_info['alt']  . '" title="' . $featured_image_info['title'] . '"/>';
                         $image_html .= '</a>';
                     } else { //no_modal
-                        $image_html = '<img width="' . $featured_image_info['width'] . '" height="' . $featured_image_info['height'] . '" itemprop="image" class="entry-thumb" src="' . $featured_image_info['src'] . '" alt="' . $featured_image_info['alt']  . '" title="' . $featured_image_info['title'] . '"/>';
+                        $image_html = '<img width="' . $featured_image_info['width'] . '" height="' . $featured_image_info['height'] . '" class="entry-thumb" src="' . $featured_image_info['src'] . '" alt="' . $featured_image_info['alt']  . '" title="' . $featured_image_info['title'] . '"/>';
                     }
                 } else {
                     //on blog index page
-                    $image_html = '<a href="' . $this->href . '"><img width="' . $featured_image_info['width'] . '" height="' . $featured_image_info['height'] . '" itemprop="image" class="entry-thumb" src="' . $featured_image_info['src'] . '" alt="' . $featured_image_info['alt']  . '" title="' . $featured_image_info['title'] . '"/></a>';
+                    $image_html = '<a href="' . $this->href . '"><img width="' . $featured_image_info['width'] . '" height="' . $featured_image_info['height'] . '" class="entry-thumb" src="' . $featured_image_info['src'] . '" alt="' . $featured_image_info['alt']  . '" title="' . $featured_image_info['title'] . '"/></a>';
                 }
 
 
@@ -255,7 +251,9 @@ class td_module_single_base extends td_module {
                 }
 
                 if ( ! empty( $term_params['color'] ) ) {
-                    $td_cat_color = ' style="background-color:' . $term_params['color'] . ';"';
+                    // set title color based on background color contrast
+                    $td_cat_title_color = $this->readableColour($term_params['color']);
+                    $td_cat_color = ' style="background-color:' . $term_params['color'] . '; color:' . $td_cat_title_color . '; border-color:' . $term_params['color']  . ';"';
                 } else {
                     $td_cat_color = '';
                 }
@@ -269,15 +267,40 @@ class td_module_single_base extends td_module {
         return $buffy;
     }
 
+
+    /**
+     * calculate the contrast of a color and return:
+     * @param $bg - string (ex. #23f100)
+     * @return string - #000 - for light background - #fff - for dark background
+     */
+    function readableColour($bg){
+        $r = hexdec(substr($bg,1,2));
+        $g = hexdec(substr($bg,3,2));
+        $b = hexdec(substr($bg,5,2));
+
+        $contrast = sqrt(
+            $r * $r * .241 +
+            $g * $g * .691 +
+            $b * $b * .068
+        );
+
+        if($contrast > 200){
+            return '#000';
+        }else{
+            return '#fff';
+        }
+    }
+
+
+
+
+
     function get_comments() {
         $buffy = '';
         if (td_util::get_option('tds_p_show_comments') != 'hide') {
             $buffy .= '<div class="td-post-comments">';
             $buffy .= '<a href="' . get_comments_link($this->post->ID) . '"><i class="td-icon-comments"></i>';
-            if (is_plugin_active('facebook-comments-plugin/facebook-comments.php'))
-                $buffy .= '<fb:comments-count href="'.get_permalink($this->post->ID).'"></fb:comments-count>';
-            else
-                $buffy .= get_comments_number($this->post->ID);
+            $buffy .= get_comments_number($this->post->ID);
             $buffy .= '</a>';
             $buffy .= '</div>';
         }
@@ -331,8 +354,27 @@ class td_module_single_base extends td_module {
 
             $td_smart_list_class = $td_smart_list['smart_list_template'];
             if (class_exists($td_smart_list_class)) {
+                /**
+                 * @var $td_smart_list_obj td_smart_list
+                 */
                 $td_smart_list_obj = new $td_smart_list_class();  // make the class from string * magic :)
-                return $td_smart_list_obj->render_from_post_content($content);
+
+                // prepare the settings for the smart list
+                $smart_list_settings = array(
+                    'post_content' => $content,
+                    'counting_order_asc' => false,
+                    'td_smart_list_h' => 'h3',
+                    'extract_first_image' => td_api_smart_list::get_key($td_smart_list_class, 'extract_first_image')
+                );
+
+                if (!empty($td_smart_list['td_smart_list_order'])) {
+                    $smart_list_settings['counting_order_asc'] = true;
+                }
+
+                if (!empty($td_smart_list['td_smart_list_h'])) {
+                    $smart_list_settings['td_smart_list_h'] = $td_smart_list['td_smart_list_h'];
+                }
+                return $td_smart_list_obj->render_from_post_content($smart_list_settings);
             } else {
                 // there was an error?
                 td_util::error(__FILE__, 'Missing smart list: ' . $td_smart_list_class . '. Did you disabled a tagDiv plugin?');
@@ -366,25 +408,29 @@ class td_module_single_base extends td_module {
 
             $content_parts = preg_split('/(<p.*>)/U', $content, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
+            $p_open_tag_count = 0; // count how many <p> tags we have added to the buffer
             foreach ($content_parts as $content_part_index => $content_part_value) {
                 if (!empty($content_part_value)) {
 
-                    if ($tds_inline_ad_paragraph == ($content_part_index / 2)) {
-                        //it's time to show the ad
-                        switch ($tds_inline_ad_align) {
-                            case 'left':
-                                $content_buffer .= td_global_blocks::get_instance('td_block_ad_box')->render(array('spot_id' => 'content_inline', 'align' => 'left'));
-                                break;
+                    // Show the ad ONLY IF THE CURRENT PART IS A <p> opening tag and before the <p> -> so we will have <p>content</p>  ~ad~ <p>content</p>
+                    // and prevent cases like <p> ~ad~ content</p>
+                    if (preg_match('/(<p.*>)/U', $content_part_value) === 1) {
+                        if ($tds_inline_ad_paragraph == $p_open_tag_count) {
+                            switch ($tds_inline_ad_align) {
+                                case 'left':
+                                    $content_buffer .= td_global_blocks::get_instance('td_block_ad_box')->render(array('spot_id' => 'content_inline', 'align' => 'left'));
+                                    break;
 
-                            case 'right':
-                                $content_buffer .= td_global_blocks::get_instance('td_block_ad_box')->render(array('spot_id' => 'content_inline', 'align' => 'right'));
-                                break;
+                                case 'right':
+                                    $content_buffer .= td_global_blocks::get_instance('td_block_ad_box')->render(array('spot_id' => 'content_inline', 'align' => 'right'));
+                                    break;
 
-                            default:
-
-                                $content_buffer .= td_global_blocks::get_instance('td_block_ad_box')->render(array('spot_id' => 'content_inline'));
-                                break;
+                                default:
+                                    $content_buffer .= td_global_blocks::get_instance('td_block_ad_box')->render(array('spot_id' => 'content_inline'));
+                                    break;
+                            }
                         }
+                        $p_open_tag_count ++;
                     }
                     $content_buffer .= $content_part_value;
                     $cnt++;
@@ -410,12 +456,12 @@ class td_module_single_base extends td_module {
 
 
     /**
-     * returns the item scope @todo - see where it's actually used
+     * returns the item scope for single pages. If we have an article or a review
      * @return string
      */
     function get_item_scope() {
         //show the review meta only on single posts that are reviews, the rest have to be article (in article lists)
-        if (td_review::has_review($this->td_review) and is_single()) {
+        if ($this->is_review && is_single()) {
             return 'itemscope itemtype="' . td_global::$http_or_https . '://schema.org/Review"';
         } else {
             return 'itemscope itemtype="' . td_global::$http_or_https . '://schema.org/Article"';
@@ -424,44 +470,109 @@ class td_module_single_base extends td_module {
 
 
     /**
-     * returns the item scope meta. It returns an empty string if the module is used in a loop (not on a single page)
-     * 16 march 2015
+     * This method outputs the item scope for SINGLE templates. If you are looking for the modules @see td_module::get_item_scope_meta()
+     * @updated 23 july 2015
+     *  - if the module that uses this class is not on a single page, we use the @see td_module::get_item_scope_meta() this allows
+     * us to output normal module item scope insted of no item scope like it was before this update
+     * @updated 16 december 2015
+     * - removed structured data from modules, now it displays only on single and it returns the current post data
+     * - no more interference with the itemprop's coming from modules
+     * - all single structured data is now gathered here
      * @return string
      */
     function get_item_scope_meta() {
 
+        // don't display meta on pages
         if (!is_single()) {
             return '';
         }
+
+        // determine publisher name - use author name if there's no blog name
+        $td_publisher_name = get_bloginfo('name');
+        if (empty($td_publisher_name)){
+            $td_publisher_name = esc_attr(get_the_author_meta('display_name', $this->post->post_author));
+        }
+        // determine publisher logo
+        $td_publisher_logo = td_util::get_option('tds_logo_upload');
+
         $buffy = ''; //the vampire slayer
 
-        $author_id = $this->post->post_author;
-        $buffy .= '<meta itemprop="author" content = "' . get_the_author_meta('display_name', $author_id) . '">';
+        // author
+        $buffy .= '<span style="display: none;" itemprop="author" itemscope itemtype="https://schema.org/Person">' ;
+        $buffy .= '<meta itemprop="name" content="' . esc_attr(get_the_author_meta('display_name', $this->post->post_author)) . '">' ;
+        $buffy .= '</span>' ;
 
-        $buffy .= '<meta itemprop="interactionCount" content="UserComments:' . get_comments_number($this->post->ID) . '"/>';
+        // datePublished
+        $td_article_date_unix = get_the_time('U', $this->post->ID);
+        $buffy .= '<meta itemprop="datePublished" content="' . date(DATE_W3C, $td_article_date_unix) . '">';
 
-        if (td_review::has_review($this->td_review)) {
-            $td_article_date_unix = get_the_time('U', $this->post->ID);
+        // dateModified
+        $buffy .= '<meta itemprop="dateModified" content="' . the_modified_date('c', '', '', false) . '">';
 
-            $buffy .= '<meta itemprop="itemReviewed " content = "' . $this->title . '">';
+        // mainEntityOfPage
+        $buffy .= '<meta itemscope itemprop="mainEntityOfPage" itemType="https://schema.org/WebPage" itemid="' . get_permalink($this->post->ID) .'"/>';
+
+        // publisher
+        $buffy .= '<span style="display: none;" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">';
+        $buffy .= '<span style="display: none;" itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">';
+        $buffy .= '<meta itemprop="url" content="' . $td_publisher_logo . '">';
+        $buffy .= '</span>';
+        $buffy .= '<meta itemprop="name" content="' . $td_publisher_name . '">';
+        $buffy .= '</span>';
+
+        // headline @todo we may improve this one to use the subtitle or excerpt? - We could not find specs about what it should be.
+        $buffy .= '<meta itemprop="headline " content="' . esc_attr( $this->post->post_title) . '">';
+
+        // featured image
+        $td_image = array();
+        if (!is_null($this->post_thumb_id)) {
+            /**
+             * from google documentation:
+             * A URL, or list of URLs pointing to the representative image file(s). Images must be
+             * at least 160x90 pixels and at most 1920x1080 pixels.
+             * We recommend images in .jpg, .png, or. gif formats.
+             * https://developers.google.com/structured-data/rich-snippets/articles
+             */
+            $td_image = wp_get_attachment_image_src($this->post_thumb_id, 'full');
+
+        } else {
+            // when the post has no image use the placeholder
+            $td_image[0] = get_template_directory_uri() . '/images/no-thumb/td_meta_replacement.png';
+            $td_image[1] = '1068';
+            $td_image[2] = '580';
+        }
+
+        // ImageObject meta
+        if (!empty($td_image[0])) {
+            $buffy .= '<span style="display: none;" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">';
+            $buffy .= '<meta itemprop="url" content="' . $td_image[0] . '">';
+            $buffy .= '<meta itemprop="width" content="' . $td_image[1] . '">';
+            $buffy .= '<meta itemprop="height" content="' . $td_image[2] . '">';
+            $buffy .= '</span>';
+        }
+
+        // if we have a review, we must add additional stuff
+        if ($this->is_review) {
+
+            // the item that is reviewd
+            $buffy .= '<span style="display: none;" itemprop="itemReviewed" itemscope itemtype="https://schema.org/Thing">';
+            $buffy .= '<meta itemprop="name " content = "' . $this->title_attribute . '">';
+            $buffy .= '</span>';
 
             if (!empty($this->td_review['review'])) {
-                $buffy .= '<meta itemprop="about" content = "' . esc_attr($this->td_review['review']) . '">';
+                $buffy .= '<meta itemprop="reviewBody" content = "' . esc_attr($this->td_review['review']) . '">';
             } else {
-                //we have no review :|
-
-                //get a damn excerpt for the metatag
+                //we have no review text :| get a excerpt for the about meta thing
                 if ($this->post->post_excerpt != '') {
                     $td_post_excerpt = $this->post->post_excerpt;
                 } else {
-                    $td_post_excerpt = td_util::excerpt($this->post->post_content, 25);
+                    $td_post_excerpt = td_util::excerpt($this->post->post_content, 45);
                 }
-                $buffy .= '<meta itemprop="about" content = "' . esc_attr($td_post_excerpt) . '">';
+                $buffy .= '<meta itemprop="reviewBody" content = "' . esc_attr($td_post_excerpt) . '">';
             }
 
-
-            $buffy .= '<meta itemprop="datePublished" content="' . date(DATE_W3C, $td_article_date_unix) . '">';
-            $buffy .= '<span class="td-page-meta" itemprop="reviewRating" itemscope itemtype="' . td_global::$http_or_https . '://schema.org/Rating">';
+            // review rating
+            $buffy .= '<span style="display: none;" class="td-page-meta" itemprop="reviewRating" itemscope itemtype="' . td_global::$http_or_https . '://schema.org/Rating">';
             $buffy .= '<meta itemprop="worstRating" content = "1">';
             $buffy .= '<meta itemprop="bestRating" content = "5">';
             $buffy .= '<meta itemprop="ratingValue" content = "' . td_review::calculate_total_stars($this->td_review) . '">';
@@ -469,7 +580,6 @@ class td_module_single_base extends td_module {
         }
         return $buffy;
     }
-
 
     /**
      * returns the review at the bottom of single posts and single posts types
@@ -480,7 +590,7 @@ class td_module_single_base extends td_module {
             return '';
         }
 
-        if (td_review::has_review($this->td_review)) {
+        if ($this->is_review) {
             //print_r($this->td_review);
             $buffy = '';
             $buffy .= td_review::render_table($this->td_review);
@@ -631,7 +741,7 @@ class td_module_single_base extends td_module {
             if (!empty($prev_post)) {
                 $buffy .= '<div class="td-block-span6 td-post-prev-post">';
                 $buffy .= '<div class="td-post-next-prev-content"><span>' .__td('Previous article', TD_THEME_NAME) . '</span>';
-                $buffy .= '<a href="' . esc_url(get_permalink($prev_post->ID)) . '">' . $prev_post->post_title . '</a>';
+                $buffy .= '<a href="' . esc_url(get_permalink($prev_post->ID)) . '">' . get_the_title( $prev_post->ID ) . '</a>';
                 $buffy .= '</div>';
                 $buffy .= '</div>';
             } else {
@@ -642,7 +752,7 @@ class td_module_single_base extends td_module {
             if (!empty($next_post)) {
                 $buffy .= '<div class="td-block-span6 td-post-next-post">';
                 $buffy .= '<div class="td-post-next-prev-content"><span>' .__td('Next article', TD_THEME_NAME) . '</span>';
-                $buffy .= '<a href="' . esc_url(get_permalink($next_post->ID)) . '">' . $next_post->post_title . '</a>';
+                $buffy .= '<a href="' . esc_url(get_permalink($next_post->ID)) . '">' . get_the_title( $next_post->ID ) . '</a>';
                 $buffy .= '</div>';
                 $buffy .= '</div>';
             }
@@ -661,11 +771,15 @@ class td_module_single_base extends td_module {
     function get_author_box($author_id = '') {
 
         if (!$this->is_single) {
-            return;
+            return '';
         }
 
 
+        if (empty($author_id)) {
+            $author_id = $this->post->post_author;
+        }
 
+        // add the author as hidden for google and return if the author box is set to disabled
         if (td_util::get_option('tds_show_author_box') == 'hide') {
             $buffy = '<div class="td-author-name vcard author" style="display: none"><span class="fn">';
             $buffy .= '<a href="' . get_author_posts_url($author_id) . '">' . get_the_author_meta('display_name', $author_id) . '</a>' ;
@@ -674,28 +788,21 @@ class td_module_single_base extends td_module {
         }
 
 
-
-        if (empty($author_id)) {
-            $author_id = $this->post->post_author;
-        }
-
-
         $buffy = '';
 
-        $authorDescription = get_the_author_meta('description');
         $hideAuthor = td_util::get_option('hide_author');
 
         if (empty($hideAuthor)) {
 
             $buffy .= '<div class="author-box-wrap">';
-            $buffy .= '<a itemprop="author" href="' . get_author_posts_url($author_id) . '">' ;
+            $buffy .= '<a href="' . get_author_posts_url($author_id) . '">' ;
             $buffy .= get_avatar(get_the_author_meta('email', $author_id), '96');
             $buffy .= '</a>';
 
 
             $buffy .= '<div class="desc">';
             $buffy .= '<div class="td-author-name vcard author"><span class="fn">';
-            $buffy .= '<a itemprop="author" href="' . get_author_posts_url($author_id) . '">' . get_the_author_meta('display_name', $author_id) . '</a>' ;
+            $buffy .= '<a href="' . get_author_posts_url($author_id) . '">' . get_the_author_meta('display_name', $author_id) . '</a>' ;
             $buffy .= '</span></div>';
 
             if (get_the_author_meta('user_url', $author_id) != '') {
@@ -722,7 +829,7 @@ class td_module_single_base extends td_module {
                             $authorMeta = 'http://twitter.com/' . $authorMeta;
                         }
                     }
-                    $buffy .= td_social_icons::get_icon($authorMeta, $td_social_id, 4, 16);
+                    $buffy .= td_social_icons::get_icon($authorMeta, $td_social_id, 4);
                 }
             }
             $buffy .= '</div>';
@@ -793,7 +900,7 @@ class td_module_single_base extends td_module {
 
 
         /**
-         * 'td_ajax_filter_type' => 'td_custom_related' - this ajax filter type overwrites the live filter via ajax @see td_ajax_block
+         * 'td_ajax_filter_type' => 'td_custom_related' - this ajax filter type overwrites the live filter via ajax @see td_ajax::on_ajax_block
          */
         $td_block_args = array (
             'limit' => $td_related_limit,

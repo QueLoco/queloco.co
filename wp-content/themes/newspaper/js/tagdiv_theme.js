@@ -126,400 +126,392 @@ function td_smooth_scroll() {
  *
  *
  */
-
-"use strict";
-
-/*  ----------------------------------------------------------------------------
- td_detect - browser detection object (instance)
- v1.1
- */
-
-var td_detect = new function () {
-
-    //constructor
-    this.is_ie8 = false;
-    this.is_ie9 = false;
-    this.is_ie10 = false;
-    this.is_ie11 = false;
-    this.is_ie = false;
-    this.is_safari = false;
-    this.is_chrome = false;
-    this.is_ipad = false;
-    this.is_touch_device = false;
-    this.has_history = false;
-    this.is_phone_screen = false;
-    this.is_ios = false;
-    this.is_android = false;
-    this.is_osx = false;
-    this.is_firefox = false;
-    this.is_win_os = false;
+/* global jQuery:false */
 
 
+var tdDetect = {};
+
+( function(){
+    "use strict";
+    tdDetect = {
+        isIe8: false,
+        isIe9 : false,
+        isIe10 : false,
+        isIe11 : false,
+        isIe : false,
+        isSafari : false,
+        isChrome : false,
+        isIpad : false,
+        isTouchDevice : false,
+        hasHistory : false,
+        isPhoneScreen : false,
+        isIos : false,
+        isAndroid : false,
+        isOsx : false,
+        isFirefox : false,
+        isWinOs : false,
+        isMobileDevice:false,
+        htmlJqueryObj:null, //here we keep the jQuery object for the HTML element
+
+        /**
+         * function to check the phone screen
+         * @see tdEvents
+         * The jQuery windows width is not reliable cross browser!
+         */
+        runIsPhoneScreen: function () {
+            if ( (jQuery(window).width() < 768 || jQuery(window).height() < 768) && false === tdDetect.isIpad ) {
+                tdDetect.isPhoneScreen = true;
+
+            } else {
+                tdDetect.isPhoneScreen = false;
+            }
+        },
+
+
+        set: function (detector_name, value) {
+            tdDetect[detector_name] = value;
+            //alert('tdDetect: ' + detector_name + ': ' + value);
+        }
+    };
+
+
+    tdDetect.htmlJqueryObj = jQuery('html');
 
 
     // is touch device ?
-    this.is_win_os = (-1 != navigator.appVersion.indexOf("Win"));
-    this.is_touch_device = !!('ontouchstart' in window) && !this.is_win_os;
+    if ( -1 !== navigator.appVersion.indexOf("Win") ) {
+        tdDetect.set('isWinOs', true);
+    }
 
-
-    this.is_mobile_device = false;
-
-    this.html_jquery_obj = jQuery('html');
+    // it looks like it has to have ontouchstart in window and NOT be windows OS. Why? we don't know.
+    if ( !!('ontouchstart' in window) && !tdDetect.isWinOs ) {
+        tdDetect.set('isTouchDevice', true);
+    }
 
 
     // detect ie8
-    if (this.html_jquery_obj.is('.ie8')) {
-        this.is_ie8 = true;
-        this.is_ie = true;
+    if ( tdDetect.htmlJqueryObj.is('.ie8') ) {
+        tdDetect.set('isIe8', true);
+        tdDetect.set('isIe', true);
     }
 
-
-
     // detect ie9
-    if (this.html_jquery_obj.is('.ie9')) {
-        this.is_ie9 = true;
-        this.is_ie = true;
+    if ( tdDetect.htmlJqueryObj.is('.ie9') ) {
+        tdDetect.set('isIe9', true);
+        tdDetect.set('isIe', true);
     }
 
     // detect ie10 - also adds the ie10 class //it also detects windows mobile IE as IE10
-    if(navigator.userAgent.indexOf("MSIE 10.0") > -1){
-        this.is_ie10 = true;
-        this.is_ie = true;
-        //alert('10');
+    if( navigator.userAgent.indexOf("MSIE 10.0") > -1 ){
+        tdDetect.set('isIe10', true);
+        tdDetect.set('isIe', true);
     }
 
     //ie 11 check - also adds the ie11 class - it may detect ie on windows mobile
-    if(!!navigator.userAgent.match(/Trident.*rv\:11\./)){
-        this.is_ie11 = true;
-        //this.is_ie = true; //do not flag ie11 as is_ie
-        //alert('11');
+    if ( !!navigator.userAgent.match(/Trident.*rv\:11\./) ){
+        tdDetect.set('isIe11', true);
+        //this.isIe = true; //do not flag ie11 as isIe
     }
 
 
     //do we have html5 history support?
     if (window.history && window.history.pushState) {
-        this.has_history = true;
+        tdDetect.set('hasHistory', true);
     }
 
     //check for safary
-    if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
-        this.is_safari = true;
+    if ( -1 !== navigator.userAgent.indexOf('Safari')  && -1 === navigator.userAgent.indexOf('Chrome') ) {
+        tdDetect.set('isSafari', true);
     }
 
     //chrome and chrome-ium check
-    this.is_chrome = /chrom(e|ium)/.test(navigator.userAgent.toLowerCase());
+    if (/chrom(e|ium)/.test(navigator.userAgent.toLowerCase())) {
+        tdDetect.set('isChrome', true);
+    }
 
-    this.is_ipad = navigator.userAgent.match(/iPad/i) != null;
-
+    if ( null !== navigator.userAgent.match(/iPad/i)) {
+        tdDetect.set('isIpad', true);
+    }
 
 
     if (/(iPad|iPhone|iPod)/g.test( navigator.userAgent )) {
-        this.is_ios = true;
-    } else {
-        this.is_ios = false;
+        tdDetect.set('isIos', true);
     }
 
 
-
-    //detect if we run on a mobile device - ipad included - used by the modal / scroll to @see scroll_into_view
+    //detect if we run on a mobile device - ipad included - used by the modal / scroll to @see scrollIntoView
     if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-        this.is_mobile_device = true;
+        tdDetect.set('isMobileDevice', true);
     }
 
-    /**
-     * function to check the phone screen
-     * @see td_events
-     * The jQuery windows width is not reliable cross browser!
-     */
-    this.run_is_phone_screen = function () {
-        if ((jQuery(window).width() < 768 || jQuery(window).height() < 768) && this.is_ipad === false) {
-            this.is_phone_screen = true;
-
-        } else {
-            this.is_phone_screen = false;
-        }
-
-        //console.log(this.is_phone_screen + ' ' + jQuery(window).width() + ' ' + jQuery(window).height());
-    };
-
-
-
-    this.run_is_phone_screen();
-
+    tdDetect.runIsPhoneScreen();
 
     //test for android
     var user_agent = navigator.userAgent.toLowerCase();
-    if(user_agent.indexOf("android") > -1) {
-        this.is_android = true;
+    if ( user_agent.indexOf("android") > -1 ) {
+        tdDetect.set('isAndroid', true);
     }
 
 
-    if (navigator.userAgent.indexOf('Mac OS X') != -1) {
-        this.is_osx = true;
+    if ( -1 !== navigator.userAgent.indexOf('Mac OS X') ) {
+        tdDetect.set('isOsx', true);
     }
 
-    if (navigator.userAgent.indexOf('Firefox') != -1) {
-        this.is_firefox = true;
+    if ( -1 !== navigator.userAgent.indexOf('Firefox') ) {
+        tdDetect.set('isFirefox', true);
     }
 
-};
-
-
+})();
 
 /**
  * Created by tagdiv on 13.05.2015.
  */
 
+/* global tdDetect: {} */
+/* global jQuery: {} */
 
-"use strict";
+var tdViewport = {};
 
+(function(){
 
-var td_viewport = {
+    "use strict";
 
+    tdViewport = {
 
-
-    /**
-     * - initial (default) value of the _current_interval_index
-     * - it's used by third part libraries
-     * - it used just as constant value
-     */
-    INTERVAL_INITIAL_INDEX: -1,
-
-
-
-    /**
-     * - keep the current interval index
-     * - it should be modified/taken just by setter/getter methods
-     * - after computing, it should not be a negative value
-     */
-    _current_interval_index : this.INTERVAL_INITIAL_INDEX,
+        /**
+         * - initial (default) value of the _currentIntervalIndex
+         * - it's used by third part libraries
+         * - it used just as constant value
+         */
+        INTERVAL_INITIAL_INDEX: -1,
 
 
 
-    /**
-     * - it keeps the interval index
-     * - it should be modified/taken just by setter/getter methods
-     * - it must be a crescendo positive values
-     */
-    _interval_list : [],
+        /**
+         * - keep the current interval index
+         * - it should be modified/taken just by setter/getter methods
+         * - after computing, it should not be a negative value
+         */
+        _currentIntervalIndex : tdViewport.INTERVAL_INITIAL_INDEX,
 
 
 
-    /**
-     *
-     */
-    init: function init() {
-        if ((typeof window.td_viewport_interval_list !== 'undefined') && (window.td_viewport_interval_list.constructor === Array)) {
+        /**
+         * - it keeps the interval index
+         * - it should be modified/taken just by setter/getter methods
+         * - it must be a crescendo positive values
+         */
+        _intervalList : [],
 
-            for (var i = 0; i < window.td_viewport_interval_list.length; i++) {
-                var item = new td_viewport.item();
 
-                var current_val = window.td_viewport_interval_list[i];
 
-                // the check is done to be sure that the intervals are well formatted
-                if (!current_val.hasOwnProperty('limit_bottom') || !current_val.hasOwnProperty('sidebar_width')) {
+        /**
+         *
+         */
+        init: function() {
+            if (('undefined' !== typeof window.td_viewport_interval_list) && (Array === window.td_viewport_interval_list.constructor)) {
+
+                for (var i = 0; i < window.td_viewport_interval_list.length; i++) {
+                    var item = new tdViewport.item();
+
+                    var currentVal = window.td_viewport_interval_list[i];
+
+                    // the check is done to be sure that the intervals are well formatted
+                    if (!currentVal.hasOwnProperty('limitBottom') || !currentVal.hasOwnProperty('sidebarWidth')) {
+                        break;
+                    }
+
+                    item.limitBottom = currentVal.limitBottom;
+                    item.sidebarWidth = currentVal.sidebarWidth;
+
+                    tdViewport._items.push(item);
+                }
+
+                tdViewport.detectChanges();
+            }
+        },
+
+
+
+        /**
+         * - getter of the _currentIntervalIndex
+         * - it should be used by outsiders libraries
+         * @returns {*}
+         */
+        getCurrentIntervalIndex : function() {
+            return tdViewport._currentIntervalIndex;
+        },
+
+
+
+        /**
+         * - setter of the _intervalList
+          - it should be used by outsiders libraries
+         * @param value
+         */
+        setIntervalList : function(value) {
+            tdViewport._intervalList = value;
+        },
+
+
+
+        /**
+         * - getter of the _intervalList
+         * - it should be used by outsiders libraries
+         * @returns {*}
+         */
+        getIntervalList : function() {
+            return tdViewport._intervalList;
+        },
+
+
+
+        /**
+         * - getter of the tdViewport current item
+         * - it should be used by outsiders libraries
+         * @returns {*}
+         */
+        getCurrentIntervalItem : function() {
+
+            if ((tdViewport.INTERVAL_INITIAL_INDEX === tdViewport._currentIntervalIndex) || (0 === tdViewport._currentIntervalIndex)) {
+                return null;
+            }
+            return tdViewport._items[tdViewport._currentIntervalIndex - 1];
+        },
+
+
+
+        _items : [],
+
+
+
+        item : function() {
+            this.limitBottom = undefined;
+            this.sidebarWidth = undefined;
+        },
+
+
+
+
+
+        /**
+         * - detect view port changes
+         * - it returns true if the change view port has changed, false otherwise
+         * - it also sets the _currentIntervalIndex
+         * @returns {boolean} True when viewport has changed
+         */
+        detectChanges: function() {
+            var result = false;
+
+            var realViewPortWidth = 0;
+            var localCurrentIntervalIndex = 0;
+
+            if (true === tdDetect.isSafari) {
+                realViewPortWidth = this._safariWiewPortWidth.getRealWidth();
+            } else {
+                realViewPortWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+            }
+
+            for (var i = 0; i < tdViewport._items.length; i++) {
+
+                if (realViewPortWidth <= tdViewport._items[i].limitBottom) {
+
+                    if (localCurrentIntervalIndex !== tdViewport._currentIntervalIndex) {
+                        tdViewport._currentIntervalIndex = localCurrentIntervalIndex;
+                        result = true;
+
+                        tdViewport.log('changing viewport ' + tdViewport._currentIntervalIndex + ' ~ ' + realViewPortWidth);
+                    }
                     break;
                 }
-
-                item.limit_bottom = current_val['limit_bottom'];
-                item.sidebar_width = current_val['sidebar_width'];
-
-                td_viewport._items.push(item);
+                localCurrentIntervalIndex++;
             }
 
-            td_viewport.detect_changes();
-        }
-    },
+            if ((false === result) && (localCurrentIntervalIndex !== tdViewport._currentIntervalIndex)) {
+                tdViewport._currentIntervalIndex = localCurrentIntervalIndex;
+                result = true;
+
+                tdViewport.log('changing viewport ' + tdViewport._currentIntervalIndex + ' ~ ' + realViewPortWidth);
+            }
+            return result;
+        },
 
 
+        /**
+         * get the real view port width on safari
+         * @type {{divAdded: boolean, divJqueryObject: string, getRealWidth: Function}}
+         */
+        _safariWiewPortWidth : {
+            divAdded : false,
+            divJqueryObject : '',
 
-    /**
-     * - getter of the _current_interval_index
-     * - it should be used by outsiders libraries
-     * @returns {*}
-     */
-    get_current_interval_index : function get_current_interval_index() {
-        return td_viewport._current_interval_index;
-    },
-
-
-
-    /**
-     * - setter of the _interval_list
-      - it should be used by outsiders libraries
-     * @param value
-     */
-    set_interval_list : function set_interval_list(value) {
-        td_viewport._interval_list = value;
-    },
-
-
-
-    /**
-     * - getter of the _interval_list
-     * - it should be used by outsiders libraries
-     * @returns {*}
-     */
-    get_interval_list : function get_interval_list() {
-        return td_viewport._interval_list;
-    },
-
-
-
-    /**
-     * - getter of the td_viewport current item
-     * - it should be used by outsiders libraries
-     * @returns {*}
-     */
-    get_current_interval_item : function get_current_interval_item() {
-
-        if (td_viewport._current_interval_index == td_viewport.INTERVAL_INITIAL_INDEX ||
-            td_viewport._current_interval_index == 0) {
-
-            return null;
-        }
-
-        return td_viewport._items[td_viewport._current_interval_index - 1];
-    },
-
-
-
-
-
-    _items : [],
-
-
-
-
-    item : function item() {
-        this.limit_bottom = undefined;
-        this.sidebar_width = undefined;
-    },
-
-
-
-
-
-    /**
-     * - detect view port changes
-     * - it returns true if the change view port has changed, false otherwise
-     * - it also sets the _current_interval_index
-     * @returns {boolean} True when viewport has changed
-     */
-    detect_changes: function detect_changes() {
-        var result = false;
-
-        var real_view_port_width = 0;
-        var local_current_interval_index = 0;
-
-        if (td_detect.is_safari === true) {
-            real_view_port_width = this._safari_view_port_width.get_real_width();
-        } else {
-            real_view_port_width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-        }
-
-        for (var i = 0; i < td_viewport._items.length; i++) {
-
-            if (real_view_port_width <= td_viewport._items[i].limit_bottom) {
-
-                if (local_current_interval_index != td_viewport._current_interval_index) {
-                    td_viewport._current_interval_index = local_current_interval_index;
-                    result = true;
-
-                    td_viewport.log('changing viewport ' + td_viewport._current_interval_index + ' ~ ' + real_view_port_width);
+            getRealWidth : function() {
+                if (false === this.divAdded) {
+                    // we don't have a div present
+                    this.divJqueryObject = jQuery('<div>')
+                        .css({
+                            "height": "1px",
+                            "position": "absolute",
+                            "top": "-1px",
+                            "left": "0",
+                            "right": "0",
+                            "visibility": "hidden",
+                            "z-index": "-1"
+                        });
+                    this.divJqueryObject.appendTo('body');
+                    this.divAdded = true;
                 }
-
-                break;
+                return this.divJqueryObject.width();
             }
-            local_current_interval_index++;
+        },
+
+
+
+        log: function log(msg) {
+            //console.log(msg);
         }
+    };
 
-        if ((result == false) && (local_current_interval_index != td_viewport._current_interval_index)) {
-            td_viewport._current_interval_index = local_current_interval_index;
-            result = true;
+    tdViewport.init();
 
-            td_viewport.log('changing viewport ' + td_viewport._current_interval_index + ' ~ ' + real_view_port_width);
-        }
-
-        return result;
-    },
-
-
-    /**
-     * get the real view port width on safari
-     * @type {{div_added: boolean, div_jquery_object: string, get_real_width: Function}}
-     */
-    _safari_view_port_width : {
-        div_added : false,
-        div_jquery_object : '',
-
-        get_real_width : function get_real_widht () {
-            if (this.div_added === false) {
-                // we don't have a div present
-                this.div_jquery_object = jQuery('<div>')
-                    .css({
-
-                        "height": "1px",
-                        "position": "absolute",
-                        "top": "-1px",
-                        "left": "0",
-                        "right": "0",
-                        "visibility": "hidden",
-                        "z-index": "-1"
-
-                    });
-                this.div_jquery_object.appendTo('body');
-                this.div_added = true;
-            }
-            return this.div_jquery_object.width();
-        }
-    },
-
-
-
-    log: function log(msg) {
-        //console.log(msg);
-    }
-};
-
-td_viewport.init();
-
-"use strict";
+})();
 
 /*  ----------------------------------------------------------------------------
     Menu script
  */
 
+/* global jQuery:{} */
+/* global tdDetect:{} */
 
 
-// top menu
+(function(){
+    'use strict';
 
-if (td_detect.is_touch_device) {
-    //touch
-    jQuery('.td-header-sp-top-menu .top-header-menu').superfish({
-        delay:300,
-        speed:'fast',
-        useClick:true
-    });
+    // top menu
 
-} else {
+    if (tdDetect.isTouchDevice) {
+        //touch
+        jQuery('.td-header-sp-top-menu .top-header-menu').superfish({
+            delay:300,
+            speed:'fast',
+            useClick:true
+        });
 
-    //not touch
-    jQuery('.td-header-sp-top-menu .top-header-menu').superfish({
-        delay:600,
-        speed:200,
-        useClick:false
-    });
-}
+    } else {
 
-
-
+        //not touch
+        jQuery('.td-header-sp-top-menu .top-header-menu').superfish({
+            delay:600,
+            speed:200,
+            useClick:false
+        });
+    }
 
 /*  ----------------------------------------------------------------------------
  On load
  */
 
-// header menu
+    // header menu
     jQuery('#td-header-menu .sf-menu').supersubs({
         minWidth: 10, // minimum width of sub-menus in em units
         maxWidth: 40, // maximum width of sub-menus in em units
@@ -528,197 +520,260 @@ if (td_detect.is_touch_device) {
 
 
 
-if (td_detect.is_touch_device) {
-    //touch
-    jQuery('#td-header-menu .sf-menu').superfish({
-        delay:300,
-        speed:'fast',
-        useClick:true
-    });
+    if (tdDetect.isTouchDevice) {
+        //touch
+        jQuery('#td-header-menu .sf-menu').superfish({
+            delay:300,
+            speed:'fast',
+            useClick:true
+        });
 
-} else {
+    } else {
 
-    //not touch
-    jQuery('#td-header-menu .sf-menu').superfish({
-        delay:600,
-        speed:200,
-        useClick:false
-    });
-}
-
-
-
-/*  ----------------------------------------------------------------------------
-    tagDiv magic cache - object (static)
- */
-var td_local_cache = {
-    data: {},
-    remove: function (resurce_id) {
-        delete td_local_cache.data[resurce_id];
-    },
-    exist: function (resurce_id) {
-        return td_local_cache.data.hasOwnProperty(resurce_id) && td_local_cache.data[resurce_id] !== null;
-    },
-    get: function (resurce_id) {
-        return td_local_cache.data[resurce_id];
-    },
-    set: function (resurce_id, cachedData) {
-        td_local_cache.remove(resurce_id);
-        td_local_cache.data[resurce_id] = cachedData;
+        //not touch
+        jQuery('#td-header-menu .sf-menu').superfish({
+            delay:600,
+            speed:200,
+            useClick:false
+        });
     }
-};
+})();
+
+
+
+
+
+
+
 /*
  td_util.js
- v1.1
+ v2.0
  */
+/* global jQuery:false */
+/* global tdDetect:false */
+/* global td`ScrollingAnimation:false */
+/* jshint -W020 */
 
-"use strict";
+var tdUtil = {};
 
+( function() {
+    "use strict";
 
-
-/*  ----------------------------------------------------------------------------
- tagDiv utility class
- */
-var td_util = {
-
-
-    /**
-     * utility function, used by td_post_images.js
-     * @param class_selector
-     */
-    image_move_class_to_figure: function (class_selector) {
-        jQuery('figure .' + class_selector).each(function() {
-            jQuery(this).parent().parent().addClass(class_selector);
-            jQuery(this).removeClass(class_selector);
-        });
-    },
+    tdUtil = {
 
 
+        /**
+         * stop propagation of an event - we should check this if we can remove window.event.cancelBubble - possible
+         * a windows mobile issue
+         * @param event
+         */
+        stopBubble: function( event ) {
+            if ( event && event.stopPropagation ) {
+                event.stopPropagation();
+            } else {
+                window.event.cancelBubble=true;
+            }
+        },
 
-    /**
-     * safe function to read variables passed by the theme via the js buffer. If by some kind of error the variable is missing from the global scope, this function will return false
-     * @param variable_name
-     * @returns {*}
-     */
-    get_backend_var: function(variable_name) {
-        if (typeof window[variable_name] === 'undefined') {
-            return '';
-        }
-        return window[variable_name];
-    },
+        /**
+         * utility function, used by td_post_images.js
+         * @param classSelector
+         */
+        imageMoveClassToFigure: function ( classSelector ) {
+            jQuery('figure .' + classSelector).each( function() {
+                jQuery(this).parent().parent().addClass(classSelector);
+                jQuery(this).removeClass(classSelector);
+            });
+        },
 
 
 
-    /**
-     * scrolls to a dom element
-     * @param dom_element
-     */
-    scroll_to_element: function(dom_element, duration) {
-        td_is_scrolling_animation = true;
-        jQuery("html, body").stop();
+        /**
+         * safe function to read variables passed by the theme via the js buffer. If by some kind of error the variable is missing from the global scope, this function will return false
+         * @param variableName
+         * @returns {*}
+         */
+        getBackendVar: function ( variableName ) {
+            if ( typeof window[variableName] === 'undefined' ) {
+                return '';
+            }
+            return window[variableName];
+        },
 
 
-        var dest;
+        /**
+         * is a given variable undefined? - this is the underscore method of checking this
+         * @param obj
+         * @returns {boolean}
+         */
+        isUndefined : function ( obj ) {
+            return obj === void 0;
+        },
 
-        //calculate destination place
-        if (dom_element.offset().top > jQuery(document).height() - jQuery(window).height()) {
-            dest = jQuery(document).height() - jQuery(window).height();
-        } else {
-            dest = dom_element.offset().top;
-        }
-        //go to destination
-        jQuery("html, body").animate({ scrollTop: dest }, {
-                duration: duration,
-                easing:'easeInOutQuart',
-                complete: function(){
-                    td_is_scrolling_animation = false;
+
+
+
+        /**
+         * scrolls to a dom element
+         * @param domElement
+         */
+        scrollToElement: function( domElement, duration ) {
+            tdIsScrollingAnimation = true;
+            jQuery("html, body").stop();
+
+
+            var dest;
+
+            //calculate destination place
+            if ( domElement.offset().top > jQuery(document).height() - jQuery(window).height() ) {
+                dest = jQuery(document).height() - jQuery(window).height();
+            } else {
+                dest = domElement.offset().top;
+            }
+            //go to destination
+            jQuery("html, body").animate(
+                { scrollTop: dest },
+                {
+                    duration: duration,
+                    easing:'easeInOutQuart',
+                    complete: function(){
+                        tdIsScrollingAnimation = false;
+                    }
+                }
+            );
+        },
+
+
+        /**
+         * scrolls to a dom element - the element will be close to the center of the screen
+         * !!! compensates for long distances !!!
+         */
+        scrollIntoView: function ( domElement ) {
+            
+            tdIsScrollingAnimation = true;
+
+            if ( tdDetect.isMobileDevice === true ) {
+                return; //do not run on any mobile device
+            }
+
+            jQuery("html, body").stop();
+
+
+            var destination = domElement.offset().top;
+            destination = destination - 150;
+
+            var distance = Math.abs( jQuery(window).scrollTop() - destination );
+            var computed_time = distance / 5;
+            //console.log(distance + ' -> ' + computed_time +  ' -> ' + (1100+computed_time));
+
+            //go to destination
+            jQuery("html, body").animate(
+                { scrollTop: destination },
+                {
+                    duration: 1100 + computed_time,
+                    easing:'easeInOutQuart',
+                    complete: function(){
+                        tdIsScrollingAnimation = false;
+                    }
+                }
+            );
+        },
+
+        /**
+         * scrolls to a position
+         * @param pxFromTop - pixels from top
+         */
+        scrollToPosition: function( pxFromTop, duration ) {
+
+            tdIsScrollingAnimation = true;
+            jQuery("html, body").stop();
+
+            //go to destination
+            jQuery("html, body").animate(
+                { scrollTop: pxFromTop },
+                {
+                    duration: duration,
+                    easing:'easeInOutQuart',
+                    complete: function(){
+                        tdIsScrollingAnimation = false;
+                    }
+                }
+            );
+        },
+        tdMoveY: function ( elm, value ) {
+            var translate = 'translate3d(0px,' + value + 'px, 0px)';
+            elm.style['-webkit-transform'] = translate;
+            elm.style['-moz-transform'] = translate;
+            elm.style['-ms-transform'] = translate;
+            elm.style['-o-transform'] = translate;
+            elm.style.transform = translate;
+        },
+
+
+        isValidUrl: function ( str ) {
+            var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+                '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+                '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+                '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+
+
+            if( !pattern.test(str) ) {
+                return false;
+            } else {
+                return true;
+            }
+        },
+
+
+        round: function ( value, precision, mode ) {
+            var m, f, isHalf, sgn; // helper variables
+            // making sure precision is integer
+            precision |= 0;
+            m = Math.pow(10, precision);
+            value *= m;
+            // sign of the number
+            sgn = (value > 0) | -(value < 0);
+            isHalf = value % 1 === 0.5 * sgn;
+            f = Math.floor(value);
+
+            if (isHalf) {
+                switch (mode) {
+                    case 'PHP_ROUND_HALF_DOWN':
+                        // rounds .5 toward zero
+                        value = f + (sgn < 0);
+                        break;
+                    case 'PHP_ROUND_HALF_EVEN':
+                        // rouds .5 towards the next even integer
+                        value = f + (f % 2 * sgn);
+                        break;
+                    case 'PHP_ROUND_HALF_ODD':
+                        // rounds .5 towards the next odd integer
+                        value = f + !(f % 2);
+                        break;
+                    default:
+                        // rounds .5 away from zero
+                        value = f + (sgn > 0);
                 }
             }
-        );
-    },
 
-
-    /**
-     * scrolls to a dom element - the element will be close to the center of the screen
-     * !!! compensates for long distances !!!
-     */
-    scroll_into_view: function (dom_element) {
-
-        if (td_detect.is_mobile_device === true) {
-            return; //do not run on any mobile device
+            return (isHalf ? value : Math.round(value)) / m;
         }
 
-        td_is_scrolling_animation = true;
-        jQuery("html, body").stop();
-
-
-        var destination = dom_element.offset().top;
-        destination = destination - 150;
-
-        var distance = Math.abs(jQuery(window).scrollTop() - destination);
-        var computed_time = distance / 5;
-        //console.log(distance + ' -> ' + computed_time +  ' -> ' + (1100+computed_time));
-
-        //go to destination
-        jQuery("html, body").animate({ scrollTop: destination }, {
-                duration: 1100 + computed_time,
-                easing:'easeInOutQuart',
-                complete: function(){
-                    td_is_scrolling_animation = false;
-                }
-            }
-        );
-    },
-
-    /**
-     * scrolls to a position
-     * @param px_from_top - pixels from top
-     */
-    scroll_to_position: function(px_from_top, duration) {
-        td_is_scrolling_animation = true;
-        jQuery("html, body").stop();
-
-        //go to destination
-        jQuery("html, body").animate({ scrollTop: px_from_top }, {
-                duration: duration,
-                easing:'easeInOutQuart',
-                complete: function(){
-                    td_is_scrolling_animation = false;
-                }
-            }
-        );
-    },
-    td_move_y: function td_move_Y (elm, value) {
-        var translate = 'translate3d(0px,' + value + 'px, 0px)';
-        elm.style['-webkit-transform'] = translate;
-        elm.style['-moz-transform'] = translate;
-        elm.style['-ms-transform'] = translate;
-        elm.style['-o-transform'] = translate;
-        elm.style.transform = translate;
-    },
-
-
-    is_valid_url: function is_valid_url(str) {
-        var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-        '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-        '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-        '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
-
-
-        if(!pattern.test(str)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
 
 
 
 
 
-};
+
+    };
+})();
+
+
+
+
+
 
 /**
  * Created by ra on 6/27/14.
@@ -726,401 +781,444 @@ var td_util = {
  * V 1.1 - better iOS 8 support
  */
 
+/* global jQuery:{} */
+/* global tdDetect:{} */
+/* global tdUtil:{} */
 
-var td_affix = {
+var tdAffix = {};
 
-    // flag used to stop scrolling
-    allow_scroll: true,
+(function(){
+    'use strict';
 
-    //settings, obtained from ext
-    menu_selector: '', //the affix menu (this element will get the td-affix)
-    menu_wrap_selector: '', //the menu wrapper / placeholder
-    tds_snap_menu: '', //the panel setting
-    tds_snap_menu_logo: '', //the panel setting
+    tdAffix = {
 
+        // flag used to stop scrolling
+        allow_scroll: true,
 
-    menu_affix_height: 0, // the menu affix height [the height when it's really affix]
-    menu_affix_height_on_mobile: 0, // the menu affix height on mobile [the height when it's really affix]
+        //settings, obtained from ext
+        menu_selector: '', //the affix menu (this element will get the td-affix)
+        menu_wrap_selector: '', //the menu wrapper / placeholder
+        tds_snap_menu: '', //the panel setting
+        tds_snap_menu_logo: '', //the panel setting
 
+        is_menu_affix_height_computed: false, // flag used to compute menu_affix_height only once, when the menu is affix
+        is_menu_affix_height_on_mobile_computed: false, // flag used to compute menu_affix_height_on_mobile only once, when the menu is affix
 
-    main_menu_height: 0, // main menu height
-    top_offset: 0, //how much the menu is moved from the original position when it's affixed
-    menu_offset: 0, //used to hide the menu on scroll
-    is_requestAnimationFrame_running:false, //prevent multiple calls to requestAnimationFrame
-    is_menu_affix: false, //the current state of the menu, true if the menu is affix
-    is_top_menu:false, //true when the menu is at the top of the screen (0px topScroll)
-
-    //menu offset boundaries - so we do not fire the animation event when the boundary is hit
-    menu_offset_max_hit: false,
-    menu_offset_min_hit: true,
+        menu_affix_height: 0, // the menu affix height [the height when it's really affix]
+        menu_affix_height_on_mobile: 0, // the menu affix height on mobile [the height when it's really affix]
 
 
-    scroll_window_scrollTop_last: 0, //last scrollTop position, used to calculate the scroll direction
+        main_menu_height: 0, // main menu height
+        top_offset: 0, //how much the menu is moved from the original position when it's affixed
+        menu_offset: 0, //used to hide the menu on scroll
+        is_requestAnimationFrame_running: false, //prevent multiple calls to requestAnimationFrame
+        is_menu_affix: false, //the current state of the menu, true if the menu is affix
+        is_top_menu: false, //true when the menu is at the top of the screen (0px topScroll)
 
-    /**
-     * run the affix, we use the menu wrap selector to compute the menu position from top
-     *
-     {
-          menu_selector: '.td-header-main-menu',
-          menu_wrap_selector: '.td-header-menu-wrap',
-          tds_snap_menu: td_util.get_backend_var('tds_snap_menu')
-      }
-     */
-    init : function init (atts) {
-
-        //read the settings
-        td_affix.menu_selector = atts.menu_selector;
-        td_affix.menu_wrap_selector = atts.menu_wrap_selector;
-        td_affix.tds_snap_menu = atts.tds_snap_menu;
-        td_affix.tds_snap_menu_logo = atts.tds_snap_menu_logo;
-        td_affix.menu_affix_height = atts.menu_affix_height;
-        td_affix.menu_affix_height_on_mobile = atts.menu_affix_height_on_mobile;
-
-        //the snap menu is disabled from the panel
-        if (!td_affix.tds_snap_menu) {
-            return;
-        }
+        //menu offset boundaries - so we do not fire the animation event when the boundary is hit
+        menu_offset_max_hit: false,
+        menu_offset_min_hit: true,
 
 
-        // a computation before jquery.ready is necessary for firefox, where td_events.scroll comes before
-        if (td_detect.is_firefox) {
-            td_affix.compute_top();
-            td_affix.compute_wrapper();
-        }
+        scroll_window_scrollTop_last: 0, //last scrollTop position, used to calculate the scroll direction
 
-        jQuery().ready(function() {
-            //compute on semi dom ready
-            td_affix.compute_top();
-            td_affix.compute_wrapper();
-        });
-
-        //recompute when all the page + logos are loaded
-        jQuery(window).load(function() {
-            td_affix.compute_top();
-            td_affix.compute_wrapper();
-
-            //recompute after 1 sec for retarded phones
-            setTimeout(function(){
-                td_affix.compute_top();
-            }, 1000);
-        });
-
-
-
-
-    },
-
-
-    /**
-     * - get the real affix height
-     * @returns {number} affix height
-     * @private
-     */
-    _get_menu_affix_height: function _get_menu_affix_height() {
-
-        if (td_detect.is_phone_screen === true) {
-            return td_affix.menu_affix_height_on_mobile;
-        }
-        return td_affix.menu_affix_height;
-    },
-
-
-
-    /**
-     * called by td_events.js on scroll
-     */
-    td_events_scroll: function td_events_scroll(scrollTop) {
-
-        if (!td_affix.allow_scroll) {
-            return;
-        }
-
-        //do not run if we don't have a snap menu
-        if (!td_affix.tds_snap_menu) {
-            return;
-        }
-
-
-        /*  ----------------------------------------------------------------------------
-         scroll direction + delta (used by affix for now)
-         to run thios code:
-         - td_affix.tds_snap_menu != '' (from above)
-         - td_affix.tds_snap_menu != 'snap'
+        /**
+         * run the affix, we use the menu wrap selector to compute the menu position from top
+         *
+         {
+              menu_selector: '.td-header-main-menu',
+              menu_wrap_selector: '.td-header-menu-wrap',
+              tds_snap_menu: tdUtil.getBackendVar('tds_snap_menu')
+          }
          */
-        if (td_affix.tds_snap_menu != 'snap') { //do not run on snap
-            if ((td_affix.tds_snap_menu != 'smart_snap_mobile' || td_detect.is_phone_screen === true)) {  // different from smart_snap_mobile or td_detect.is_phone_screen === true
-                //console.log('rrr');
-                var scroll_direction = '';
-                var scrollDelta = 0;
+        init : function ( atts ) {
 
-                //check the direction
-                if (scrollTop != td_affix.scroll_window_scrollTop_last) { //compute direction only if we have different last scroll top
-                    // compute the direction of the scroll
-                    if (scrollTop > td_affix.scroll_window_scrollTop_last) {
-                        scroll_direction = 'down';
-                    } else {
-                        scroll_direction = 'up';
-                    }
-                    //calculate the scroll delta
-                    scrollDelta = Math.abs(scrollTop - td_affix.scroll_window_scrollTop_last);
-                }
+            //read the settings
+            tdAffix.menu_selector = atts.menu_selector;
+            tdAffix.menu_wrap_selector = atts.menu_wrap_selector;
+            tdAffix.tds_snap_menu = atts.tds_snap_menu;
+            tdAffix.tds_snap_menu_logo = atts.tds_snap_menu_logo;
+            tdAffix.menu_affix_height = atts.menu_affix_height;
+            tdAffix.menu_affix_height_on_mobile = atts.menu_affix_height_on_mobile;
 
-                td_affix.scroll_window_scrollTop_last = scrollTop;
-            }
-        }
-
-        /*  ---------------------------------------------------------------------------- */
-
-        // show the logo on sticky menu if is always snap setting
-        if (td_affix.tds_snap_menu == 'snap' && td_affix.tds_snap_menu_logo != '') {
-            jQuery('.td-main-menu-logo').addClass('td-logo-sticky');
-        }
-
-
-        //if the menu is in the affix state
-        if ((scrollTop > td_affix.top_offset)
-
-            // - the affix is OFF when the next condition is not accomplished, which means that the affix is ON
-            // and the scroll to the top is LOWER than the initial td_affix.top_offset reduced by the affix real height
-            // - this condition makes the transition from the small affix menu to the larger menu of the page
-            || ((td_affix.is_menu_affix === true) && scrollTop > (td_affix.top_offset - td_affix._get_menu_affix_height()))
-
-            || td_affix.is_top_menu === true) {
-
-            //get the menu element
-            var td_affix_menu_element = jQuery(td_affix.menu_selector);
-
-            //turn affix on for it
-            td_affix._affix_on(td_affix_menu_element);
-
-
-            //if the menu is only with snap or we are on smart_snap_mobile + mobile, our job here in this function is done, return
-            if (td_affix.tds_snap_menu == 'snap' || (td_affix.tds_snap_menu =='smart_snap_mobile' && td_detect.is_phone_screen === false)) {
+            //the snap menu is disabled from the panel
+            if ( ! tdAffix.tds_snap_menu ) {
                 return;
             }
 
-            /*    ---  end simple snap  ---  */
+
+            // a computation before jquery.ready is necessary for firefox, where tdEvents.scroll comes before
+            if ( tdDetect.isFirefox ) {
+                tdAffix.compute_top();
+                tdAffix.compute_wrapper();
+            }
+
+            jQuery().ready(function() {
+                //compute on semi dom ready
+                tdAffix.compute_top();
+                tdAffix.compute_wrapper();
+            });
+
+            //recompute when all the page + logos are loaded
+            jQuery( window ).load(function() {
+                tdAffix.compute_top();
+                tdAffix.compute_wrapper();
+
+                //recompute after 1 sec for retarded phones
+                setTimeout(function(){
+                    tdAffix.compute_top();
+                }, 1000 );
+            });
+        },
+
+
+        /**
+         * - get the real affix height.
+         * The real affix height is computed only once, when the menu is affix. Till then, the function
+         * return the values set at init.
+         *
+         * These values are important because they are used in the tdSmartSidebar.js for the
+         * td_affix_menu_computed_height variable, which then is used to determine the sidebar position.
+         *
+         * For 'Newspaper', the sidebar needs a custom padding top (see @tdSmartSidebar.js), otherwise
+         * the sidebar is sticked to the affix menu.
+         *
+         *
+         * @returns {number} affix height
+         * @private
+         */
+        _get_menu_affix_height: function() {
+
+            //if (tdDetect.isPhoneScreen === true) {
+            //    return tdAffix.menu_affix_height_on_mobile;
+            //}
+            //return tdAffix.menu_affix_height;
+
+            if ( true === tdDetect.isPhoneScreen ) {
+                if ( ! tdAffix.is_menu_affix_height_on_mobile_computed && tdAffix.is_menu_affix ) {
+
+                    tdAffix.is_menu_affix_height_on_mobile_computed = true;
+
+                    // overwrite the tdAffix.menu_affix_height_on_mobile variable with the real affix height
+                    tdAffix.menu_affix_height_on_mobile = jQuery(tdAffix.menu_selector).height();
+                }
+                return tdAffix.menu_affix_height_on_mobile;
+            }
+
+            if ( ! tdAffix.is_menu_affix_height_computed && tdAffix.is_menu_affix ) {
+
+                tdAffix.is_menu_affix_height_computed = true;
+
+                // overwrite the tdAffix.menu_affix_height variable with the real affix height
+                tdAffix.menu_affix_height = jQuery(tdAffix.menu_selector).height();
+            }
+            return tdAffix.menu_affix_height;
+        },
+
+
+
+        /**
+         * called by tdEvents.js on scroll
+         */
+        td_events_scroll: function( scrollTop ) {
+
+            if ( ! tdAffix.allow_scroll ) {
+                return;
+            }
+
+            //do not run if we don't have a snap menu
+            if ( ! tdAffix.tds_snap_menu ) {
+                return;
+            }
 
 
             /*  ----------------------------------------------------------------------------
-             check scroll directions (we may also have scroll_direction = '', that's why we have to check for the specific state (up or down))
+             scroll direction + delta (used by affix for now)
+             to run thios code:
+             - tdAffix.tds_snap_menu != '' (from above)
+             - tdAffix.tds_snap_menu != 'snap'
              */
+            var scroll_direction = '';
+
+            if ( 'snap' !== tdAffix.tds_snap_menu ) { //do not run on snap
+                if ( ( 'smart_snap_mobile' !== tdAffix.tds_snap_menu || true === tdDetect.isPhoneScreen ) ) {  // different from smart_snap_mobile or tdDetect.isPhoneScreen === true
+
+                    var scrollDelta = 0;
+
+                    //check the direction
+                    if ( scrollTop !== tdAffix.scroll_window_scrollTop_last ) { //compute direction only if we have different last scroll top
+                        // compute the direction of the scroll
+                        if ( scrollTop > tdAffix.scroll_window_scrollTop_last ) {
+                            scroll_direction = 'down';
+                        } else {
+                            scroll_direction = 'up';
+                        }
+                        //calculate the scroll delta
+                        scrollDelta = Math.abs( scrollTop - tdAffix.scroll_window_scrollTop_last );
+                    }
+
+                    tdAffix.scroll_window_scrollTop_last = scrollTop;
+                }
+            }
+
+            /*  ---------------------------------------------------------------------------- */
+
+            // show the logo on sticky menu if is always snap setting
+            if ( 'snap' === tdAffix.tds_snap_menu && '' !== tdAffix.tds_snap_menu_logo ) {
+                jQuery( '.td-main-menu-logo' ).addClass( 'td-logo-sticky' );
+            }
 
 
-            // boundary check - to not run the position on each scroll event
-            if ((td_affix.menu_offset_max_hit === false && scroll_direction=='down') || (td_affix.menu_offset_min_hit === false && scroll_direction=='up')) {
-                //request animation frame
-                //if (td_affix.is_requestAnimationFrame_running === false) {
+
+
+            //if the menu is in the affix state
+
+            // the next check is to keep the text from the menu at the same position, when the menu comes from affix off to affix off
+            if ( ( scrollTop > tdAffix.top_offset + ( tdAffix.main_menu_height / 2 - tdAffix._get_menu_affix_height() / 2 ) ) ||
+
+                    // - the affix is OFF when the next condition is not accomplished, which means that the affix is ON
+                    // and the scroll to the top is LOWER than the initial tdAffix.top_offset reduced by the affix real height
+                    // - this condition makes the transition from the small affix menu to the larger menu of the page
+                ( ( tdAffix.is_menu_affix === true ) && ( 'smart_snap_always' === tdAffix.tds_snap_menu) && scrollTop > ( tdAffix.top_offset - tdAffix._get_menu_affix_height() ) ) ||
+
+                tdAffix.is_top_menu === true ) {
+
+                //get the menu element
+                var td_affix_menu_element = jQuery( tdAffix.menu_selector );
+
+                //turn affix on for it
+                tdAffix._affix_on( td_affix_menu_element );
+
+
+                //if the menu is only with snap or we are on smart_snap_mobile + mobile, our job here in this function is done, return
+                if ( 'snap' === tdAffix.tds_snap_menu || ( 'smart_snap_mobile' === tdAffix.tds_snap_menu && false === tdDetect.isPhoneScreen ) ) {
+                    return;
+                }
+
+                /*    ---  end simple snap  ---  */
+
+
+                /*  ----------------------------------------------------------------------------
+                 check scroll directions (we may also have scroll_direction = '', that's why we have to check for the specific state (up or down))
+                 */
+
+
+                // boundary check - to not run the position on each scroll event
+                if ( ( false === tdAffix.menu_offset_max_hit && 'down' === scroll_direction ) || ( false === tdAffix.menu_offset_min_hit && 'up' === scroll_direction ) ) {
+                    //request animation frame
+                    //if (tdAffix.is_requestAnimationFrame_running === false) {
                     window.requestAnimationFrame(function(){
 
-                        //console.log(td_affix.menu_offset);
+                        //console.log(tdAffix.menu_offset);
                         //console.log(scrollDelta);
                         var offset = 0;
 
 
-                        if (scrollTop > 0) { // ios returns negative scrollTop values
-                            if (scroll_direction == 'down') {
+                        if ( scrollTop > 0 ) { // ios returns negative scrollTop values
+                            if ( 'down' === scroll_direction ) {
 
                                 //compute the offset
-                                offset = td_affix.menu_offset - scrollDelta;
+                                offset = tdAffix.menu_offset - scrollDelta;
 
-                                // the offset is a value in the [-td_affix.menu_affix_height, 0] and
-                                // not into the interval [-td_affix.main_menu_height, 0]
-                                if (offset < -td_affix._get_menu_affix_height()) {
-                                    offset = -td_affix._get_menu_affix_height();
+                                // the offset is a value in the [-tdAffix.menu_affix_height, 0] and
+                                // not into the interval [-tdAffix.main_menu_height, 0]
+                                if ( offset < -tdAffix._get_menu_affix_height() ) {
+                                    offset = -tdAffix._get_menu_affix_height();
                                 }
 
-                            } else if (scroll_direction == 'up') {
+                            } else if ( 'up' === scroll_direction ) {
                                 //compute the offset
-                                offset = td_affix.menu_offset + scrollDelta;
-                                if (offset > 0) {
+                                offset = tdAffix.menu_offset + scrollDelta;
+                                if ( offset > 0 ) {
                                     offset = 0;
                                 }
                             }
-
                         }
 
                         //td_debug.log_live(scroll_direction + ' | scrollTop: ' + scrollTop + '  | offset: ' + offset);
 
-                        //td_affix.is_requestAnimationFrame_running = true;
+                        //tdAffix.is_requestAnimationFrame_running = true;
 
                         //console.log(offset);
 
                         //move the menu
-                        td_util.td_move_y(td_affix_menu_element[0], offset);
+                        tdUtil.tdMoveY( td_affix_menu_element[0], offset );
 
                         //td_affix_menu_element.css({top: (offset) + 'px'});  //legacy menu move code
 
                         //check boundaries
-                        if (offset == 0) {
-                            td_affix.menu_offset_min_hit = true;
+                        if ( 0 === offset ) {
+                            tdAffix.menu_offset_min_hit = true;
                         } else {
-                            td_affix.menu_offset_min_hit = false;
+                            tdAffix.menu_offset_min_hit = false;
                         }
 
 
-                        if (offset == -td_affix._get_menu_affix_height()) {
-                            td_affix.menu_offset_max_hit = true;
+                        if ( offset === -tdAffix._get_menu_affix_height() ) {
+                            tdAffix.menu_offset_max_hit = true;
                             //also hide the menu when it's 100% out of view on ios - the safari header is transparent and we can see the menu
-                            if(td_detect.is_ios === true || td_detect.is_safari) { // safari also
+                            if ( ( true === tdDetect.isIos ) || tdDetect.isSafari ) { // safari also
                                 td_affix_menu_element.hide();
                             }
 
                             //show the logo on smart sticky menu
-                            if(td_affix.tds_snap_menu_logo != '') {
-                                jQuery('.td-main-menu-logo').addClass('td-logo-sticky');
+                            if ( '' !== tdAffix.tds_snap_menu_logo ) {
+                                jQuery( '.td-main-menu-logo' ).addClass( 'td-logo-sticky' );
                             }
                         } else {
-                            td_affix.menu_offset_max_hit = false;
+                            tdAffix.menu_offset_max_hit = false;
 
-                            if(td_detect.is_ios === true || td_detect.is_safari) { //ios safari fix
+                            if ( ( true === tdDetect.isIos ) || tdDetect.isSafari ) { //ios safari fix
                                 td_affix_menu_element.show();
                             }
                         }
 
+                        //tdAffix.is_requestAnimationFrame_running = false;
 
-                        //td_affix.is_requestAnimationFrame_running = false;
+                        tdAffix.menu_offset = offset; //update the current offset of the menu
 
+                    }, td_affix_menu_element[0] );
 
+                    //}
+                    //console.log(offset + ' ' + scroll_direction);
 
+                } //end boundary check
 
-                        td_affix.menu_offset = offset; //update the current offset of the menu
-
-
-                    },td_affix_menu_element[0]);
-
-                //}
-                //console.log(offset + ' ' + scroll_direction);
-
-            } //end boundary check
-
-
-
-        } else {
-            td_affix._affix_off(jQuery(td_affix.menu_selector));
-        }
-
-    },
+            } else {
+                tdAffix._affix_off( jQuery( tdAffix.menu_selector ) );
+            }
+        },
 
 
-    /**
-     * calculates the affix point (the distance from the top when affix should be enabled)
-     * @see td_affix.init()
-     * @see td_events
-     */
-    compute_top: function compute_top() {
+        /**
+         * calculates the affix point (the distance from the top when affix should be enabled)
+         * @see tdAffix.init()
+         * @see tdEvents
+         */
+        compute_top: function() {
 
-        // to compute from the bottom of the menu, the top offset is incremented by the menu wrap height
-        td_affix.top_offset = jQuery(td_affix.menu_wrap_selector).offset().top + jQuery(td_affix.menu_wrap_selector).height();
-
-        //check to see if the menu is at the top of the screen
-        if (td_affix.top_offset == (jQuery(td_affix.menu_wrap_selector).height()) + 1) {
-            //switch to affix - because the menu is at the top of the page
-            //td_affix._affix_on(jQuery(td_affix.menu_selector));
-            td_affix.is_top_menu = true;
-        } else {
-            //check to see the current top offset
-            td_affix.is_top_menu = false;
-
-        }
-        td_affix.td_events_scroll(jQuery(window).scrollTop());
-
-        //alert(td_affix.top_offset);
-        //console.log('computed: ' + td_affix.top_offset);
-    },
+            // to compute from the bottom of the menu, the top offset is incremented by the menu wrap height
+            tdAffix.top_offset = jQuery( tdAffix.menu_wrap_selector ).offset().top;// + jQuery(tdAffix.menu_wrap_selector).height();
 
 
-    /**
-     * recalculate the wrapper height. To support different menu heights
-     */
-    compute_wrapper: function compute_wrapper() {
-
-        // td-affix class is removed to compute a real height when the compute_wrapper is done on a scrolled page
-        if (jQuery(td_affix.menu_selector).hasClass('td-affix')) {
-            jQuery(td_affix.menu_selector).removeClass('td-affix');
-
-            //read the height of the menu
-            td_affix.main_menu_height = jQuery(td_affix.menu_selector).height();
-
-            jQuery(td_affix.menu_selector).addClass('td-affix');
-
-        } else {
-            //read the height of the menu
-            td_affix.main_menu_height = jQuery(td_affix.menu_selector).height();
-        }
-
-        // put the menu height to the wrapper. The wrapper remains in the place when the menu is affixed
-        jQuery(td_affix.menu_wrap_selector).css('height', td_affix.main_menu_height);
-    },
-
-    /**
-     * turns affix on for the menu element
-     * @param td_affix_menu_element
-     * @private
-     */
-    _affix_on: function _affix_on(td_affix_menu_element) {
-        if (td_affix.is_menu_affix === false) {
-
-            td_affix.menu_offset = -td_affix.top_offset;
-
-            //make the menu fixed
-            td_affix_menu_element.addClass('td-affix');
-
-            // Bug.Fix - affix menu flickering
-            // - the td_affix_menu_element is hidden because he is outside of the viewport
-            // - without it, there's a flicker effect of applying css style (classes) over it
-            if (td_detect.is_phone_screen !== true) {
-                td_affix_menu_element.css('visibility', 'hidden');
+            // The top_offset is incremented with the menu_affix_height only on 'smart_snap_always', because of the sidebar
+            // which use the menu_offset (and menu_offset depends on this top_offset)
+            //
+            // Consider that the smart sidebar, increment the td_affix_menu_computed_height with the menu_offset value
+            // when the menu is on 'smart_snap_always'
+            if ( 'smart_snap_always' === tdAffix.tds_snap_menu ) {
+                tdAffix.top_offset += tdAffix.menu_affix_height;
             }
 
-            //add body-td-affix class on body for header style 8 -> when scrolling down the window jumps 76px up when the menu is changing from header style 8 default to header style 8 affix
-            jQuery('body').addClass('body-td-affix');
 
-            td_affix.is_menu_affix = true;
-        } else {
+            //check to see if the menu is at the top of the screen
+            if ( 1 === tdAffix.top_offset ) {
+                //switch to affix - because the menu is at the top of the page
+                //tdAffix._affix_on(jQuery(tdAffix.menu_selector));
+                tdAffix.is_top_menu = true;
+            } else {
+                //check to see the current top offset
+                tdAffix.is_top_menu = false;
+            }
+            tdAffix.td_events_scroll( jQuery(window).scrollTop() );
 
-            // the td_affix_menu element is kept visible
-            if (td_detect.is_phone_screen !== true) {
-                td_affix_menu_element.css('visibility', '');
+            //alert(tdAffix.top_offset);
+            //console.log('computed: ' + tdAffix.top_offset);
+        },
+
+
+        /**
+         * recalculate the wrapper height. To support different menu heights
+         */
+        compute_wrapper: function() {
+
+            // td-affix class is removed to compute a real height when the compute_wrapper is done on a scrolled page
+            if ( jQuery( tdAffix.menu_selector ).hasClass( 'td-affix' ) ) {
+                jQuery( tdAffix.menu_selector ).removeClass( 'td-affix' );
+
+                //read the height of the menu
+                tdAffix.main_menu_height = jQuery( tdAffix.menu_selector ).height();
+
+                jQuery( tdAffix.menu_selector ).addClass( 'td-affix' );
+
+            } else {
+                //read the height of the menu
+                tdAffix.main_menu_height = jQuery( tdAffix.menu_selector ).height();
+            }
+
+            // put the menu height to the wrapper. The wrapper remains in the place when the menu is affixed
+            jQuery( tdAffix.menu_wrap_selector ).css( 'height', tdAffix.main_menu_height );
+        },
+
+        /**
+         * turns affix on for the menu element
+         * @param td_affix_menu_element
+         * @private
+         */
+        _affix_on: function( td_affix_menu_element ) {
+            if ( false === tdAffix.is_menu_affix ) {
+
+
+                // Bug.Fix - affix menu flickering
+                // - the td_affix_menu_element is hidden because he is outside of the viewport
+                // - without it, there's a flicker effect of applying css style (classes) over it
+
+                if ( ( 'smart_snap_always' === tdAffix.tds_snap_menu ) && ( tdDetect.isPhoneScreen !== true ) ) {
+                    td_affix_menu_element.css( 'visibility', 'hidden' );
+                }
+
+                tdAffix.menu_offset = -tdAffix.top_offset;
+
+                //make the menu fixed
+                td_affix_menu_element.addClass( 'td-affix' );
+
+                //add body-td-affix class on body for header style 8 -> when scrolling down the window jumps 76px up when the menu is changing from header style 8 default to header style 8 affix
+                jQuery( 'body' ).addClass( 'body-td-affix' );
+
+                tdAffix.is_menu_affix = true;
+            } else {
+
+                // the td_affix_menu element is kept visible
+                if ( true  !== tdDetect.isPhoneScreen ) {
+                    td_affix_menu_element.css( 'visibility', '' );
+                }
+            }
+        },
+
+
+
+        /**
+         * Turns affix off for the menu element
+         * @param td_affix_menu_element
+         * @private
+         */
+        _affix_off: function( td_affix_menu_element ) {
+            if ( true === tdAffix.is_menu_affix ) {
+                //make the menu normal
+                jQuery( tdAffix.menu_selector ).removeClass( 'td-affix' );
+
+                //hide the logo from sticky menu when the menu is not affix
+                if( '' !== tdAffix.tds_snap_menu_logo ) {
+                    jQuery( '.td-main-menu-logo' ).removeClass( 'td-logo-sticky' );
+                }
+
+                //remove body-td-affix class on body for header style 8 -> when scrolling down the window jumps 76px up when the menu is changing from header style 8 default to header style 8 affix
+                jQuery( 'body' ).removeClass( 'body-td-affix' );
+
+                tdAffix.is_menu_affix = false;
+
+                //move the menu to 0 (ios seems to skip animation frames)
+                tdUtil.tdMoveY( td_affix_menu_element[0], 0 );
+
+                if ( ( true === tdDetect.isIos ) || tdDetect.isSafari ) {
+                    td_affix_menu_element.show();
+                }
             }
         }
-    },
+    };
+})();
 
 
-
-    /**
-     * Turns affix off for the menu element
-     * @param td_affix_menu_element
-     * @private
-     */
-    _affix_off: function _affix_off(td_affix_menu_element) {
-        if (td_affix.is_menu_affix === true) {
-            //make the menu normal
-            jQuery(td_affix.menu_selector).removeClass('td-affix');
-
-            //hide the logo from sticky menu when the menu is not affix
-            if(td_affix.tds_snap_menu_logo != '') {
-                jQuery('.td-main-menu-logo').removeClass('td-logo-sticky');
-            }
-
-            //remove body-td-affix class on body for header style 8 -> when scrolling down the window jumps 76px up when the menu is changing from header style 8 default to header style 8 affix
-            jQuery('body').removeClass('body-td-affix');
-
-            td_affix.is_menu_affix = false;
-
-            //move the menu to 0 (ios seems to skip animation frames)
-            td_util.td_move_y(td_affix_menu_element[0], 0);
-
-            if(td_detect.is_ios === true || td_detect.is_safari) {
-                td_affix_menu_element.show();
-            }
-
-        }
-    }
-
-
-
-};
 
 
 
@@ -1132,12 +1230,15 @@ var td_affix = {
     Thanks for using our theme! :)
 */
 
-/*jslint node: true */
-/*global window */
-/*global alert */
-/*global jQuery */
+
+/* global jQuery:false */
+/* global tdUtil:false */
+/* global tdModalImageLastEl:{} */
+
 
 "use strict";
+
+
 
 
 
@@ -1170,12 +1271,22 @@ jQuery().ready(function jQuery_ready() {
     //used for smart lists
     td_smart_lists_magnific_popup();
 
-
+    //smart list drop down pagination
+    td_smart_list_dropdown();
 
 
 
 }); //end on load
 
+
+/**
+ * smart lists drop down pagination redirect
+ */
+function td_smart_list_dropdown() {
+    jQuery('.td-smart-list-dropdown').on('change', function() {
+        window.location = this.value;
+    });
+}
 
 
 /**
@@ -1216,16 +1327,16 @@ var td_more_articles_box = {
     },
 
     /**
-     * called by td_events.js on scroll
+     * called by tdEvents.js on scroll
      */
     td_events_scroll: function td_events_scroll(scrollTop) {
 
-        if(td_is_scrolling_animation) { //do not fire the event on animations
+        if(tdIsScrollingAnimation) { //do not fire the event on animations
             return;
         }
 
         //check to see if it's enable form panel and also from cookie
-        if(td_util.get_backend_var('tds_more_articles_on_post_enable') == "show" && td_more_articles_box.cookie != 'hide-more-articles-box') {
+        if(tdUtil.getBackendVar('tds_more_articles_on_post_enable') == "show" && td_more_articles_box.cookie != 'hide-more-articles-box') {
 
             if (scrollTop > td_more_articles_box.distance_from_top ) {
                 if (td_more_articles_box.is_box_visible === false) {
@@ -1268,22 +1379,31 @@ function td_done_resizing(){
 function td_resize_videos() {
     //youtube in content
     jQuery(document).find('iframe[src*="youtube.com"]').each(function() {
-
-        if(jQuery(this).parent().hasClass("td_wrapper_playlist_player_youtube")) {
-            //do nothing for playlist player youtube
+        var videoMainContainer = jQuery(this).parent().parent().parent(),
+            videoInPlaylist = jQuery(this).parent().hasClass("td_wrapper_playlist_player_vimeo"),
+            video43AspectRatio = videoMainContainer.hasClass("vc_video-aspect-ratio-43"), //the video is set to 4:3 aspect ratio
+            video235AspectRatio = videoMainContainer.hasClass("vc_video-aspect-ratio-235"); //the video is set to 2.35:1 aspect ratio
+        if(videoInPlaylist || video43AspectRatio || video235AspectRatio) {
+            //do nothing for playlist player youtube or aspect ratios 4:3 and 2.35:1
+            //the video aspect ratio can be set on Visual Composer - Video Player widget settings
         } else {
             var td_video = jQuery(this);
             td_video.attr('width', '100%');
             var td_video_width = td_video.width();
-            td_video.css('height', td_video_width * 0.6, 'important');
+            td_video.css('height', td_video_width * 0.5625, 'important');
         }
     });
 
 
     //vimeo in content
     jQuery(document).find('iframe[src*="vimeo.com"]').each(function() {
-        if(jQuery(this).parent().hasClass("td_wrapper_playlist_player_vimeo")) {
-            //do nothing for playlist player vimeo
+        var videoMainContainer = jQuery(this).parent().parent().parent(),
+            videoInPlaylist = jQuery(this).parent().hasClass("td_wrapper_playlist_player_vimeo"),
+            video43AspectRatio = videoMainContainer.hasClass("vc_video-aspect-ratio-43"), //the video is set to 4:3 aspect ratio
+            video235AspectRatio = videoMainContainer.hasClass("vc_video-aspect-ratio-235"); //the video is set to 2.35:1 aspect ratio
+        if(videoInPlaylist || video43AspectRatio || video235AspectRatio) {
+            //do nothing for playlist player vimeo or aspect ratios 4:3 and 2.35:1
+            //the video aspect ratio can be set on Visual Composer - Video Player widget settings
         } else {
             var td_video = jQuery(this);
             td_video.attr('width', '100%');
@@ -1295,10 +1415,19 @@ function td_resize_videos() {
 
     //daily motion in content
     jQuery(document).find('iframe[src*="dailymotion.com"]').each(function() {
-        var td_video = jQuery(this);
-        td_video.attr('width', '100%');
-        var td_video_width = td_video.width();
-        td_video.css('height', td_video_width * 0.6, 'important');
+        var videoMainContainer = jQuery(this).parent().parent().parent(),
+            video43AspectRatio = videoMainContainer.hasClass("vc_video-aspect-ratio-43"), //video aspect ratio 4:3
+            video235AspectRatio = videoMainContainer.hasClass("vc_video-aspect-ratio-235"); //video aspect ratio 2.35:1
+        if (video43AspectRatio || video235AspectRatio) {
+            //do nothing for video aspect ratios 4:3 and 2.35:1
+            //the video aspect ratio can be set on Visual Composer - Video Player widget settings
+        } else {
+            var td_video = jQuery(this);
+            td_video.attr('width', '100%');
+            var td_video_width = td_video.width();
+            td_video.css('height', td_video_width * 0.6, 'important');
+        }
+
     });
 
 
@@ -1325,7 +1454,7 @@ function td_mobile_menu() {
         if(jQuery('body').hasClass('td-menu-mob-open-menu')) {
             jQuery('body').removeClass('td-menu-mob-open-menu');
         } else {
-            if (td_detect.is_mobile_device) {
+            if (tdDetect.isMobileDevice) {
                 // on mobile devices scroll to top instantly and wait a bit and open the menu
                 window.scrollTo(0, 0);
                 setTimeout(function(){
@@ -1335,7 +1464,7 @@ function td_mobile_menu() {
                 // on desktop open it with full animations
                 jQuery('body').addClass('td-menu-mob-open-menu');
                 setTimeout(function(){
-                    td_util.scroll_to_position(0, 1200);
+                    tdUtil.scrollToPosition(0, 1200);
                 }, 200);
             }
         }
@@ -1422,7 +1551,7 @@ jQuery('body').click(function(e){
 });*/
 
 //click only on BACKGROUND, for devices that don't have touch (ex: phone, tablets)
-if(!td_detect.is_touch_device && td_util.get_backend_var('td_ad_background_click_link') != '') {
+if(!tdDetect.isTouchDevice && tdUtil.getBackendVar('td_ad_background_click_link') != '') {
 
     //var ev = ev || window.event;
     //var target = ev.target || ev.srcElement;
@@ -1513,15 +1642,18 @@ function td_set_cookies_life(td_time_cookie_array) {
     Scroll to top + animation stop
  */
 
-var td_is_scrolling_animation = false;
+var tdIsScrollingAnimation = false;
 var td_mouse_wheel_or_touch_moved = false; //we want to know if the user stopped the animation via touch or mouse move
 
 //stop the animation on mouse wheel
 jQuery(document).bind('mousewheel DOMMouseScroll MozMousePixelScroll', function(e){
-    if (td_is_scrolling_animation === false) {
+
+
+    if (tdIsScrollingAnimation === false) {
         return;
     } else {
-        td_is_scrolling_animation = false;
+
+        tdIsScrollingAnimation = false;
         td_mouse_wheel_or_touch_moved = true;
 
         jQuery("html, body").stop();
@@ -1531,10 +1663,10 @@ jQuery(document).bind('mousewheel DOMMouseScroll MozMousePixelScroll', function(
 //stop the animation on touch
 if (document.addEventListener){
     document.addEventListener('touchmove', function(e) {
-        if (td_is_scrolling_animation === false) {
+        if (tdIsScrollingAnimation === false) {
             return;
         } else {
-            td_is_scrolling_animation = false;
+            tdIsScrollingAnimation = false;
             td_mouse_wheel_or_touch_moved = true;
             jQuery("html, body").stop();
         }
@@ -1542,11 +1674,11 @@ if (document.addEventListener){
 }
 
 /**
- * called by td_events.js on scroll - back to top
+ * called by tdEvents.js on scroll - back to top
  */
 var td_scroll_to_top_is_visible = false;
 function td_events_scroll_scroll_to_top(scrollTop) {
-    if(td_is_scrolling_animation) {  //do not fire the event on animations
+    if(tdIsScrollingAnimation) {  //do not fire the event on animations
         return;
     }
     if (scrollTop > 400) {
@@ -1564,7 +1696,7 @@ function td_events_scroll_scroll_to_top(scrollTop) {
 
 
 jQuery('.td-scroll-up').click(function(){
-    if(td_is_scrolling_animation) { //double check - because when we remove the class, the button is still visible for a while
+    if(tdIsScrollingAnimation) { //double check - because when we remove the class, the button is still visible for a while
         return;
     }
 
@@ -1577,7 +1709,7 @@ jQuery('.td-scroll-up').click(function(){
     jQuery('.td-more-articles-box').removeClass('td-front-end-display-block');
 
     //scroll to top
-    td_util.scroll_to_position(0, 1200);
+    tdUtil.scrollToPosition(0, 1200);
 
     return false;
 });
@@ -1593,8 +1725,8 @@ jQuery('.td-scroll-up').click(function(){
 // small down arrow on template 6 and full width index
 jQuery('.td-read-down a').click(function(event){
     event.preventDefault();
-    td_util.scroll_to_position(jQuery('.td-full-screen-header-image-wrap').height(), 1200);
-    //td_util.scroll_to_position(jQuery('.td-full-screen-header-image-wrap').height() + jQuery('.td-full-screen-header-image-wrap').offset().top, 1200);
+    tdUtil.scrollToPosition(jQuery('.td-full-screen-header-image-wrap').height(), 1200);
+    //tdUtil.scrollToPosition(jQuery('.td-full-screen-header-image-wrap').height() + jQuery('.td-full-screen-header-image-wrap').offset().top, 1200);
 });
 
 /**
@@ -1638,7 +1770,7 @@ function td_post_template_6_title() {
         if (scroll_from_top <= 950) { //stop the animation after scroll from top
 
             var blur_value = 1 - (scroll_from_top / 800); // @todo trebuie verificata formula??
-            if (td_detect.is_ie8 === true) {
+            if (tdDetect.isIe8 === true) {
                 blur_value = 1;
             }
 
@@ -1650,12 +1782,12 @@ function td_post_template_6_title() {
 
             //move the bg
             var parallax_move = -Math.round(scroll_from_top / 4);
-            td_util.td_move_y(td_parallax_bg_el,-parallax_move);
+            tdUtil.tdMoveY(td_parallax_bg_el,-parallax_move);
 
 
             //move the title + cat
             distance_from_bottom = -Math.round(scroll_from_top / 8);
-            td_util.td_move_y(td_parallax_el,-distance_from_bottom);
+            tdUtil.tdMoveY(td_parallax_el,-distance_from_bottom);
             //td_parallax_el.style.bottom = distance_from_bottom + "px";  //un accelerated version
 
 
@@ -1680,7 +1812,7 @@ function td_smart_lists_magnific_popup() {
             enabled: true,
             navigateByImgClick: true,
             preload: [0,1],
-            tCounter: td_util.get_backend_var('td_magnific_popup_translation_tCounter') // Markup for "1 of 7" counter
+            tCounter: tdUtil.getBackendVar('td_magnific_popup_translation_tCounter') // Markup for "1 of 7" counter
         },
         image: {
             tError: "<a href=\'%url%\'>The image #%curr%</a> could not be loaded.",
@@ -1711,15 +1843,15 @@ function td_smart_lists_magnific_popup() {
                     //jQuery(".td-iosSlider").iosSlider("goToSlide", this.currItem.index + 1 );
                     jQuery(".td-iosSlider").iosSlider("goToSlide", parseInt(nr_slide[1]) + 1);
                 } else {
-                    td_modal_image_last_el = item.el;
+                    tdModalImageLastEl = item.el;
                     setTimeout(function(){
-                        td_util.scroll_into_view(item.el);
+                        tdUtil.scrollIntoView(item.el);
                     }, 100);
                 }
             },
             beforeClose: function() {
-                if (td_modal_image_last_el != '') {
-                    td_util.scroll_into_view(td_modal_image_last_el);
+                if (tdModalImageLastEl != '') {
+                    tdUtil.scrollIntoView(tdModalImageLastEl);
                 }
             }
         }
@@ -1765,108 +1897,150 @@ function td_get_document_height() {
 }
 
 
-//stop propagation
-function stopBubble(e){
-    if(e && e.stopPropagation) {
-        e.stopPropagation();
-    } else {
-        window.event.cancelBubble=true;
-    }
-}
-var td_loading_box = {
+/* global jQuery:false */
+/* global tdUtil:false */
 
-    //array_colors: ['#ffffff', '#fafafa', '#ececec', '#dddddd', '#bfbfbf', '#9a9a9a', '#7e7e7e', '#636363'],//whiter -> darker
-
-    array_colors_temp: ['rgba(99, 99, 99, 0)', 'rgba(99, 99, 99, 0.05)', 'rgba(99, 99, 99, 0.08)', 'rgba(99, 99, 99, 0.2)', 'rgba(99, 99, 99, 0.3)', 'rgba(99, 99, 99, 0.5)', 'rgba(99, 99, 99, 0.6)', 'rgba(99, 99, 99, 1)'],//whiter -> darker
-
-    array_colors: [],
-
-    status_animation: 'stop',
-
-    //stop loading box
-    stop : function stop () {
-        td_loading_box.status_animation = 'stop';
-        //jQuery('.td-loader-gif').html("");
-    },
+var tdLoadingBox = {};
 
 
-    //init loading box
-    init : function init (color) {
+( function() {
+    "use strict";
+    tdLoadingBox = {
 
-        var td_color_reg_exp = /^#[a-zA-Z0-9]{3,6}$/;
-        if(color && td_color_reg_exp.test(color)) {
+        //arrayColors: ['#ffffff', '#fafafa', '#ececec', '#dddddd', '#bfbfbf', '#9a9a9a', '#7e7e7e', '#636363'],//whiter -> darker
 
-            var col_rgba = td_loading_box.hexToRgb(color);
+        speed: 40,
 
-            var rgba_string = "rgba(" + col_rgba.r + ", " + col_rgba.g + ", " + col_rgba.b + ", ";
+        arrayColorsTemp: [
+            'rgba(99, 99, 99, 0)',
+            'rgba(99, 99, 99, 0.05)',
+            'rgba(99, 99, 99, 0.08)',
+            'rgba(99, 99, 99, 0.2)',
+            'rgba(99, 99, 99, 0.3)',
+            'rgba(99, 99, 99, 0.5)',
+            'rgba(99, 99, 99, 0.6)',
+            'rgba(99, 99, 99, 1)'
+        ],//whiter -> darker
 
-            td_loading_box.array_colors[7] = rgba_string + " 1)";
-            td_loading_box.array_colors[6] = rgba_string + " 0.6)";
-            td_loading_box.array_colors[5] = rgba_string + " 0.5)";
-            td_loading_box.array_colors[4] = rgba_string + " 0.3)";
-            td_loading_box.array_colors[3] = rgba_string + " 0.2)";
-            td_loading_box.array_colors[2] = rgba_string + " 0.08)";
-            td_loading_box.array_colors[1] = rgba_string + " 0.05)";
-            td_loading_box.array_colors[0] = rgba_string + " 0)";
+        arrayColors: [],
 
-        } else {
-            //default array
-            td_loading_box.array_colors = td_loading_box.array_colors_temp.slice(0);
+        statusAnimation: 'stop',
 
+        //stop loading box
+        stop : function stop () {
+            tdLoadingBox.statusAnimation = 'stop';
+            //jQuery('.td-loader-gif').html("");
+        },
+
+
+        //init loading box
+        init : function init (color, speed) {
+
+            // set up the speed
+            if (false === tdUtil.isUndefined(speed)) {
+                tdLoadingBox.speed = speed;
+            }
+
+            //console.log('test');
+            var tdColorRegExp = /^#[a-zA-Z0-9]{3,6}$/;
+            if(color && tdColorRegExp.test(color)) {
+
+                var colRgba = tdLoadingBox.hexToRgb(color);
+
+                var rgbaString = "rgba(" + colRgba.r + ", " + colRgba.g + ", " + colRgba.b + ", ";
+
+                tdLoadingBox.arrayColors[7] = rgbaString + " 1)";
+                tdLoadingBox.arrayColors[6] = rgbaString + " 0.6)";
+                tdLoadingBox.arrayColors[5] = rgbaString + " 0.5)";
+                tdLoadingBox.arrayColors[4] = rgbaString + " 0.3)";
+                tdLoadingBox.arrayColors[3] = rgbaString + " 0.2)";
+                tdLoadingBox.arrayColors[2] = rgbaString + " 0.08)";
+                tdLoadingBox.arrayColors[1] = rgbaString + " 0.05)";
+                tdLoadingBox.arrayColors[0] = rgbaString + " 0)";
+
+            } else {
+                //default array
+                tdLoadingBox.arrayColors = tdLoadingBox.arrayColorsTemp.slice(0);
+
+            }
+
+            if(tdLoadingBox.statusAnimation === 'stop') {
+                tdLoadingBox.statusAnimation = 'display';
+                this.render();
+            }
+        },
+
+
+        //create the animation
+        render: function render (color) {
+
+            //call the animationDisplay function
+            tdLoadingBox.animationDisplay(
+                '<div class="td-lb-box td-lb-box-1" style="background-color:' + tdLoadingBox.arrayColors[0] + '"></div>' +
+                '<div class="td-lb-box td-lb-box-2" style="background-color:' + tdLoadingBox.arrayColors[1] + '"></div>' +
+                '<div class="td-lb-box td-lb-box-3" style="background-color:' + tdLoadingBox.arrayColors[2] + '"></div>' +
+                '<div class="td-lb-box td-lb-box-4" style="background-color:' + tdLoadingBox.arrayColors[3] + '"></div>' +
+                '<div class="td-lb-box td-lb-box-5" style="background-color:' + tdLoadingBox.arrayColors[4] + '"></div>' +
+                '<div class="td-lb-box td-lb-box-6" style="background-color:' + tdLoadingBox.arrayColors[5] + '"></div>' +
+                '<div class="td-lb-box td-lb-box-7" style="background-color:' + tdLoadingBox.arrayColors[6] + '"></div>' +
+                '<div class="td-lb-box td-lb-box-8" style="background-color:' + tdLoadingBox.arrayColors[7] + '"></div>'
+            );
+
+            //direction right
+            var tempColorArray = [
+                tdLoadingBox.arrayColors[0],
+                tdLoadingBox.arrayColors[1],
+                tdLoadingBox.arrayColors[2],
+                tdLoadingBox.arrayColors[3],
+                tdLoadingBox.arrayColors[4],
+                tdLoadingBox.arrayColors[5],
+                tdLoadingBox.arrayColors[6],
+                tdLoadingBox.arrayColors[7]
+            ];
+
+            tdLoadingBox.arrayColors[0] = tempColorArray[7];
+            tdLoadingBox.arrayColors[1] = tempColorArray[0];
+            tdLoadingBox.arrayColors[2] = tempColorArray[1];
+            tdLoadingBox.arrayColors[3] = tempColorArray[2];
+            tdLoadingBox.arrayColors[4] = tempColorArray[3];
+            tdLoadingBox.arrayColors[5] = tempColorArray[4];
+            tdLoadingBox.arrayColors[6] = tempColorArray[5];
+            tdLoadingBox.arrayColors[7] = tempColorArray[6];
+
+            if(tdLoadingBox.statusAnimation === 'display') {
+
+
+                setTimeout(tdLoadingBox.render, tdLoadingBox.speed);
+            } else {
+                tdLoadingBox.animationDisplay('');
+            }
+        },
+
+
+        //display the animation
+        animationDisplay: function (animation_str) {
+            jQuery('.td-loader-gif').html(animation_str);
+        },
+
+
+        //converts hex to rgba
+        hexToRgb: function (hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
         }
-
-        if(td_loading_box.status_animation == 'stop') {
-            td_loading_box.status_animation = 'display';
-            this.render();
-        }
-    },
+    }; //tdLoadingBox.init();//tdLoadingBox.stop();
+})();
 
 
-    //create the animation
-    render: function render (color) {
-
-        //call the animation_display function
-        td_loading_box.animation_display('<div class="td-lb-box td-lb-box-1" style="background-color:' + td_loading_box.array_colors[0] + '"></div><div class="td-lb-box td-lb-box-2" style="background-color:' + td_loading_box.array_colors[1] + '"></div><div class="td-lb-box td-lb-box-3" style="background-color:' + td_loading_box.array_colors[2] + '"></div><div class="td-lb-box td-lb-box-4" style="background-color:' + td_loading_box.array_colors[3] + '"></div><div class="td-lb-box td-lb-box-5" style="background-color:' + td_loading_box.array_colors[4] + '"></div><div class="td-lb-box td-lb-box-6" style="background-color:' + td_loading_box.array_colors[5] + '"></div><div class="td-lb-box td-lb-box-7" style="background-color:' + td_loading_box.array_colors[6] + '"></div><div class="td-lb-box td-lb-box-8" style="background-color:' + td_loading_box.array_colors[7] + '"></div>');
-
-        //direction right
-        var temp_color_array = [td_loading_box.array_colors[0], td_loading_box.array_colors[1], td_loading_box.array_colors[2], td_loading_box.array_colors[3], td_loading_box.array_colors[4], td_loading_box.array_colors[5], td_loading_box.array_colors[6], td_loading_box.array_colors[7]];
-
-        td_loading_box.array_colors[0] = temp_color_array[7];
-        td_loading_box.array_colors[1] = temp_color_array[0];
-        td_loading_box.array_colors[2] = temp_color_array[1];
-        td_loading_box.array_colors[3] = temp_color_array[2];
-        td_loading_box.array_colors[4] = temp_color_array[3];
-        td_loading_box.array_colors[5] = temp_color_array[4];
-        td_loading_box.array_colors[6] = temp_color_array[5];
-        td_loading_box.array_colors[7] = temp_color_array[6];
-
-        if(td_loading_box.status_animation == 'display') {
 
 
-            setTimeout(td_loading_box.render, 40);
-        } else {
-            td_loading_box.animation_display('');
-        }
-    },
 
 
-    //display the animation
-    animation_display: function animation_display (animation_str) {
-        jQuery('.td-loader-gif').html(animation_str);
-    },
-
-
-    //converts hex to rgba
-    hexToRgb: function hexToRgb(hex) {
-        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-}; //td_loading_box.init();//td_loading_box.stop();
 
 /*  ----------------------------------------------------------------------------
     On load
@@ -1984,7 +2158,7 @@ var td_ajax_search = {
     show_search_box: function open_search_box() {
         jQuery(".td-drop-down-search").addClass('td-drop-down-search-open');
         // do not try to autofocus on ios. It's still buggy as of 18 march 2015
-        if (td_detect.is_ios !== true) {
+        if (tdDetect.isIos !== true) {
             setTimeout(function(){
                 document.getElementById("td-header-search").focus();
             }, 200);
@@ -2112,9 +2286,9 @@ var td_ajax_search = {
          */
 
         // the .entry-thumb are searched for in the #td-aj-search object, sorted and added into the view port array items
-        if ((typeof window['td_animation_stack'] !== 'undefined')  && (window['td_animation_stack'].activated === true)) {
-            window['td_animation_stack'].check_for_new_items('#td-aj-search .td-animation-stack', window['td_animation_stack'].SORTED_METHOD.sort_left_to_right, true);
-            window['td_animation_stack'].compute_items();
+        if ((typeof window['tdAnimationStack'] !== 'undefined')  && (window['tdAnimationStack'].activated === true)) {
+            window['tdAnimationStack'].check_for_new_items('#td-aj-search .td-animation-stack', window['tdAnimationStack'].SORTED_METHOD.sort_left_to_right, true);
+            window['tdAnimationStack'].compute_items();
         }
     },
 
@@ -2135,8 +2309,8 @@ var td_ajax_search = {
 
 
         //do we have a cache hit
-        if (td_local_cache.exist(search_query)) {
-            td_ajax_search.process_ajax_response(td_local_cache.get(search_query));
+        if (tdLocalCache.exist(search_query)) {
+            td_ajax_search.process_ajax_response(tdLocalCache.get(search_query));
             return; //cache HIT
         }
 
@@ -2153,7 +2327,7 @@ var td_ajax_search = {
                 td_string: search_query
             },
             success: function(data, textStatus, XMLHttpRequest){
-                td_local_cache.set(search_query, data);
+                tdLocalCache.set(search_query, data);
                 td_ajax_search.process_ajax_response(data);
             },
             error: function(MLHttpRequest, textStatus, errorThrown){
@@ -2167,13 +2341,16 @@ var td_ajax_search = {
 
 
 
-"use strict";
+;'use strict';
 
 /* ----------------------------------------------------------------------------
- td_post_images.js
+ tdPostImages.js
  --------------------------------------------------------------------------- */
 
-
+/* global jQuery:{} */
+/* global tdUtil:{} */
+/* global tdAffix:{} */
+/* global tdIsScrollingAnimation:boolean */
 
 /*  ----------------------------------------------------------------------------
  On load
@@ -2181,20 +2358,20 @@ var td_ajax_search = {
 jQuery().ready(function() {
 
     //handles the modal images
-    td_modal_image();
+    tdModalImage();
 
     //move classes from post images to figure - td-post-image-full etc
-    td_util.image_move_class_to_figure('td-post-image-full');
-    td_util.image_move_class_to_figure('td-post-image-right');
-    td_util.image_move_class_to_figure('td-post-image-left');
+    tdUtil.imageMoveClassToFigure( 'td-post-image-full' );
+    tdUtil.imageMoveClassToFigure( 'td-post-image-right' );
+    tdUtil.imageMoveClassToFigure( 'td-post-image-left' );
 
     /**
      * - add a general td-modal-image class to the all post images
      */
-    if ((typeof window.tds_general_modal_image !== 'undefined') && (window.tds_general_modal_image !== '')) {
-        jQuery('.single .td-post-content a > img').filter(function(index, element) {
-            if (element.className.indexOf('wp-image') != -1) {
-                jQuery(element).parent().addClass('td-modal-image');
+    if ( ( 'undefined' !== typeof window.tds_general_modal_image ) && ( '' !== window.tds_general_modal_image ) ) {
+        jQuery( '.single .td-post-content a > img' ).filter(function( index, element ) {
+            if ( -1 !== element.className.indexOf( 'wp-image' ) ) {
+                jQuery( element ).parent().addClass( 'td-modal-image' );
             }
         });
     }
@@ -2203,82 +2380,79 @@ jQuery().ready(function() {
 
 
 // used for scrolling to the last element
-var td_modal_image_last_el = '';
+var tdModalImageLastEl = '';
 
 // handles modal images for: Featured images, inline image, inline image with caption, galleries
-function td_modal_image() {
+function tdModalImage() {
 
     //fix wordpress figure + figcaption (we move the figcaption in the data-caption attribute of the link)
-    jQuery('figure.wp-caption').each(function() {
-        var caption_text = jQuery(this).children('figcaption').html();
-        jQuery(this).children('a').data('caption', caption_text);
+    jQuery( 'figure.wp-caption' ).each(function() {
+        var caption_text = jQuery( this ).children( 'figcaption' ).html();
+        jQuery( this ).children( 'a' ).data( 'caption', caption_text );
     });
 
     //move td-modal-image class to the parent a from the image. We can only add this class to the image via word press media editor
-    jQuery('.td-modal-image').each(function() {
-        jQuery(this).parent().addClass('td-modal-image');
-        jQuery(this).removeClass('td-modal-image');
+    jQuery( '.td-modal-image' ).each(function() {
+        jQuery( this ).parent().addClass( 'td-modal-image' );
+        jQuery( this ).removeClass( 'td-modal-image' );
     });
 
 
 
     //popup on modal images in articles
-    jQuery('article').magnificPopup({
-        type:'image',
+    jQuery( 'article' ).magnificPopup({
+        type: 'image',
         delegate: ".td-modal-image",
-        gallery:{
-            enabled:true,
-            tPrev: td_util.get_backend_var('td_magnific_popup_translation_tPrev'), // Alt text on left arrow
-            tNext: td_util.get_backend_var('td_magnific_popup_translation_tNext'), // Alt text on right arrow
-            tCounter: td_util.get_backend_var('td_magnific_popup_translation_tCounter') // Markup for "1 of 7" counter
+        gallery: {
+            enabled: true,
+            tPrev: tdUtil.getBackendVar( 'td_magnific_popup_translation_tPrev' ), // Alt text on left arrow
+            tNext: tdUtil.getBackendVar( 'td_magnific_popup_translation_tNext' ), // Alt text on right arrow
+            tCounter: tdUtil.getBackendVar( 'td_magnific_popup_translation_tCounter' ) // Markup for "1 of 7" counter
         },
         ajax: {
-            tError: td_util.get_backend_var('td_magnific_popup_translation_ajax_tError')
+            tError: tdUtil.getBackendVar( 'td_magnific_popup_translation_ajax_tError' )
         },
         image: {
-            tError: td_util.get_backend_var('td_magnific_popup_translation_image_tError'),
-            titleSrc: function(item) {//console.log(item.el);
+            tError: tdUtil.getBackendVar( 'td_magnific_popup_translation_image_tError' ),
+            titleSrc: function( item ) {//console.log(item.el);
                 //alert(jQuery(item.el).data("caption"));
-                var td_current_caption = jQuery(item.el).data('caption');
-                if (typeof td_current_caption != "undefined") {
+                var td_current_caption = jQuery( item.el ).data( 'caption' );
+                if ( 'undefined' !== typeof td_current_caption ) {
                     return td_current_caption;
                 } else {
                     return '';
                 }
-
-
             }
         },
         zoom: {
             enabled: true,
             duration: 300,
-            opener: function(element) {
-                return element.find("img");
+            opener: function( element ) {
+                return element.find( 'img' );
             }
         },
         callbacks: {
-            change: function(item) {
-                td_modal_image_last_el = item.el;
+            change: function( item ) {
+                tdModalImageLastEl = item.el;
                 //setTimeout(function(){
-                td_util.scroll_into_view(item.el);
+                tdUtil.scrollIntoView( item.el );
                 //}, 100);
-
             },
             beforeClose: function() {
-                td_affix.allow_scroll = false;
+                tdAffix.allow_scroll = false;
 
-                td_util.scroll_into_view(td_modal_image_last_el);
+                tdUtil.scrollIntoView( tdModalImageLastEl );
 
                 var interval_td_affix_scroll = setInterval(function() {
 
-                    if (!td_is_scrolling_animation) {
-                        clearInterval(interval_td_affix_scroll);
+                    if ( ! tdIsScrollingAnimation ) {
+                        clearInterval( interval_td_affix_scroll );
                         setTimeout(function() {
-                            td_affix.allow_scroll = true;
-                            //td_affix.td_events_scroll(td_events.scroll_window_scrollTop);
-                        }, 100);
+                            tdAffix.allow_scroll = true;
+                            //tdAffix.td_events_scroll(td_events.scroll_window_scrollTop);
+                        }, 100 );
                     }
-                }, 100);
+                }, 100 );
             }
         }
     });
@@ -2289,34 +2463,33 @@ function td_modal_image() {
 
     //gallery popup
     //detect jetpack carousel and disable the theme popup
-    if (typeof jetpackCarouselStrings === 'undefined') {
+    if ( 'undefined' === typeof jetpackCarouselStrings ) {
 
         // copy gallery caption from figcaption to data-caption attribute of the link to the full image, in this way the modal can read the caption
-        jQuery('figure.gallery-item').each(function() {
-            var caption_text = jQuery(this).children('figcaption').html();
-            jQuery(this).find('a').data('caption', caption_text);
+        jQuery( 'figure.gallery-item' ).each(function() {
+            var caption_text = jQuery( this ).children( 'figcaption' ).html();
+            jQuery( this ).find( 'a' ).data( 'caption', caption_text );
         });
-
 
 
         //jquery tiled gallery
-        jQuery('.tiled-gallery').magnificPopup({
-            type:'image',
+        jQuery( '.tiled-gallery' ).magnificPopup({
+            type: 'image',
             delegate: "a",
-            gallery:{
-                enabled:true,
-                tPrev: td_util.get_backend_var('td_magnific_popup_translation_tPrev'), // Alt text on left arrow
-                tNext: td_util.get_backend_var('td_magnific_popup_translation_tNext'), // Alt text on right arrow
-                tCounter: td_util.get_backend_var('td_magnific_popup_translation_tCounter') // Markup for "1 of 7" counter
+            gallery: {
+                enabled: true,
+                tPrev: tdUtil.getBackendVar( 'td_magnific_popup_translation_tPrev' ), // Alt text on left arrow
+                tNext: tdUtil.getBackendVar( 'td_magnific_popup_translation_tNext' ), // Alt text on right arrow
+                tCounter: tdUtil.getBackendVar( 'td_magnific_popup_translation_tCounter' ) // Markup for "1 of 7" counter
             },
             ajax: {
-                tError: td_util.get_backend_var('td_magnific_popup_translation_ajax_tError')
+                tError: tdUtil.getBackendVar( 'td_magnific_popup_translation_ajax_tError' )
             },
             image: {
-                tError: td_util.get_backend_var('td_magnific_popup_translation_image_tError'),
-                titleSrc: function(item) {//console.log(item.el);
-                    var td_current_caption = jQuery(item.el).parent().find('.tiled-gallery-caption').text();
-                    if (typeof td_current_caption != "undefined") {
+                tError: tdUtil.getBackendVar( 'td_magnific_popup_translation_image_tError' ),
+                titleSrc: function( item ) {//console.log(item.el);
+                    var td_current_caption = jQuery( item.el ).parent().find( '.tiled-gallery-caption' ).text();
+                    if ( 'undefined' !== typeof td_current_caption ) {
                         return td_current_caption;
                     } else {
                         return '';
@@ -2326,41 +2499,40 @@ function td_modal_image() {
             zoom: {
                 enabled: true,
                 duration: 300,
-                opener: function(element) {
-                    return element.find("img");
+                opener: function( element ) {
+                    return element.find( 'img' );
                 }
             },
             callbacks: {
-                change: function(item) {
-                    td_modal_image_last_el = item.el;
-                    td_util.scroll_into_view(item.el);
+                change: function( item ) {
+                    tdModalImageLastEl = item.el;
+                    tdUtil.scrollIntoView( item.el );
                 },
                 beforeClose: function() {
-                    td_util.scroll_into_view(td_modal_image_last_el);
+                    tdUtil.scrollIntoView( tdModalImageLastEl );
                 }
-
             }
         });
 
 
 
-        jQuery('.gallery').magnificPopup({
-            type:'image',
-            delegate: ".gallery-icon > a",
-            gallery:{
-                enabled:true,
-                tPrev: td_util.get_backend_var('td_magnific_popup_translation_tPrev'), // Alt text on left arrow
-                tNext: td_util.get_backend_var('td_magnific_popup_translation_tNext'), // Alt text on right arrow
-                tCounter: td_util.get_backend_var('td_magnific_popup_translation_tCounter') // Markup for "1 of 7" counter
+        jQuery( '.gallery' ).magnificPopup({
+            type: 'image',
+            delegate: '.gallery-icon > a',
+            gallery: {
+                enabled: true,
+                tPrev: tdUtil.getBackendVar( 'td_magnific_popup_translation_tPrev' ), // Alt text on left arrow
+                tNext: tdUtil.getBackendVar( 'td_magnific_popup_translation_tNext' ), // Alt text on right arrow
+                tCounter: tdUtil.getBackendVar( 'td_magnific_popup_translation_tCounter' ) // Markup for "1 of 7" counter
             },
             ajax: {
-                tError: td_util.get_backend_var('td_magnific_popup_translation_ajax_tError')
+                tError: tdUtil.getBackendVar( 'td_magnific_popup_translation_ajax_tError' )
             },
             image: {
-                tError: td_util.get_backend_var('td_magnific_popup_translation_image_tError'),
-                titleSrc: function(item) {//console.log(item.el);
-                    var td_current_caption = jQuery(item.el).data('caption');
-                    if (typeof td_current_caption != "undefined") {
+                tError: tdUtil.getBackendVar( 'td_magnific_popup_translation_image_tError' ),
+                titleSrc: function( item ) {//console.log(item.el);
+                    var td_current_caption = jQuery( item.el ).data( 'caption' );
+                    if ( 'undefined' !== typeof td_current_caption ) {
                         return td_current_caption;
                     } else {
                         return '';
@@ -2370,57 +2542,758 @@ function td_modal_image() {
             zoom: {
                 enabled: true,
                 duration: 300,
-                opener: function(element) {
-                    return element.find("img");
+                opener: function( element ) {
+                    return element.find( 'img' );
                 }
             },
             callbacks: {
-                change: function(item) {
-                    td_modal_image_last_el = item.el;
-                    td_util.scroll_into_view(item.el);
+                change: function( item ) {
+                    tdModalImageLastEl = item.el;
+                    tdUtil.scrollIntoView( item.el );
                 },
                 beforeClose: function() {
-                    td_util.scroll_into_view(td_modal_image_last_el);
+                    tdUtil.scrollIntoView( tdModalImageLastEl );
                 }
-
             }
         });
-
-
     }
-
 } //end modal
+/**
+ * tdBlocks.js
+ * v3.0  5 August 2015
+ * Converted to WP JS standards + jsHint
+ */
 
-// minimized js - made by tagDiv -
-jQuery().ready(function(){td_on_ready_ajax_blocks()});
-function td_on_ready_ajax_blocks(){function b(a){1==c&&a.target==d?window.location=a.target:(c=!0,d=a.target,a.preventDefault(),setTimeout(function(){c=!1},300),e.call(jQuery(this),a))}function e(a){a=jQuery(this).data("td_block_id");jQuery(".mega-menu-sub-cat-"+a).removeClass("cur-sub-cat");jQuery(this).addClass("cur-sub-cat");a=td_getBlockObjById(a);a.td_filter_value=jQuery(this).data("td_filter_value");a.td_current_page=1;td_ajax_do_block_request(a,"mega_menu")}jQuery(".td-ajax-next-page").click(function(a){a.preventDefault();
-a=td_getBlockObjById(jQuery(this).data("td_block_id"));jQuery(this).hasClass("ajax-page-disabled")||!0===a.is_ajax_running||(a.is_ajax_running=!0,a.td_current_page++,td_ajax_do_block_request(a,"next"))});jQuery(".td-ajax-prev-page").click(function(a){a.preventDefault();a=td_getBlockObjById(jQuery(this).data("td_block_id"));jQuery(this).hasClass("ajax-page-disabled")||!0===a.is_ajax_running||(a.is_ajax_running=!0,a.td_current_page--,td_ajax_do_block_request(a,"back"))});jQuery(".td_ajax_load_more").click(function(a){a.preventDefault();
-jQuery(this).hasClass("ajax-page-disabled")||(a=td_getBlockObjById(jQuery(this).data("td_block_id")),a.td_current_page++,td_ajax_do_block_request(a,"load_more"),a.max_num_pages<=a.td_current_page&&jQuery(this).addClass("ajax-page-disabled"))});td_detect.is_mobile_device?jQuery(".td-pulldown-filter-display-option").click(function(){var a=jQuery(this).data("td_block_id");jQuery("#td_pulldown_"+a).addClass("td-pulldown-filter-list-open");a=jQuery("#td_pulldown_"+a+"_list");a.removeClass("fadeOut");a.addClass("animated fadeIn")}):
-jQuery(".td-pulldown-filter-display-option").hover(function(){var a=jQuery(this).data("td_block_id");jQuery("#td_pulldown_"+a).addClass("td-pulldown-filter-list-open");a=jQuery("#td_pulldown_"+a+"_list");a.removeClass("fadeOut");a.addClass("animated fadeIn");a.css("visibility","visible")},function(){var a=jQuery(this).data("td_block_id");jQuery("#td_pulldown_"+a).removeClass("td-pulldown-filter-list-open")});jQuery(".td-pulldown-filter-link").click(function(a){a.preventDefault();var c=jQuery(this).data("td_block_id");
-jQuery("#"+c).find(".iosSlider").iosSlider("destroy");var b=td_getBlockObjById(c);b.td_filter_value=jQuery(this).data("td_filter_value");b.td_filter_ui_uid=jQuery(this).attr("id");b.td_current_page=1;td_pull_down_filter_change_value(b.id,'<span>Loading... </span><i class="td-icon-menu-down"></i>');jQuery("#td_pulldown_"+c).removeClass("td-pulldown-filter-list-open");td_ajax_do_block_request(b,"pull_down");td_detect.is_mobile_device&&stopBubble(a)});jQuery(".td-related-title a").click(function(a){a.preventDefault();
-jQuery(".td-related-title").children("a").removeClass("td-cur-simple-item");jQuery(this).addClass("td-cur-simple-item");a=jQuery(this).data("td_block_id");a=td_getBlockObjById(a);a.td_filter_value=jQuery(this).data("td_filter_value");a.td_current_page=1;td_ajax_do_block_request(a,"pull_down")});var c=!1,d="";td_detect.is_touch_device?(jQuery(".block-mega-child-cats a").click(b,!1),jQuery(".block-mega-child-cats a").each(function(a,c){c.addEventListener("touchend",b,!1)})):jQuery(".block-mega-child-cats a").hover(e,
-function(a){});jQuery(".td-subcat-item a").click(function(a){a.preventDefault();jQuery("."+jQuery(this).data("td_block_id")+"_rand").find(".td-cur-simple-item").removeClass("td-cur-simple-item");jQuery(this).addClass("td-cur-simple-item");a=td_getBlockObjById(jQuery(this).data("td_block_id"));jQuery(this).hasClass("ajax-page-disabled")||!0===a.is_ajax_running||(a.is_ajax_running=!0,a.td_filter_value=jQuery(this).data("td_filter_value"),a.td_current_page=1,td_ajax_do_block_request(a,"pull_down"))})}
-function td_pull_down_filter_change_value(b,e){jQuery("#td-pulldown-"+b+"-val").html(e)}
-function td_ajax_do_block_request(b,e){var c=JSON.stringify(b);if(td_local_cache.exist(c))return td_block_ajax_loading_start(b,!0,e),td_ajax_block_process_response(td_local_cache.get(c),e),"cache_hit";td_block_ajax_loading_start(b,!1,e);jQuery.ajax({type:"POST",url:td_ajax_url,cache:!0,data:{action:"td_ajax_block",td_atts:b.atts,td_block_id:b.id,td_column_number:b.td_column_number,td_current_page:b.td_current_page,block_type:b.block_type,td_filter_value:b.td_filter_value,td_filter_ui_uid:b.td_filter_ui_uid,
-td_user_action:b.td_user_action},success:function(b,a,f){td_local_cache.set(c,b);td_ajax_block_process_response(b,e)},error:function(b,a,c){}})}
-function td_ajax_block_process_response(b,e){var c=jQuery.parseJSON(b);c.td_filter_ui_uid&&td_pull_down_filter_change_value(c.td_block_id,"<span>"+jQuery("#"+c.td_filter_ui_uid).html()+' </span><i class="td-icon-menu-down"></i>');if("load_more"==e||"infinite_load"==e){for(var d=0;d<td_smart_sidebar.items.length;d++)"case_3_bottom_of_content"==td_smart_sidebar.items[d].sidebar_state&&(td_smart_sidebar.items[d].sidebar_state="case_1_fixed_down");jQuery(c.td_data).appendTo("#"+c.td_block_id)}else jQuery("#"+
-c.td_block_id).html(c.td_data);!0===c.td_hide_prev?jQuery("#prev-page-"+c.td_block_id).addClass("ajax-page-disabled"):jQuery("#prev-page-"+c.td_block_id).removeClass("ajax-page-disabled");!0===c.td_hide_next?jQuery("#next-page-"+c.td_block_id).addClass("ajax-page-disabled"):jQuery("#next-page-"+c.td_block_id).removeClass("ajax-page-disabled");d=td_getBlockObjById(c.td_block_id);"slide"===d.block_type&&jQuery("#"+c.td_block_id+" .slide-wrap-active-first").addClass("slide-wrap-active");d.is_ajax_running=
-!1;td_block_ajax_loading_end(c,d,e)}
-function td_block_ajax_loading_start(b,e,c){var d=jQuery("#"+b.id);jQuery(".td-loader-gif").remove();jQuery("#"+b.id).removeClass("fadeInRight fadeInLeft fadeInDown fadeInUp animated_xlong");d.addClass("td_block_inner_overflow");var a=d.height();d.css("height",a);!0!==e&&("load_more"==c?(d.parent().append('<div class="td-loader-gif td-loader-gif-bottom td-loader-animation-start"></div>'),td_loading_box.init(b.header_color?b.header_color:tds_theme_color_site_wide),setTimeout(function(){jQuery(".td-loader-gif").removeClass("td-loader-animation-start");
-jQuery(".td-loader-gif").addClass("td-loader-animation-mid")},50)):"infinite_load"!=c&&(d.parent().append('<div class="td-loader-gif td-loader-animation-start"></div>'),td_loading_box.init(b.header_color?b.header_color:tds_theme_color_site_wide),setTimeout(function(){jQuery(".td-loader-gif").removeClass("td-loader-animation-start");jQuery(".td-loader-gif").addClass("td-loader-animation-mid")},50),d.addClass("animated_long fadeOut_to_1")))}
-function td_block_ajax_loading_end(b,e,c){jQuery(".td-loader-gif").removeClass("td-loader-animation-mid");jQuery(".td-loader-gif").addClass("td-loader-animation-end");setTimeout(function(){jQuery(".td-loader-gif").remove();td_loading_box.stop()},400);var d=jQuery("#"+e.id);d.removeClass("animated_long fadeOut_to_1");var a;"undefined"!==typeof window.td_animation_stack&&!0===window.td_animation_stack.activated&&(a=window.td_animation_stack.SORTED_METHOD.sort_left_to_right);switch(c){case "next":d.addClass("animated_xlong fadeInRight");
-void 0!==a&&(a=window.td_animation_stack.SORTED_METHOD.sort_right_to_left);break;case "back":d.addClass("animated_xlong fadeInLeft");break;case "pull_down":d.addClass("animated_xlong fadeInDown");break;case "mega_menu":d.addClass("animated_xlong fadeInUp");break;case "infinite_load":setTimeout(function(){td_infinite_loader.compute_top_distances();""!=b.td_data&&td_infinite_loader.enable_is_visible_callback(e.id)},500),setTimeout(function(){td_infinite_loader.compute_top_distances()},1E3),setTimeout(function(){td_infinite_loader.compute_top_distances()},
-1500)}setTimeout(function(){jQuery(".td_block_inner_overflow").removeClass("td_block_inner_overflow");d.css("height","auto");td_smart_sidebar.compute()},200);setTimeout(function(){td_smart_sidebar.compute()},500);void 0!==a&&setTimeout(function(){window.td_animation_stack.check_for_new_items("#"+e.id+" .td-animation-stack",a,!0)},200)}function td_getBlockIndex(b){var e=0,c=0;jQuery.each(td_blocks,function(d,a){if(a.id===b)return c=e,!1;e++});return c}
-function td_getBlockObjById(b){return td_blocks[td_getBlockIndex(b)]};
+/* global jQuery:false */
+/* global td_ajax_url:false */
+/* global tds_theme_color_site_wide:false */
 
-// end minimized
+
+
+/* global tdSmartSidebar:{} */
+/* global tdAnimationStack:{} */
+/* global tdUtil:false */                   //done
+/* global tdLoadingBox:false */             //done
+/* global tdInfiniteLoader:false */         //done
+/* global tdBlocksArray:false */            //done
+/* global tdDetect:false */                 //done
+/* global tdLocalCache:false */             //done
+
+var tdBlocks = {};
+
+( function() {
+    "use strict";
+
+    /*  ----------------------------------------------------------------------------
+     On load
+     */
+    jQuery().ready( function() {
+        tdOnReadyAjaxBlocks();
+    });
+
+
+
+
+
+
+    function tdOnReadyAjaxBlocks() {
+
+
+        /*  ----------------------------------------------------------------------------
+            AJAX pagination next
+         */
+        jQuery(".td-ajax-next-page").click( function(event) {
+            event.preventDefault();
+
+            var currentBlockObj = tdBlocks.tdGetBlockObjById(jQuery(this).data('td_block_id'));
+
+            if ( jQuery(this).hasClass('ajax-page-disabled') || true === currentBlockObj.is_ajax_running ) {
+                return;
+            }
+
+            currentBlockObj.is_ajax_running = true; // ajax is running and we're wayting for a reply from server
+
+            currentBlockObj.td_current_page++;
+            tdBlocks.tdAjaxDoBlockRequest(currentBlockObj, 'next');
+        });
+
+
+        /*  ----------------------------------------------------------------------------
+            AJAX pagination prev
+         */
+        jQuery(".td-ajax-prev-page").click( function(event) {
+            event.preventDefault();
+
+            var currentBlockObj = tdBlocks.tdGetBlockObjById(jQuery(this).data('td_block_id'));
+
+            if ( jQuery(this).hasClass('ajax-page-disabled') || true === currentBlockObj.is_ajax_running ) {
+                return;
+            }
+
+            currentBlockObj.is_ajax_running = true; // ajax is running and we're wayting for a reply from server
+
+            currentBlockObj.td_current_page--;
+            tdBlocks.tdAjaxDoBlockRequest(currentBlockObj, 'back');
+        });
+
+
+        /*  ----------------------------------------------------------------------------
+            AJAX pagination load more
+         */
+        jQuery(".td_ajax_load_more_js").click( function(event) {
+            event.preventDefault();
+            if ( jQuery(this).hasClass('ajax-page-disabled') ) {
+                return;
+            }
+
+            jQuery(this).css('visibility', 'hidden');
+
+            var currentBlockObj = tdBlocks.tdGetBlockObjById(jQuery(this).data('td_block_id'));
+
+            currentBlockObj.td_current_page++;
+            tdBlocks.tdAjaxDoBlockRequest(currentBlockObj, 'load_more');
+
+            // load_more is hidden if there are no more posts
+            if ( currentBlockObj.max_num_pages <= currentBlockObj.td_current_page ) {
+                jQuery(this).addClass('ajax-page-disabled');
+            }
+        });
+
+
+
+        /*  ----------------------------------------------------------------------------
+            pull down open/close //on mobile devices use click event
+         */
+        if ( tdDetect.isMobileDevice ) {
+
+            jQuery(".td-pulldown-filter-display-option").click( function () {
+                var currentBlockUid = jQuery(this).data('td_block_id');
+                jQuery("#td_pulldown_" + currentBlockUid).addClass("td-pulldown-filter-list-open");
+
+                //animate the list
+                var tdPullDownList = jQuery("#td_pulldown_" + currentBlockUid + "_list");
+                tdPullDownList.removeClass('fadeOut');
+                tdPullDownList.addClass('td_animated td_fadeIn'); //used for opacity animation
+                //tdPullDownList.css('visibility', 'visible');
+            });
+
+            //on desktop devices use hover event
+        } else {
+
+            /**
+             * (hover) open and close the drop down menu (on blocks on hover)
+             */
+            jQuery(".td-pulldown-filter-display-option").hover( function () {
+                    // hover in
+                    var current_block_uid = jQuery(this).data('td_block_id');
+                    jQuery("#td_pulldown_" + current_block_uid).addClass("td-pulldown-filter-list-open");
+
+                    //animate the list
+                    var tdPullDownList = jQuery("#td_pulldown_" + current_block_uid + "_list");
+                    tdPullDownList.removeClass('fadeOut');
+                    tdPullDownList.addClass('td_animated td_fadeIn'); //used for opacity animation
+                    tdPullDownList.css('visibility', 'visible');
+
+                },
+                function () {
+                    // hover out
+                    var currentBlockUid = jQuery(this).data('td_block_id');
+                    jQuery("#td_pulldown_" + currentBlockUid).removeClass("td-pulldown-filter-list-open");
+
+
+                }
+            );
+        }
+
+
+
+        /*  ----------------------------------------------------------------------------
+            click on related posts in single posts
+         */
+        jQuery('.td-related-title a').click( function(event) {
+            event.preventDefault();
+
+            jQuery('.td-related-title').children('a').removeClass('td-cur-simple-item');
+            jQuery(this).addClass('td-cur-simple-item');
+
+            //get the current block id
+            var currentBlockUid = jQuery(this).data('td_block_id');
+
+            //get current block
+            var currentBlockObj = tdBlocks.tdGetBlockObjById(currentBlockUid);
+
+            //change current filter value - the filter type is readed by td_ajax from the atts of the shortcode
+            currentBlockObj.td_filter_value = jQuery(this).data('td_filter_value');
+
+            currentBlockObj.td_current_page = 1; //reset the page
+
+            //do request
+            tdBlocks.tdAjaxDoBlockRequest(currentBlockObj, 'pull_down');
+        });
+
+
+
+
+        /*  ----------------------------------------------------------------------------
+            MEGA MENU
+         */
+        // Used to simulate on mobile doubleclick at 300ms @see the function tdAjaxSubCatMegaRun()
+        var tdSubCatMegaRunLink = false;   // run the link if this is true, instead of loading via ajax the mega menu content
+        var tdSubCatMegaLastTarget = '';   // last event target - to make sure the double click is on the same element
+
+
+        /**
+         * On touch screens check for double click and redirect to the subcategory page if that's the case,
+         * if not double click... do the normal ajax request
+         * @param event
+         * @param jQueryObject
+         */
+        function tdAjaxSubCatMegaRunOnTouch(event, jQueryObject) {
+            if ( (true === tdSubCatMegaRunLink) && (event.target === tdSubCatMegaLastTarget) ) {
+                window.location = event.target;
+            } else {
+                tdSubCatMegaRunLink = true;
+                tdSubCatMegaLastTarget = event.target;
+                event.preventDefault();
+
+                setTimeout( function() {
+                    tdSubCatMegaRunLink = false;
+                }, 300);
+
+                tdAjaxSubCatMegaRun(event, jQueryObject);
+            }
+        }
+
+        /**
+         * this one makes the ajax request for mega menu filter
+         * hover or click on mega menu subcategories
+         */
+        function tdAjaxSubCatMegaRun(event, jQueryObject) {
+            /* global this:false */
+            //get the current block id
+            var currentBlockUid = jQueryObject.data('td_block_id');
+            var currentBlockObj = tdBlocks.tdGetBlockObjById(currentBlockUid);
+
+            // on mega menu, we allow parallel ajax request for better UI. We set is_ajax_running so that the preloader cache will work as expected
+            currentBlockObj.is_ajax_running = true;
+
+            //switch cur cat
+            jQuery('.mega-menu-sub-cat-' + currentBlockUid).removeClass('cur-sub-cat');
+            jQueryObject.addClass('cur-sub-cat');
+
+            //get current block
+
+
+            //change current filter value - the filter type is readed by td_ajax from the atts of the shortcode
+            currentBlockObj.td_filter_value = jQueryObject.data('td_filter_value');
+
+            currentBlockObj.td_current_page = 1; //reset the page
+
+            //do request
+            tdBlocks.tdAjaxDoBlockRequest(currentBlockObj, 'mega_menu');
+        }
+
+
+        /**
+         * Mega menu filters
+         */
+        //on touch devices use click
+        // @todo needs testing to determine why we need .click and touchend?
+        // @todo trebuie refactorizata sa transmita jQuery(this) de aici la functii
+        if ( tdDetect.isTouchDevice ) {
+            jQuery(".block-mega-child-cats a")
+                .click( function(event) {
+                    tdAjaxSubCatMegaRunOnTouch(event, jQuery(this));
+                }, false)
+                .each(function(index, element) {
+                    element.addEventListener('touchend', function(event) {
+                        tdAjaxSubCatMegaRunOnTouch(event, jQuery(this));
+                    }, false);
+                });
+
+        } else {
+            jQuery(".block-mega-child-cats a").hover( function(event) {
+                tdAjaxSubCatMegaRun(event, jQuery(this));
+            }, function (event) {} );
+        }
+
+
+
+        /*  ----------------------------------------------------------------------------
+            Subcategories
+         */
+        /**
+         * Newspaper ONLY
+         * used by the drop down ajax filter on blocks
+         */
+        jQuery('.td-subcat-item a').click( function(event) {
+            event.preventDefault();
+
+            var currentBlockObj = tdBlocks.tdGetBlockObjById(jQuery(this).data('td_block_id'));
+
+            //if ( jQuery(this).hasClass('ajax-page-disabled') || true === currentBlockObj.is_ajax_running ) {
+            //    return;
+            //}
+            //
+            if ( true === currentBlockObj.is_ajax_running ) {
+                return;
+            }
+
+
+            currentBlockObj.is_ajax_running = true; // ajax is running and we're waiting for a reply from server
+
+
+            jQuery('.' + jQuery(this).data('td_block_id') + '_rand').find('.td-cur-simple-item').removeClass('td-cur-simple-item');
+            jQuery(this).addClass('td-cur-simple-item');
+
+
+            //change current filter value - the filter type is read by td_ajax from the atts of the shortcode
+            currentBlockObj.td_filter_value = jQuery(this).data('td_filter_value');
+
+
+
+            //reset the page
+            currentBlockObj.td_current_page = 1;
+
+            // we ues 'pull_down' just for the 'td_animated_xlong td_fadeInDown' effect
+            tdBlocks.tdAjaxDoBlockRequest(currentBlockObj, 'pull_down');
+        });
+
+
+        /**
+         * Newsmag ONLY
+         * when a item is from the dropdown menu is clicked (on all the blocks)
+         * @todo asta face ceva cu ios slider-ul in plus fata de aia de pe Newspaper
+         */
+        jQuery(".td-pulldown-filter-link").click( function(event) {
+            event.preventDefault();
+
+
+
+            //get the current block id
+            var currentBlockUid = jQuery(this).data('td_block_id');
+
+            //destroy any iossliders to avoid bugs
+            jQuery('#' + currentBlockUid).find('.iosSlider').iosSlider('destroy');
+
+            //get current block
+            var currentBlockObj = tdBlocks.tdGetBlockObjById(currentBlockUid);
+            if ( true === currentBlockObj.is_ajax_running ) {
+                return;
+            }
+
+            currentBlockObj.is_ajax_running = true;
+            //change current filter value - the filter type is readed by td_ajax from the atts of the shortcode
+            currentBlockObj.td_filter_value = jQuery(this).data('td_filter_value');
+
+
+            currentBlockObj.td_current_page = 1;
+
+
+            //put loading... text and hide the dropdown @todo - tranlation pt loading
+            //tdBlocks.tdPullDownFilterChangeValue(currentBlockObj.id, '<span>Loading... </span><i class="td-icon-menu-down"></i>');
+            tdBlocks.tdPullDownFilterChangeValue(currentBlockUid, '<span>' + jQuery(this).html() + ' </span><i class="td-icon-menu-down"></i>');
+
+
+            //hide the dropdown
+            jQuery('#td_pulldown_' + currentBlockUid).removeClass("td-pulldown-filter-list-open");
+
+
+            //do request
+            tdBlocks.tdAjaxDoBlockRequest(currentBlockObj, 'pull_down');
+
+
+            //on mobile devices stop event propagation
+            if ( tdDetect.isMobileDevice ) {
+                tdUtil.stopBubble(event);
+            }
+
+        });
+    } // end tdOnReadyAjaxBlocks()
+
+
+
+
+
+
+    tdBlocks = {
+
+
+        /**
+         * Newsmag ONLY change the pull down filter value to loading... and to the current category after an ajax reply
+         * is received
+         * @param td_block_uid
+         * @param td_text
+         */
+        tdPullDownFilterChangeValue: function(td_block_uid, td_text) {
+            jQuery('#td-pulldown-' + td_block_uid + '-val').html(td_text);
+        },
+
+
+
+        /**
+         * makes a ajax block request
+         * @param current_block_obj
+         * @param td_user_action - load more or infinite loader (used by the animation)
+         * @returns {string}
+         */
+        tdAjaxDoBlockRequest: function(current_block_obj, td_user_action) {
+            //search the cache
+            var currentBlockObjSignature = JSON.stringify(current_block_obj);
+            if ( tdLocalCache.exist(currentBlockObjSignature) ) {
+                //do the animation with cache hit = true
+                tdBlocks.tdBlockAjaxLoadingStart(current_block_obj, true, td_user_action);
+                tdBlocks.tdAjaxBlockProcessResponse(tdLocalCache.get(currentBlockObjSignature), td_user_action);
+                return 'cache_hit'; //cache HIT
+            }
+
+
+            //cache miss - we make a full request! - cache hit - false
+            tdBlocks.tdBlockAjaxLoadingStart(current_block_obj, false, td_user_action);
+//return;
+            var requestData = {
+                action: 'td_ajax_block',
+                td_atts: current_block_obj.atts,
+                td_block_id:current_block_obj.id,
+                td_column_number:current_block_obj.td_column_number,
+                td_current_page:current_block_obj.td_current_page,
+                block_type:current_block_obj.block_type,
+                td_filter_value:current_block_obj.td_filter_value,
+                td_user_action:current_block_obj.td_user_action
+            };
+
+            //console.log('tdAjaxDoBlockRequest:');
+            //console.log(requestData);
+
+            jQuery.ajax({
+                type: 'POST',
+                url: td_ajax_url,
+                cache:true,
+                data: requestData,
+                success: function(data, textStatus, XMLHttpRequest) {
+
+                    tdLocalCache.set(currentBlockObjSignature, data);
+                    tdBlocks.tdAjaxBlockProcessResponse(data, td_user_action);
+                },
+                error: function(MLHttpRequest, textStatus, errorThrown) {
+                    //console.log(errorThrown);
+                }
+            });
+        },
+
+
+        /**
+         * process the response from the ajax query (it also processes the responses stored in the cache)
+         * @param data
+         * @param td_user_action - load more or infinite loader (used by the animation)
+         */
+        tdAjaxBlockProcessResponse: function(data, td_user_action) {
+
+            //read the server response
+            var tdReplyObj = jQuery.parseJSON(data); //get the data object
+
+            //console.log('tdAjaxBlockProcessResponse:');
+            //console.log(tdReplyObj);
+            /*
+             td_data_object.td_block_id
+             td_data_object.td_data
+             td_data_object.td_cur_cat
+             */
+
+
+
+
+
+
+            //load the content (in place or append)
+            if ( 'load_more' === td_user_action || 'infinite_load' === td_user_action ) {
+
+                // fix needed to keep sidebars fixed down when they are bottom of the content and the content grows up
+                for ( var i = 0; i < tdSmartSidebar.items.length; i++ ) {
+                    if ( 'case_3_bottom_of_content' === tdSmartSidebar.items[ i ].sidebar_state ) {
+                        tdSmartSidebar.items[ i ].sidebar_state = 'case_1_fixed_down';
+                    }
+                }
+
+                jQuery(tdReplyObj.td_data).appendTo('#' + tdReplyObj.td_block_id);
+                //jQuery(tdReplyObj.td_data).addClass('td_animated_xxlong').appendTo('#' + tdReplyObj.td_block_id).addClass('td_fadeIn');
+                //jQuery('#' + tdReplyObj.td_block_id).append(tdReplyObj.td_data); //append
+            } else {
+                jQuery('#' + tdReplyObj.td_block_id).html(tdReplyObj.td_data); //in place
+            }
+
+
+            //hide or show prev
+            if ( true === tdReplyObj.td_hide_prev ) {
+                jQuery('#prev-page-' + tdReplyObj.td_block_id).addClass('ajax-page-disabled');
+            } else {
+                jQuery('#prev-page-' + tdReplyObj.td_block_id).removeClass('ajax-page-disabled');
+            }
+
+            //hide or show next
+            if ( true === tdReplyObj.td_hide_next ) {
+                jQuery('#next-page-' + tdReplyObj.td_block_id).addClass('ajax-page-disabled');
+            } else {
+                jQuery('#next-page-' + tdReplyObj.td_block_id).removeClass('ajax-page-disabled');
+            }
+
+
+            var  currentBlockObj = tdBlocks.tdGetBlockObjById(tdReplyObj.td_block_id);
+            if ( 'slide' === currentBlockObj.block_type ) {
+                //make the first slide active (to have caption)
+                jQuery('#' + tdReplyObj.td_block_id + ' .slide-wrap-active-first').addClass('slide-wrap-active');
+            }
+
+            currentBlockObj.is_ajax_running = false; // finish the loading for this block
+
+
+            //loading effects
+            tdBlocks.tdBlockAjaxLoadingEnd(tdReplyObj, currentBlockObj, td_user_action);   //td_user_action - load more or infinite loader (used by the animation)
+        },
+
+
+
+        /**
+         * loading start
+         * @param current_block_obj
+         * @param cache_hit boolean - is true if we have a cache hit
+         * @param td_user_action - the request type / infinite_load ?
+         */
+        tdBlockAjaxLoadingStart: function(current_block_obj, cache_hit, td_user_action) {
+
+            //get the element
+            var elCurTdBlockInner = jQuery('#' + current_block_obj.id);
+
+            //remove any remaining loaders
+            jQuery('.td-loader-gif').remove();
+
+            //remove animation classes
+            elCurTdBlockInner.removeClass('td_fadeInRight td_fadeInLeft td_fadeInDown td_fadeInUp td_animated_xlong');
+
+            elCurTdBlockInner.addClass('td_block_inner_overflow');
+            //auto height => fixed height
+            var tdTmpBlockHeight = elCurTdBlockInner.height();
+            elCurTdBlockInner.css('height', tdTmpBlockHeight);
+
+
+            //show the loader only if we have a cache MISS
+            if ( false === cache_hit ) {
+                if ( 'load_more' === td_user_action) {
+                    // on load more
+                    elCurTdBlockInner.parent().append('<div class="td-loader-gif td-loader-infinite td-loader-blocks-load-more  td-loader-animation-start"></div>');
+                    tdLoadingBox.init(current_block_obj.header_color ? current_block_obj.header_color : tds_theme_color_site_wide);  //init the loading box
+                    setTimeout(function () {
+                        jQuery('.td-loader-gif')
+                            .removeClass('td-loader-animation-start')
+                            .addClass('td-loader-animation-mid');
+                    }, 50);
+
+                }
+                else if ('infinite_load' === td_user_action) {
+                    // on infinite load
+                    elCurTdBlockInner.parent().append('<div class="td-loader-gif td-loader-infinite td-loader-animation-start"></div>');
+                    tdLoadingBox.init(current_block_obj.header_color ? current_block_obj.header_color : tds_theme_color_site_wide);  //init the loading box
+                    setTimeout(function () {
+                        jQuery('.td-loader-gif')
+                            .removeClass('td-loader-animation-start')
+                            .addClass('td-loader-animation-mid');
+                    }, 50);
+
+                } else {
+                    /**
+                     * the default animation if the user action is NOT load_more or infinite_load
+                     * infinite load has NO animation !
+                     */
+                    elCurTdBlockInner.parent().append('<div class="td-loader-gif td-loader-animation-start"></div>');
+                    tdLoadingBox.init(current_block_obj.header_color ? current_block_obj.header_color : tds_theme_color_site_wide);         //init the loading box (the parameter is the block title background color or tds_theme_color_site_wide)
+                    setTimeout( function(){
+                        jQuery('.td-loader-gif')
+                            .removeClass('td-loader-animation-start')
+                            .addClass('td-loader-animation-mid');
+                    },50);
+                    elCurTdBlockInner.addClass('td_animated_long td_fadeOut_to_1');
+
+                }
+            } // end cache_hit if
+        },
+
+
+
+        /**
+         * we have a reply from the ajax request
+         * @param td_reply_obj - the reply object that we got from the server, it's useful with infinite load
+         * @param current_block_obj
+         * @param td_user_action - load more or infinite loader (used by the animation)
+         */
+        tdBlockAjaxLoadingEnd: function(td_reply_obj, current_block_obj, td_user_action) {
+
+            //jQuery('.td-loader-gif').remove();
+            // remove the loader
+            jQuery('.td-loader-gif')
+                .removeClass('td-loader-animation-mid')
+                .addClass('td-loader-animation-end');
+            setTimeout( function() {
+                jQuery('.td-loader-gif').remove();
+                //stop the loading box
+                tdLoadingBox.stop();
+            },400);
+
+
+            //get the current inner
+            var elCurTdBlockInner = jQuery('#' + current_block_obj.id);
+
+            elCurTdBlockInner.removeClass('td_animated_long td_fadeOut_to_1');
+
+
+            // by default, the sort method used to animate the ajax response is left to the right
+
+            var tdAnimationStackSortType;
+
+            if ( true === tdAnimationStack.activated ) {
+                tdAnimationStackSortType = tdAnimationStack.SORTED_METHOD.sort_left_to_right;
+            }
+
+            switch(td_user_action) {
+                case 'next':
+                    elCurTdBlockInner.addClass('td_animated_xlong td_fadeInRight');
+
+                    // the default sort method is modified to work from right to the left
+                    if ( undefined !== tdAnimationStackSortType ) {
+                        tdAnimationStackSortType = tdAnimationStack.SORTED_METHOD.sort_right_to_left;
+                    }
+
+                    break;
+                case 'back':
+                    elCurTdBlockInner.addClass('td_animated_xlong td_fadeInLeft');
+                    break;
+
+                case 'pull_down':
+                    elCurTdBlockInner.addClass('td_animated_xlong td_fadeInDown');
+                    break;
+
+                case 'mega_menu':
+                    elCurTdBlockInner.addClass('td_animated_xlong td_fadeInDown');
+                    break;
+
+
+                case 'load_more':
+                    //console.log('.' + current_block_obj.id + '_rand .td_ajax_load_more_js');
+                    setTimeout ( function() {
+                        jQuery('.' + current_block_obj.id + '_rand .td_ajax_load_more_js').css('visibility', 'visible');
+                    }, 500);
+
+                    break;
+                case 'infinite_load':
+                    setTimeout( function() {
+                        //refresh waypoints for infinit scroll tdInfiniteLoader
+                        tdInfiniteLoader.computeTopDistances();
+                        if ( '' !== td_reply_obj.td_data  ) {
+                            tdInfiniteLoader.enable_is_visible_callback(current_block_obj.id);
+                        }
+                    }, 500);
+
+
+                    setTimeout( function() {
+                        tdInfiniteLoader.computeTopDistances();
+                        // load next page only if we have new data coming from the last ajax request
+                    }, 1000);
+
+                    setTimeout( function() {
+                        tdInfiniteLoader.computeTopDistances();
+                    }, 1500);
+                    break;
+
+            }
+
+
+
+            setTimeout( function() {
+                jQuery('.td_block_inner_overflow').removeClass('td_block_inner_overflow');
+                elCurTdBlockInner.css('height', 'auto');
+
+                tdSmartSidebar.compute();
+            },200);
+
+
+
+
+            setTimeout( function () {
+                tdSmartSidebar.compute();
+            }, 500);
+
+
+
+            // the .entry-thumb are searched for in the current block object, sorted and added into the view port array items
+            if ( undefined !== tdAnimationStackSortType ) {
+                setTimeout( function () {
+                    tdAnimationStack.check_for_new_items('#' + current_block_obj.id + ' .td-animation-stack', tdAnimationStackSortType, true);
+                }, 200);
+            }
+        },
+
+        /**
+         * search by block _id
+         * @param myID - block id
+         * @returns {number} the index
+         */
+        tdGetBlockIndex: function(myID) {
+            var cnt = 0;
+            var tmpReturn = 0;
+            jQuery.each(tdBlocksArray, function(index, td_block) {
+                if ( td_block.id === myID ) {
+                    tmpReturn = cnt;
+                    return false; //brake jquery each
+                } else {
+                    cnt++;
+                }
+            });
+            return tmpReturn;
+        },
+
+
+
+        /**
+         * gets the block object using a block ID
+         * @param myID
+         * @returns {*} block object
+         */
+        tdGetBlockObjById: function(myID) {
+            return tdBlocksArray[tdBlocks.tdGetBlockIndex(myID)];
+        }
+
+
+
+
+
+    };  //end tdBlocks
+
+
+
+})();
+
+
+
+
+
+
+
+
+
 
 /*
  td_util.js
  v1.1
  */
 
-"use strict";
+/* global jQuery:{} */
+/* global tdDetect:{} */
+/* global td_ajax_url:string */
+
+/* global td_please_wait:string */
+/* global td_email_user_pass_incorrect:string */
+/* global td_email_user_incorrect:string */
+/* global td_email_incorrect:string */
+
 
 
 /*  ----------------------------------------------------------------------------
@@ -2428,10 +3301,12 @@ function td_getBlockObjById(b){return td_blocks[td_getBlockIndex(b)]};
  */
 jQuery().ready(function() {
 
+    'use strict';
+
     /**
      * Modal window js code
      */
-    jQuery('.td-login-modal-js').magnificPopup({
+    jQuery( '.td-login-modal-js' ).magnificPopup({
         type: 'inline',
         preloader: false,
         focus: '#name',
@@ -2442,9 +3317,7 @@ jQuery().ready(function() {
         callbacks: {
             beforeOpen: function() {
 
-
                 this.st.mainClass = this.st.el.attr('data-effect');
-
 
                 //empty all fields
                 td_modala_empty_all_fields();
@@ -2452,14 +3325,13 @@ jQuery().ready(function() {
                 //empty error display div
                 td_modala_empty_err_div();
 
-                if(jQuery(window).width() < 700) {
+                if( jQuery( window ).width() < 700) {
                     this.st.focus = false;
                 } else {
-                    if (td_detect.is_ie === false) {
+                    if ( false === tdDetect.isIe ) {
                         //do not focus on ie 10
                         this.st.focus = '#login_email';
                     }
-
                 }
             },
 
@@ -2468,17 +3340,16 @@ jQuery().ready(function() {
         }
     });
 
-
     //login
-    jQuery('#login-link').on( "click", function() {
+    jQuery( '#login-link' ).on( 'click', function() {
         //hides or shows the divs with inputs
-        show_hide_content_modala([['#td-login-div', 1], ['#td-register-div', 0], ['#td-forgot-pass-div', 0]]);
+        show_hide_content_modala( [['#td-login-div', 1], ['#td-register-div', 0], ['#td-forgot-pass-div', 0]] );
 
         //moves focus on the tab
-        modala_swich_tabs([['#login-link', 1], ['#register-link', 0]]);
+        modala_swich_tabs( [['#login-link', 1], ['#register-link', 0]] );
 
-        if(jQuery(window).width() > 700 && td_detect.is_ie === false) {
-            jQuery('#login_email').focus();
+        if ( jQuery(window).width() > 700 && tdDetect.isIe === false ) {
+            jQuery( '#login_email' ).focus();
         }
 
         //empty all fields
@@ -2487,27 +3358,29 @@ jQuery().ready(function() {
         //empty error display div
         td_modala_empty_err_div();
     });
+
     //login button
-    jQuery('#login_button').on( "click", function() {
+    jQuery( '#login_button' ).on( 'click', function() {
         handle_login_for_modal_window();
     });
+
     //enter key on #login_pass
-    jQuery('#login_pass').keydown(function(event) {
-        if ((event.which && event.which == 13) || (event.keyCode && event.keyCode == 13)) {
+    jQuery( '#login_pass' ).keydown(function(event) {
+        if ( ( event.which && 13 === event.which ) || ( event.keyCode && 13 === event.keyCode ) ) {
             handle_login_for_modal_window();
         }
     });
 
     //register
-    jQuery('#register-link').on( "click", function() {
+    jQuery( '#register-link' ).on( 'click', function() {
         //hides or shows the divs with inputs
-        show_hide_content_modala([['#td-login-div', 0], ['#td-register-div', 1], ['#td-forgot-pass-div', 0]]);
+        show_hide_content_modala( [['#td-login-div', 0], ['#td-register-div', 1], ['#td-forgot-pass-div', 0]] );
 
         //moves focus on the tab
-        modala_swich_tabs([['#login-link', 0], ['#register-link', 1]]);
+        modala_swich_tabs( [['#login-link', 0], ['#register-link', 1]] );
 
-        if(jQuery(window).width() > 700  && td_detect.is_ie === false) {
-            jQuery('#register_email').focus();
+        if ( jQuery( window ).width() > 700  && false === tdDetect.isIe ) {
+            jQuery( '#register_email' ).focus();
         }
 
         //empty all fields
@@ -2516,27 +3389,29 @@ jQuery().ready(function() {
         //empty error display div
         td_modala_empty_err_div();
     });
+
     //register button
-    jQuery('#register_button').on( "click", function() {
+    jQuery( '#register_button' ).on( 'click', function() {
         handle_register_for_modal_window();
     });
+
     //enter key on #register_user
-    jQuery('#register_user').keydown(function(event) {
-        if ((event.which && event.which == 13) || (event.keyCode && event.keyCode == 13)) {
+    jQuery( '#register_user' ).keydown(function(event) {
+        if ( ( event.which && 13 === event.which ) || ( event.keyCode && 13 === event.keyCode ) ) {
             handle_register_for_modal_window();
         }
     });
 
     //forgot pass
-    jQuery('#forgot-pass-link').on( "click", function() {
+    jQuery( '#forgot-pass-link' ).on( 'click', function() {
         //hides or shows the divs with inputs
-        show_hide_content_modala([['#td-login-div', 0], ['#td-register-div', 0], ['#td-forgot-pass-div', 1]]);
+        show_hide_content_modala( [['#td-login-div', 0], ['#td-register-div', 0], ['#td-forgot-pass-div', 1]] );
 
         //moves focus on the tab
-        modala_swich_tabs([['#login-link', 0], ['#register-link', 0]]);
+        modala_swich_tabs( [['#login-link', 0], ['#register-link', 0]] );
 
-        if(jQuery(window).width() > 700 && td_detect.is_ie === false) {
-            jQuery('#forgot_email').focus();
+        if (jQuery( window ).width() > 700 && false === tdDetect.isIe ) {
+            jQuery( '#forgot_email' ).focus();
         }
 
         //empty all fields
@@ -2545,289 +3420,339 @@ jQuery().ready(function() {
         //empty error display div
         td_modala_empty_err_div();
     });
+
     //forgot button
-    jQuery('#forgot_button').on( "click", function() {
+    jQuery( '#forgot_button' ).on( 'click', function() {
         handle_forgot_password_for_modal_window();
     });
+
     //enter key on #forgot_email
-    jQuery('#forgot_email').keydown(function(event) {
-        if ((event.which && event.which == 13) || (event.keyCode && event.keyCode == 13)) {
+    jQuery( '#forgot_email' ).keydown(function(event) {
+        if ( ( event.which && 13 === event.which ) || ( event.keyCode && 13 === event.keyCode ) ) {
             handle_forgot_password_for_modal_window();
         }
     });
-
-
 });//end jquery ready
 
 
 
 //patern to check emails
-var td_mod_pattern_email = /^[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,}[a-zA-Z0-9]@[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,}[a-z0-9][\.][a-z0-9]{2,4}$/;
+var td_mod_pattern_email = /^[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,}[a-zA-Z0-9]@[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,}[a-z0-9][\.][a-z0-9]{2,4}$/,
+    handle_login_for_modal_window,
+    handle_register_for_modal_window,
+    handle_forgot_password_for_modal_window,
+    show_hide_content_modala,
+    modala_swich_tabs,
+    modala_add_remove_class,
+    td_modala_empty_err_div,
+    td_modala_write_err_div,
+    td_modala_empty_all_fields,
+    td_modala_call_ajax;
 
-/**
- * handle all request made from login tab
- */
-function handle_login_for_modal_window() {
-    var login_email = jQuery('#login_email').val();
-    var login_pass = jQuery('#login_pass').val();
 
-    if(login_email && login_pass){
-        //empty error display div
-        //td_modala_empty_err_div();
+(function(){
 
-        modala_add_remove_class(['.td_display_err', 1, "td_display_msg_ok"]);
-        jQuery('.td_display_err').show();
-        td_modala_write_err_div(td_please_wait);
+    'use strict';
 
-        //call ajax for log in
-        td_modala_call_ajax('td_mod_login', login_email, '', login_pass);
-    } else {
-        jQuery('.td_display_err').show();
-        td_modala_write_err_div(td_email_user_pass_incorrect);
-    }
-}
+    /**
+     * handle all request made from login tab
+     */
+    handle_login_for_modal_window = function() {
+        var login_email = jQuery( '#login_email' ).val();
+        var login_pass = jQuery( '#login_pass' ).val();
 
-/**
- * handle all request made from register tab
- */
-function handle_register_for_modal_window() {
-    var register_email = jQuery('#register_email').val();
-    var register_user = jQuery('#register_user').val();
+        if ( login_email && login_pass ) {
+            //empty error display div
+            //td_modala_empty_err_div();
 
-    if(td_mod_pattern_email.test(register_email) && register_user){
-        //empty error display div
-        //td_modala_empty_err_div();
+            modala_add_remove_class( ['.td_display_err', 1, 'td_display_msg_ok'] );
+            jQuery( '.td_display_err' ).show();
+            td_modala_write_err_div( td_please_wait );
 
-        modala_add_remove_class(['.td_display_err', 1, "td_display_msg_ok"]);
-        jQuery('.td_display_err').show();
-        td_modala_write_err_div(td_please_wait);
-
-        //call ajax
-        td_modala_call_ajax('td_mod_register', register_email, register_user, '');
-    } else {
-        jQuery('.td_display_err').show();
-        td_modala_write_err_div(td_email_user_incorrect);
-    }
-}
-
-/**
- * handle all request made from forgot password tab
- */
-function handle_forgot_password_for_modal_window() {
-    var forgot_email = jQuery('#forgot_email').val();
-
-    if(td_mod_pattern_email.test(forgot_email)){
-        //empty error display div
-        //td_modala_empty_err_div();
-
-        modala_add_remove_class(['.td_display_err', 1, "td_display_msg_ok"]);
-        jQuery('.td_display_err').show();
-        td_modala_write_err_div(td_please_wait);
-
-        //call ajax
-        td_modala_call_ajax('td_mod_remember_pass', forgot_email, '', '');
-    } else {
-        jQuery('.td_display_err').show();
-        td_modala_write_err_div(td_email_incorrect);
-    }
-}
-
-/**
- * swhich the div's acordingly to the user action (Log In, Register, Remember Password)
- *
- * ids_array : array of ids that have to be showed or hidden
- */
-function show_hide_content_modala(ids_array) {
-    var length = ids_array.length;
-
-    for (var i = 0; i < length; i++) {
-        var element_id = ids_array[i][0];
-        var element_visibility = ids_array[i][1];
-
-        if (element_visibility == 1) {
-            jQuery(element_id).removeClass('td-dispaly-none').addClass('td-dispaly-block');
+            //call ajax for log in
+            td_modala_call_ajax( 'td_mod_login', login_email, '', login_pass );
         } else {
-            jQuery(element_id).removeClass('td-dispaly-block').addClass('td-dispaly-none');
+            jQuery( '.td_display_err' ).show();
+            td_modala_write_err_div( td_email_user_pass_incorrect );
         }
-    }
-}
+    };
 
+    /**
+     * handle all request made from register tab
+     */
+    handle_register_for_modal_window = function() {
+        var register_email = jQuery( '#register_email' ).val();
+        var register_user = jQuery( '#register_user' ).val();
 
-/**
- * swhich the tab's acordingly to the user action (Log In, Register, Remember Password)
- *
- * ids_array : array of ids that have to be focus on or unfocus
- */
-function modala_swich_tabs(ids_array) {
-    var length = ids_array.length;
+        if ( td_mod_pattern_email.test( register_email ) && register_user ) {
+            //empty error display div
+            //td_modala_empty_err_div();
 
-    for (var i = 0; i < length; i++) {
-        var element_id = ids_array[i][0];
-        var element_visibility = ids_array[i][1];
+            modala_add_remove_class( ['.td_display_err', 1, 'td_display_msg_ok'] );
+            jQuery( '.td_display_err' ).show();
+            td_modala_write_err_div( td_please_wait );
 
-        if (element_visibility == 1) {
-            jQuery(element_id).addClass('td_login_tab_focus');
+            //call ajax
+            td_modala_call_ajax( 'td_mod_register', register_email, register_user, '' );
         } else {
-            jQuery(element_id).removeClass('td_login_tab_focus');
+            jQuery( '.td_display_err' ).show();
+            td_modala_write_err_div( td_email_user_incorrect );
         }
-    }
-}
+    };
+
+    /**
+     * handle all request made from forgot password tab
+     */
+    handle_forgot_password_for_modal_window = function() {
+        var forgot_email = jQuery( '#forgot_email' ).val();
+
+        if ( td_mod_pattern_email.test( forgot_email ) ){
+            //empty error display div
+            //td_modala_empty_err_div();
+
+            modala_add_remove_class( ['.td_display_err', 1, 'td_display_msg_ok'] );
+            jQuery( '.td_display_err' ).show();
+            td_modala_write_err_div( td_please_wait );
+
+            //call ajax
+            td_modala_call_ajax( 'td_mod_remember_pass', forgot_email, '', '' );
+        } else {
+            jQuery( '.td_display_err' ).show();
+            td_modala_write_err_div( td_email_incorrect );
+        }
+    };
 
 
-/**
- * adds or remove a class from an html object
- *
- * param : array with object identifier (id - # or class - .)
- * ex: ['.class_indetifier', 1, 'class_to_add'] or ['.class_indetifier', 0, 'class_to_remove']
- */
-function modala_add_remove_class(param) {
+    /**
+     * swhich the div's acordingly to the user action (Log In, Register, Remember Password)
+     *
+     * ids_array : array of ids that have to be showed or hidden
+     */
+    show_hide_content_modala = function( ids_array ) {
+        var length = ids_array.length;
 
-    //add class
-    if (param[1] == 1) {
-        jQuery(param[0]).addClass(param[2]);
+        for ( var i = 0; i < length; i++ ) {
+            var element_id = ids_array[ i ][0];
+            var element_visibility = ids_array[ i ][1];
 
-        //remove class
-    } else {
-        jQuery(param[0]).removeClass(param[2]);
-    }
-}
-
-
-/**
- * empty the error div
- */
-function td_modala_empty_err_div() {
-    jQuery('.td_display_err').html('');
-    jQuery('.td_display_err').hide();
-}
-
-
-/**
- * write text to error div
- */
-function td_modala_write_err_div(message) {
-    jQuery('.td_display_err').html(message);
-}
-
-/**
- * empty all fields in modal window
- */
-function td_modala_empty_all_fields() {
-    //login fields
-    jQuery('#login_email').val('');
-    jQuery('#login_pass').val('');
-
-    //register fields
-    jQuery('#register_email').val('');
-    jQuery('#register_user').val('');
-
-    //forgot pass
-    jQuery('#forgot_email').val('');
-}
-
-
-/**
- * call to server from modal window
- *
- * @param $action : what action (log in, register, forgot email)
- * @param $email  : the email beening sent
- * @param $user   : the user name beening sent
- */
-function td_modala_call_ajax(sent_action, sent_email, sent_user, sent_pass) {
-    jQuery.ajax({
-        type: 'POST',
-        url: td_ajax_url,
-        data: {
-            action: sent_action,
-            email: sent_email,
-            user: sent_user,
-            pass: sent_pass
-        },
-        success: function(data, textStatus, XMLHttpRequest){
-            var td_data_object = jQuery.parseJSON(data); //get the data object
-
-            //check the response from server
-            switch(td_data_object[0]) {
-                case 'login':
-                    if(td_data_object[1] == 1) {
-                        location.reload(true);
-                    } else {
-                        modala_add_remove_class(['.td_display_err', 0, 'td_display_msg_ok']);
-                        jQuery('.td_display_err').show();
-                        td_modala_write_err_div(td_data_object[2]);
-                    }
-                    break;
-
-                case 'register':
-                    if(td_data_object[1] == 1) {
-                        modala_add_remove_class(['.td_display_err', 1, "td_display_msg_ok"]);
-                        jQuery('.td_display_err').show();
-                    } else {
-                        modala_add_remove_class(['.td_display_err', 0, "td_display_msg_ok"]);
-                        jQuery('.td_display_err').show();
-                    }
-                    td_modala_write_err_div(td_data_object[2]);
-                    break;
-
-                case 'remember_pass':
-                    if(td_data_object[1] == 1) {
-                        modala_add_remove_class(['.td_display_err', 1, "td_display_msg_ok"]);
-                        jQuery('.td_display_err').show();
-                    } else {
-                        modala_add_remove_class(['.td_display_err', 0, "td_display_msg_ok"]);
-                        jQuery('.td_display_err').show();
-                    }
-                    td_modala_write_err_div(td_data_object[2]);
-                    break;
-
+            if ( 1 === element_visibility ) {
+                jQuery( element_id ).removeClass( 'td-dispaly-none' ).addClass( 'td-dispaly-block' );
+            } else {
+                jQuery( element_id ).removeClass( 'td-dispaly-block' ).addClass( 'td-dispaly-none' );
             }
-
-
-        },
-        error: function(MLHttpRequest, textStatus, errorThrown){
-            //console.log(errorThrown);
         }
-    });
-}
+    };
+
+
+    /**
+     * swhich the tab's acordingly to the user action (Log In, Register, Remember Password)
+     *
+     * ids_array : array of ids that have to be focus on or unfocus
+     */
+    modala_swich_tabs = function( ids_array ) {
+        var length = ids_array.length;
+
+        for ( var i = 0; i < length; i++ ) {
+            var element_id = ids_array[ i ][0];
+            var element_visibility = ids_array[ i ][1];
+
+            if ( 1 === element_visibility ) {
+                jQuery( element_id ).addClass( 'td_login_tab_focus' );
+            } else {
+                jQuery( element_id ).removeClass( 'td_login_tab_focus' );
+            }
+        }
+    };
+
+
+    /**
+     * adds or remove a class from an html object
+     *
+     * param : array with object identifier (id - # or class - .)
+     * ex: ['.class_indetifier', 1, 'class_to_add'] or ['.class_indetifier', 0, 'class_to_remove']
+     */
+    modala_add_remove_class = function( param ) {
+
+        //add class
+        if ( 1 === param[1] ) {
+            jQuery( param[0] ).addClass( param[2] );
+
+            //remove class
+        } else {
+            jQuery( param[0] ).removeClass( param[2] );
+        }
+    };
+
+
+    /**
+     * empty the error div
+     */
+    td_modala_empty_err_div = function() {
+        var jQueryObj = jQuery( '.td_display_err');
+        if ( jQueryObj.length ) {
+            jQueryObj.html( '' );
+            jQueryObj.hide();
+        }
+    };
+
+
+    /**
+     * write text to error div
+     */
+    td_modala_write_err_div = function( message ) {
+        jQuery( '.td_display_err' ).html( message );
+    };
+
+
+    /**
+     * empty all fields in modal window
+     */
+    td_modala_empty_all_fields = function() {
+        //login fields
+        jQuery( '#login_email' ).val( '' );
+        jQuery( '#login_pass' ).val( '' );
+
+        //register fields
+        jQuery( '#register_email' ).val( '' );
+        jQuery( '#register_user' ).val( '' );
+
+        //forgot pass
+        jQuery( '#forgot_email' ).val( '' );
+    };
+
+
+    /**
+     * call to server from modal window
+     *
+     * @param $action : what action (log in, register, forgot email)
+     * @param $email  : the email beening sent
+     * @param $user   : the user name beening sent
+     */
+    td_modala_call_ajax = function( sent_action, sent_email, sent_user, sent_pass ) {
+        jQuery.ajax({
+            type: 'POST',
+            url: td_ajax_url,
+            data: {
+                action: sent_action,
+                email: sent_email,
+                user: sent_user,
+                pass: sent_pass
+            },
+            success: function( data, textStatus, XMLHttpRequest ){
+                var td_data_object = jQuery.parseJSON( data ); //get the data object
+
+                //check the response from server
+                switch( td_data_object[0] ) {
+                    case 'login':
+                        if ( 1 === td_data_object[1] ) {
+                            location.reload( true );
+                        } else {
+                            modala_add_remove_class( ['.td_display_err', 0, 'td_display_msg_ok'] );
+                            jQuery( '.td_display_err' ).show();
+                            td_modala_write_err_div( td_data_object[2] );
+                        }
+                        break;
+
+                    case 'register':
+                        if ( 1 === td_data_object[1] ) {
+                            modala_add_remove_class( ['.td_display_err', 1, 'td_display_msg_ok'] );
+                            jQuery( '.td_display_err' ).show();
+                        } else {
+                            modala_add_remove_class( ['.td_display_err', 0, 'td_display_msg_ok'] );
+                            jQuery( '.td_display_err' ).show();
+                        }
+                        td_modala_write_err_div( td_data_object[2] );
+                        break;
+
+                    case 'remember_pass':
+                        if ( 1 === td_data_object[1] ) {
+                            modala_add_remove_class( ['.td_display_err', 1, 'td_display_msg_ok'] );
+                            jQuery( '.td_display_err' ).show();
+                        } else {
+                            modala_add_remove_class( ['.td_display_err', 0, 'td_display_msg_ok'] );
+                            jQuery( '.td_display_err' ).show();
+                        }
+                        td_modala_write_err_div( td_data_object[2] );
+                        break;
+
+                }
+
+
+            },
+            error: function( MLHttpRequest, textStatus, errorThrown ){
+                //console.log(errorThrown);
+            }
+        });
+    };
+
+})();
+
+
+
 /*  ----------------------------------------------------------------------------
  tagDiv live css compiler ( 2013 )
  - this script is used on our demo site to customize the theme live
  - not used on production sites
  */
-var td_current_panel_stat = td_read_site_cookie('td_show_panel');
-if (td_current_panel_stat == 'show' || td_current_panel_stat == null) {
-    jQuery('.td-theme-settings-small').addClass('td-theme-settings-no-transition');
-    jQuery('.td-theme-settings-small').removeClass('td-theme-settings-small');
-}
+
+/* global jQuery:{} */
+/* global td_read_site_cookie:Function */
+/* global td_set_cookies_life:Function */
+
+var td_current_panel_stat = '';
+
+(function() {
+
+    'use strict';
+
+    td_current_panel_stat = td_read_site_cookie( 'td_show_panel' );
+
+    if ( 'show' === td_current_panel_stat || null === td_current_panel_stat ) {
+
+        var jQueryObj = jQuery( '.td-theme-settings-small' );
+        if ( jQueryObj.length ) {
+            jQueryObj.addClass('td-theme-settings-no-transition');
+            jQueryObj.removeClass('td-theme-settings-small');
+        }
+    }
+
+})();
+
+
 
 /*  ----------------------------------------------------------------------------
  On load
  */
 jQuery().ready(function() {
 
+    'use strict';
+
     //hide panel
-    jQuery("#td-theme-set-hide").click(function(event){
+    jQuery( '#td-theme-set-hide' ).click(function(event){
         event.preventDefault();
         event.stopPropagation();
         //hide
-        td_set_cookies_life(['td_show_panel', 'hide', 86400000]);//86400000 is the number of milliseconds in a day
-        jQuery('#td-theme-settings').removeClass('td-theme-settings-no-transition');
-        jQuery('#td-theme-settings').addClass('td-theme-settings-small');
+        td_set_cookies_life( ['td_show_panel', 'hide', 86400000] );//86400000 is the number of milliseconds in a day
 
+        var jQueryObj = jQuery( '#td-theme-settings' );
+        if ( jQueryObj.length ) {
+            jQueryObj.removeClass( 'td-theme-settings-no-transition' );
+            jQueryObj.addClass( 'td-theme-settings-small' );
+        }
 
-        jQuery('.td-set-theme-style-link').removeClass('fadeInLeft');
+        jQuery('.td-set-theme-style-link').removeClass('td_fadeInLeft');
 
     });
 
     //show panel
-    jQuery("#td-theme-settings").click(function(){
-        if (jQuery(this).hasClass('td-theme-settings-small')) {
+    jQuery( '#td-theme-settings' ).click(function(){
+        if ( jQuery( this).hasClass( 'td-theme-settings-small' ) ) {
 
-            jQuery('.td-set-theme-style-link').addClass('animated_xlong fadeInLeft');
+            jQuery( '.td-set-theme-style-link' ).addClass( 'td_animated_xlong td_fadeInLeft' );
 
             //show full
-            td_set_cookies_life(['td_show_panel', 'show', 86400000]);//86400000 is the number of milliseconds in a day
-            jQuery('.td-theme-settings-small').removeClass('td-theme-settings-small');
+            td_set_cookies_life( ['td_show_panel', 'show', 86400000] );//86400000 is the number of milliseconds in a day
+            jQuery( '.td-theme-settings-small' ).removeClass( 'td-theme-settings-small' );
         }
     });
 
@@ -2836,204 +3761,207 @@ jQuery().ready(function() {
  * Created by RADU on 6/24/14.
  */
 
-"use strict";
-
-/*  ----------------------------------------------------------------------------
- On load
- */
-jQuery().ready(function() {
-    //trending now
-    td_trending_now();
-
-    //call to trending now function to start auto scroll
-    td_trending_now_auto_start();
-});
-
-
-/*  ----------------------------------------------------------------------------
- trending now
- */
+/* global jQuery: {} */
 
 //global object that holds each `trending-now-wrapper` list of posts
-var td_trending_now_object = {
-    trending_now_autostart_blocks:[]
-};
+//var td_trending_now_object = {};
 
-//trending now function : creates the array of posts in each trend and add events to the nav buttons
-function td_trending_now() {
+var tdTrendingNowObject = {};
 
-    //move thru all `trending-now-wrapper's` on the page
-    jQuery(".td-trending-now-wrapper").each(function() {
-        var wrapper_id = jQuery(this).attr("id");
-        var wrapper_id_navigation = jQuery(this).data("start");
+(function() {
 
-        if(wrapper_id_navigation != 'manual') {
-            td_trending_now_object.trending_now_autostart_blocks.push(wrapper_id);
-        }
+    "use strict";
 
-        var trending_list_posts = [];
-        var i_cont = 0;
+    tdTrendingNowObject = {
 
-        //take the text from each post from current trending-now-wrapper
-        jQuery("#" + wrapper_id + " .td-trending-now-post").each(function() {
-            //trending_list_posts[i_cont] = jQuery(this)[0].outerHTML;
-            trending_list_posts[i_cont] = jQuery(this);
+        trendingNowAutostartBlocks: [],
 
-            //increment the counter
-            i_cont++;
-        });
+        //trending now function : creates the array of posts in each trend and add events to the nav buttons
+        tdTrendingNow: function() {
 
-        //add this array to `td_trending_now_object`
-        td_trending_now_object[wrapper_id] = trending_list_posts;
-        td_trending_now_object[wrapper_id + '_position'] = 0;
-    });
+            //move thru all `trending-now-wrapper's` on the page
+            jQuery('.td-trending-now-wrapper').each(function() {
+                var wrapperId = jQuery(this).attr('id');
+                var wrapperIdNavigation = jQuery(this).data('start');
 
-    jQuery(".td-trending-now-nav-left").click(function(event){
-        event.preventDefault();
-        var wrapper_id_for_nav = jQuery(this).data("wrapper-id");
+                if ('manual' !== wrapperIdNavigation) {
+                    tdTrendingNowObject.trendingNowAutostartBlocks.push(wrapperId);
+                }
 
-        // if there's just a single post to be shown, there's no need for next/prev/autostart
-        if (wrapper_id_for_nav != undefined && td_trending_now_object[wrapper_id_for_nav].length <= 1) {
-            return;
-        }
+                var trendingListPosts = [];
+                var iCont = 0;
 
-        var data_moving = jQuery(this).data("moving");
-        var control_start = jQuery(this).data("control-start");
+                //take the text from each post from current trending-now-wrapper
+                jQuery('#' + wrapperId + ' .td-trending-now-post').each(function() {
+                    //trending_list_posts[i_cont] = jQuery(this)[0].outerHTML;
+                    trendingListPosts[iCont] = jQuery(this);
 
-        /**
-         * used when the trending now block is used on auto mod and we click on show prev or show next article title
-         * this will make the auto mode wait another xx seconds before displaying the next article title
+                    //increment the counter
+                    iCont++;
+                });
+
+                //add this array to `tdTrendingNowObject`
+                tdTrendingNowObject[wrapperId] = trendingListPosts;
+                tdTrendingNowObject[wrapperId + '_position'] = 0;
+            });
+
+            jQuery('.td-trending-now-nav-left').click( function(event) {
+                event.preventDefault();
+                var wrapperIdForNav = jQuery(this).data('wrapper-id');
+
+                // if there's just a single post to be shown, there's no need for next/prev/autostart
+                if ((undefined !== wrapperIdForNav) && (1 >= tdTrendingNowObject[wrapperIdForNav].length))  {
+                    return;
+                }
+
+                //var data_moving = jQuery(this).data('moving');
+                var controlStart = jQuery(this).data('control-start');
+
+                /**
+                 * used when the trending now block is used on auto mod and we click on show prev or show next article title
+                 * this will make the auto mode wait another xx seconds before displaying the next article title
+                 */
+                if ('manual' !== controlStart) {
+                    clearInterval(tdTrendingNowObject[wrapperIdForNav + '_timer']);
+                    tdTrendingNowObject[wrapperIdForNav + '_timer'] = setInterval(function() {
+                        tdTrendingNowObject.tdTrendingNowChangeText([wrapperIdForNav, 'left'], true);
+                    }, 3000);
+                }
+
+
+                //call to change the text
+                tdTrendingNowObject.tdTrendingNowChangeText([wrapperIdForNav, 'right'], false);
+            });
+
+
+            jQuery('.td-trending-now-nav-right').click(function(event) {
+                event.preventDefault();
+                var wrapperIdForNav = jQuery(this).data('wrapper-id');
+
+                // if there's just a single post to be shown, there's no need for next/prev/autostart
+                if ((undefined !== wrapperIdForNav) && (1 >= tdTrendingNowObject[wrapperIdForNav].length)) {
+                    return;
+                }
+
+                //var data_moving = jQuery(this).data('moving');
+                var controlStart = jQuery(this).data('control-start');
+
+                /**
+                 * used when the trending now block is used on auto mod and we click on show prev or show next article title
+                 * this will make the auto mode wait another xx seconds before displaying the next article title
+                 */
+                if ('manual' !== controlStart) {
+                    clearInterval(tdTrendingNowObject[wrapperIdForNav + '_timer']);
+                    tdTrendingNowObject[wrapperIdForNav + '_timer'] = setInterval(function() {
+                        tdTrendingNowObject.tdTrendingNowChangeText([wrapperIdForNav, 'left' ], true);
+                    }, 3000);
+                }
+
+                //call to change the text
+                tdTrendingNowObject.tdTrendingNowChangeText([wrapperIdForNav, 'left'], true);
+            });
+
+            //console.log(tdTrendingNowObject);
+        },
+
+
+        /*
+         function for changing the posts in `trending now` display area
+         *
+         *array_param[0] : the id of current `trending now wrapper`
+         *array_param[1] : moving direction (left or right)
          */
-        if(control_start != 'manual'){
-            clearInterval(td_trending_now_object[wrapper_id_for_nav + "_timer"]);
-            td_trending_now_object[wrapper_id_for_nav + "_timer"] = setInterval(function() {td_trending_now_change_text([wrapper_id_for_nav, 'left'], true);}, 3000);
-        }
+        tdTrendingNowChangeText: function(array_param, to_right) {
+
+            //for consistency use the same variables names as thh parent function
+            var wrapperIdForNav = array_param[0];
+            var dataMoving = array_param[1];
+
+            //get the list of post and position for this trending now block
+            var postsArrayListForThisTrend = tdTrendingNowObject[wrapperIdForNav];
 
 
-        //call to change the text
-        td_trending_now_change_text([wrapper_id_for_nav, 'right'], false);
-    });
-
-
-    jQuery(".td-trending-now-nav-right").click(function(event){
-        event.preventDefault();
-        var wrapper_id_for_nav = jQuery(this).data("wrapper-id");
-
-        // if there's just a single post to be shown, there's no need for next/prev/autostart
-        if (wrapper_id_for_nav != undefined && td_trending_now_object[wrapper_id_for_nav].length <= 1) {
-            return;
-        }
-
-        var data_moving = jQuery(this).data("moving");
-        var control_start = jQuery(this).data("control-start");
-
-        /**
-         * used when the trending now block is used on auto mod and we click on show prev or show next article title
-         * this will make the auto mode wait another xx seconds before displaying the next article title
-         */
-        if(control_start != 'manual'){
-            clearInterval(td_trending_now_object[wrapper_id_for_nav + "_timer"]);
-            td_trending_now_object[wrapper_id_for_nav + "_timer"] = setInterval(function() {td_trending_now_change_text([wrapper_id_for_nav, 'left'], true);}, 3000);
-        }
-
-        //call to change the text
-        td_trending_now_change_text([wrapper_id_for_nav, 'left'], true);
-    });
-
-    //console.log(td_trending_now_object);
-}
-
-
-/*
- function for changing the posts in `trending now` display area
- *
- *array_param[0] : the id of current `trending now wrapper`
- *array_param[1] : moving direction (left or right)
- */
-function td_trending_now_change_text(array_param, to_right) {
-
-    //for consistency use the same variables names as thh parent function
-    var wrapper_id_for_nav = array_param[0];
-    var data_moving = array_param[1];
-
-    //get the list of post and position for this trending now block
-    var posts_array_list_for_this_trend = td_trending_now_object[wrapper_id_for_nav];
-
-
-    // the following method is not so good because using it, many timers are already created
-    //
-    // if there's just a single post to be shown, there's no need for next/prev/autostart
-    //if (posts_array_list_for_this_trend.length <= 1) {
-    //    return;
-    //}
-
-    var posts_array_list_position = td_trending_now_object[wrapper_id_for_nav + '_position'];
-
-    var previous_post_array_list_position = posts_array_list_position;
-
-    //count how many post are in the list
-    var post_count = posts_array_list_for_this_trend.length - 1;
-
-    if(data_moving == "left") {
-        posts_array_list_position += 1;
-
-        if(posts_array_list_position > post_count) {
-            posts_array_list_position = 0;
-        }
-
-    } else {
-        posts_array_list_position -= 1;
-
-        if(posts_array_list_position < 0) {
-            posts_array_list_position = post_count;
-        }
-    }
-
-    //update the new position in the global `td_trending_now_object`
-    td_trending_now_object[wrapper_id_for_nav + '_position'] = posts_array_list_position;
-
-    posts_array_list_for_this_trend[previous_post_array_list_position].css('opacity', 0);
-    posts_array_list_for_this_trend[previous_post_array_list_position].css('z-index', 0);
-
-    for (var trending_post in posts_array_list_for_this_trend) {
-        posts_array_list_for_this_trend[trending_post].removeClass('animated_xlong fadeInLeft fadeInRight fadeOutLeft fadeOutRight');
-    }
-
-    posts_array_list_for_this_trend[posts_array_list_position].css('opacity', 1);
-    posts_array_list_for_this_trend[posts_array_list_position].css('z-index', 1);
-
-    if (to_right === true) {
-
-        posts_array_list_for_this_trend[previous_post_array_list_position].addClass('animated_xlong fadeOutLeft');
-        posts_array_list_for_this_trend[posts_array_list_position].addClass('animated_xlong fadeInRight');
-    } else {
-
-        posts_array_list_for_this_trend[previous_post_array_list_position].addClass('animated_xlong fadeOutRight');
-        posts_array_list_for_this_trend[posts_array_list_position].addClass('animated_xlong fadeInLeft');
-    }
-}
-
-
-//trending now function to auto start
-function td_trending_now_auto_start() {
-
-    var list = td_trending_now_object.trending_now_autostart_blocks;
-
-    for (var i = 0, len = list.length; i < len; i += 1) {
-        (function(i) {
-
+            // the following method is not so good because using it, many timers are already created
+            //
             // if there's just a single post to be shown, there's no need for next/prev/autostart
-            if (td_trending_now_object[list[i]].length <= 1) {
-                return;
+            //if (posts_array_list_for_this_trend.length <= 1) {
+            //    return;
+            //}
+
+            var postsArrayListPosition = tdTrendingNowObject[wrapperIdForNav + '_position'];
+
+            var previousPostArrayListPosition = postsArrayListPosition;
+
+            //count how many post are in the list
+            var post_count = postsArrayListForThisTrend.length - 1;
+
+            if ('left' === dataMoving) {
+                postsArrayListPosition += 1;
+
+                if (postsArrayListPosition > post_count) {
+                    postsArrayListPosition = 0;
+                }
+
+            } else {
+                postsArrayListPosition -= 1;
+
+                if (postsArrayListPosition < 0) {
+                    postsArrayListPosition = post_count;
+                }
             }
-            
-            td_trending_now_object[list[i] + "_timer"] = setInterval(function() {
+
+            //update the new position in the global `tdTrendingNowObject`
+            tdTrendingNowObject[wrapperIdForNav + '_position'] = postsArrayListPosition;
+
+            postsArrayListForThisTrend[previousPostArrayListPosition].css('opacity', 0);
+            postsArrayListForThisTrend[previousPostArrayListPosition].css('z-index', 0);
+
+            for (var trending_post in postsArrayListForThisTrend) {
+                if (true === postsArrayListForThisTrend.hasOwnProperty(trending_post)) {
+                    postsArrayListForThisTrend[trending_post].removeClass('td_animated_xlong td_fadeInLeft td_fadeInRight td_fadeOutLeft td_fadeOutRight');
+                }
+            }
+
+            postsArrayListForThisTrend[postsArrayListPosition].css('opacity', 1);
+            postsArrayListForThisTrend[postsArrayListPosition].css('z-index', 1);
+
+            if (true === to_right) {
+
+                postsArrayListForThisTrend[previousPostArrayListPosition].addClass('td_animated_xlong td_fadeOutLeft');
+                postsArrayListForThisTrend[postsArrayListPosition].addClass('td_animated_xlong td_fadeInRight');
+            } else {
+
+                postsArrayListForThisTrend[previousPostArrayListPosition].addClass('td_animated_xlong td_fadeOutRight');
+                postsArrayListForThisTrend[postsArrayListPosition].addClass('td_animated_xlong td_fadeInLeft');
+            }
+        },
+
+
+        //trending now function to auto start
+        tdTrendingNowAutoStart: function() {
+
+            var list = tdTrendingNowObject.trendingNowAutostartBlocks;
+
+            for (var i = 0, len = list.length; i < len; i += 1) {
+
+                // if there's just a single post to be shown, there's no need for next/prev/autostart
+                if (1 >= tdTrendingNowObject[list[i]].length) {
+                    return;
+                }
+
+                tdTrendingNowObject[list[i] + '_timer'] = tdTrendingNowObject.setTimerChangingText(list[i]);
+            }
+        },
+
+        setTimerChangingText: function(autoStartItem) {
+            return setInterval(function () {
                 //console.log(i + "=>" + list[i] + "\n");
-                td_trending_now_change_text([list[i], 'left'], true);
-            }, 3000)
-        })(i);
-    }
-}
+                tdTrendingNowObject.tdTrendingNowChangeText([autoStartItem, 'left'], true);
+            }, 3000);
+        }
+    };
+
+})();
 "use strict";
 
 
@@ -3061,7 +3989,7 @@ var td_history = {
      * @param data
      */
     replace_history_entry: function (data) {
-        if (td_detect.has_history === false) {
+        if (tdDetect.hasHistory === false) {
             return; //no history support
         }
         history.replaceState(data, null);
@@ -3076,7 +4004,7 @@ var td_history = {
      */
     add_history_entry: function (data, query_parm_id, query_parm_value) {
 
-        if (td_detect.has_history === false) {
+        if (tdDetect.hasHistory === false) {
             return; //no history support
         }
 
@@ -3231,210 +4159,887 @@ if (window.history && window.history.pushState) {
     td_history.init();
 }
 
+/**
+ * @depends on:
+ * td_util
+ * td_events
+ * tdAffix
+ */
 
-// minimized js - made by tagDiv -
-var td_smart_sidebar={has_items:!1,items:[],scroll_window_scrollTop_last:0,tds_snap_menu:td_util.get_backend_var("tds_snap_menu"),is_enabled:!0,is_enabled_state_run_once:!1,is_disabled_state_run_once:!1,is_tablet_grid:!1,_view_port_current_interval_index:td_viewport.get_current_interval_index(),item:function(){this.sidebar_jquery_obj=this.content_jquery_obj="";this.content_bottom=this.content_top=this.sidebar_height=this.sidebar_bottom=this.sidebar_top=0;this.sidebar_state="";this.case_3_run_once=
-this.case_2_run_once=this.case_1_run_once=!1;this.case_3_last_content_height=this.case_3_last_sidebar_height=0;this.case_4_run_once=!1;this.case_4_last_menu_offset=0;this.case_6_run_once=this.case_5_run_once=!1},add_item:function(b){td_smart_sidebar.has_items=!0;b.sidebar_jquery_obj.prepend('<div class="clearfix"></div>').append('<div class="clearfix"></div>');b.content_jquery_obj.prepend('<div class="clearfix"></div>').append('<div class="clearfix"></div>');td_smart_sidebar.items.push(b)},td_events_scroll:function(b){if(!1!==
-td_smart_sidebar.has_items)if(0==td_smart_sidebar.is_enabled){if(!1===td_smart_sidebar.is_disabled_state_run_once){td_smart_sidebar.is_disabled_state_run_once=!0;for(var c=0;c<td_smart_sidebar.items.length;c++)td_smart_sidebar.items[c].sidebar_jquery_obj.css({width:"auto",position:"static",top:"auto",bottom:"auto"});td_smart_sidebar.log("smart_sidebar_disabled")}}else window.requestAnimationFrame(function(){var c=0;""!=td_smart_sidebar.tds_snap_menu&&(c=td_affix.main_menu_height);var e="";b!=td_smart_sidebar.scroll_window_scrollTop_last&&
-(e=b>td_smart_sidebar.scroll_window_scrollTop_last?"down":"up");td_smart_sidebar.scroll_window_scrollTop_last=b;var h=jQuery(window).height(),f=b+h;b+=c;for(var d=0;d<td_smart_sidebar.items.length;d++){var a=td_smart_sidebar.items[d];a.content_top=a.content_jquery_obj.offset().top;a.content_height=a.content_jquery_obj.height();a.content_bottom=a.content_top+a.content_height;a.sidebar_top=a.sidebar_jquery_obj.offset().top;a.sidebar_height=a.sidebar_jquery_obj.height();a.sidebar_bottom=a.sidebar_top+
-a.sidebar_height;if(a.content_height<=a.sidebar_height)a.sidebar_state="case_6_content_too_small";else if(a.sidebar_height<h)td_smart_sidebar._is_smaller_or_equal(b,a.content_top)?a.sidebar_state="case_2_top_of_content":!0===td_smart_sidebar._is_smaller(a.sidebar_bottom,b)?td_smart_sidebar._is_smaller(b,a.content_bottom-a.sidebar_height)?a.sidebar_state="case_4_fixed_up":a.sidebar_state="case_3_bottom_of_content":td_smart_sidebar._is_smaller_or_equal(a.content_bottom,a.sidebar_bottom)?"up"==e&&td_smart_sidebar._is_smaller_or_equal(b,
-a.sidebar_top)?a.sidebar_state="case_4_fixed_up":a.sidebar_state="case_3_bottom_of_content":a.sidebar_state=a.content_bottom-b>=a.sidebar_height?"case_4_fixed_up":"case_3_bottom_of_content";else if(!0===td_smart_sidebar._is_smaller(a.sidebar_bottom,b)?!0===td_smart_sidebar._is_smaller_or_equal(b,a.sidebar_top)&&!0===td_smart_sidebar._is_smaller_or_equal(a.content_top,b)?a.sidebar_state="case_4_fixed_up":!0===td_smart_sidebar._is_smaller(a.sidebar_bottom,f)&&!0===td_smart_sidebar._is_smaller(a.sidebar_bottom,
-a.content_bottom)&&a.content_bottom>=f?a.sidebar_state="case_1_fixed_down":a.sidebar_state="case_3_bottom_of_content":!0===td_smart_sidebar._is_smaller(a.sidebar_bottom,f)&&!0===td_smart_sidebar._is_smaller(a.sidebar_bottom,a.content_bottom)&&"down"==e&&a.content_bottom>=f?a.sidebar_state="case_1_fixed_down":!0===td_smart_sidebar._is_smaller_or_equal(a.sidebar_top,a.content_top)&&"up"==e&&a.content_bottom>=f?a.sidebar_state="case_2_top_of_content":!0===td_smart_sidebar._is_smaller_or_equal(a.content_bottom,
-a.sidebar_bottom)&&"down"==e||a.content_bottom<f?a.sidebar_state="case_3_bottom_of_content":!0===td_smart_sidebar._is_smaller_or_equal(b,a.sidebar_top)&&"up"==e&&!0===td_smart_sidebar._is_smaller_or_equal(a.content_top,b)&&(a.sidebar_state="case_4_fixed_up"),"case_1_fixed_down"==a.sidebar_state&&"up"==e||"case_4_fixed_up"==a.sidebar_state&&"down"==e)a.sidebar_state="case_5_absolute";var g=0,k=td_viewport.get_current_interval_item();null!=k&&(g=k.sidebar_width);switch(a.sidebar_state){case "case_1_fixed_down":if(!0===
-a.case_1_run_once)break;td_smart_sidebar.log("sidebar_id: "+d+" "+a.sidebar_state);a.case_1_run_once=!0;a.case_2_run_once=!1;a.case_3_run_once=!1;a.case_4_run_once=!1;a.case_5_run_once=!1;a.case_6_run_once=!1;a.sidebar_jquery_obj.css({width:g,position:"fixed",top:"auto",bottom:"0","z-index":"1"});break;case "case_2_top_of_content":if(!0===a.case_2_run_once)break;td_smart_sidebar.log("sidebar_id: "+d+" "+a.sidebar_state);a.case_1_run_once=!1;a.case_2_run_once=!0;a.case_3_run_once=!1;a.case_4_run_once=
-!1;a.case_5_run_once=!1;a.case_6_run_once=!1;a.sidebar_jquery_obj.css({width:"auto",position:"static",top:"auto",bottom:"auto"});break;case "case_3_bottom_of_content":if(!0===a.case_3_run_once&&a.case_3_last_sidebar_height==a.sidebar_height&&a.case_3_last_content_height==a.content_height)break;td_smart_sidebar.log("sidebar_id: "+d+" "+a.sidebar_state);a.case_1_run_once=!1;a.case_2_run_once=!1;a.case_3_run_once=!0;a.case_3_last_sidebar_height=a.sidebar_height;a.case_3_last_content_height=a.content_height;
-a.case_4_run_once=!1;a.case_5_run_once=!1;a.case_6_run_once=!1;a.sidebar_jquery_obj.css({width:g,position:"absolute",top:a.content_bottom-a.sidebar_height-a.content_top,bottom:"auto"});break;case "case_4_fixed_up":if(!0===a.case_4_run_once&&a.case_4_last_menu_offset==c)break;td_smart_sidebar.log("sidebar_id: "+d+" "+a.sidebar_state);a.case_1_run_once=!1;a.case_2_run_once=!1;a.case_3_run_once=!1;a.case_4_run_once=!0;a.case_4_last_menu_offset=c;a.case_5_run_once=!1;a.case_6_run_once=!1;a.sidebar_jquery_obj.css({width:g,
-position:"fixed",top:c,bottom:"auto"});break;case "case_5_absolute":if(!0===a.case_5_run_once)break;td_smart_sidebar.log("sidebar_id: "+d+" "+a.sidebar_state);a.case_1_run_once=!1;a.case_2_run_once=!1;a.case_3_run_once=!1;a.case_4_run_once=!1;a.case_5_run_once=!0;a.case_6_run_once=!1;a.sidebar_jquery_obj.css({width:g,position:"absolute",top:a.sidebar_top-a.content_top,bottom:"auto"});break;case "case_6_content_too_small":if(!0===a.case_6_run_once)break;td_smart_sidebar.log("sidebar_id: "+d+" "+a.sidebar_state);
-a.case_1_run_once=!1;a.case_2_run_once=!1;a.case_3_run_once=!1;a.case_4_run_once=!1;a.case_5_run_once=!1;a.case_6_run_once=!0;a.sidebar_jquery_obj.css({width:"auto",position:"static",top:"auto",bottom:"auto"})}}})},compute:function(){td_smart_sidebar.td_events_scroll(jQuery(window).scrollTop())},reset_run_once_flags:function(){for(var b=0;b<td_smart_sidebar.items.length;b++)td_smart_sidebar.items[b].case_1_run_once=!1,td_smart_sidebar.items[b].case_2_run_once=!1,td_smart_sidebar.items[b].case_3_run_once=
-!1,td_smart_sidebar.items[b].case_3_last_sidebar_height=0,td_smart_sidebar.items[b].case_3_last_content_height=0,td_smart_sidebar.items[b].case_4_run_once=!1,td_smart_sidebar.items[b].case_4_last_menu_offset=0,td_smart_sidebar.items[b].case_5_run_once=!1,td_smart_sidebar.items[b].case_6_run_once=!1},td_events_resize:function(){td_smart_sidebar._view_port_current_interval_index=td_viewport.get_current_interval_index();switch(td_smart_sidebar._view_port_current_interval_index){case 0:td_smart_sidebar.is_enabled=
-!1;td_smart_sidebar.is_enabled_state_run_once=!1;break;case 1:!1===td_smart_sidebar.is_tablet_grid&&(td_smart_sidebar.reset_run_once_flags(),td_smart_sidebar.is_tablet_grid=!0,td_smart_sidebar.is_desktop_grid=!1,td_smart_sidebar.log("view port tablet"));td_smart_sidebar.is_enabled=!0;td_smart_sidebar.is_disabled_state_run_once=!1;!1===td_smart_sidebar.is_enabled_state_run_once&&(td_smart_sidebar.is_enabled_state_run_once=!0,td_smart_sidebar.log("smart_sidebar_enabled"));break;case 2:case 3:!0===td_smart_sidebar.is_tablet_grid&&
-(td_smart_sidebar.reset_run_once_flags(),td_smart_sidebar.is_tablet_grid=!1,td_smart_sidebar.is_desktop_grid=!0,td_smart_sidebar.log("view port desktop")),td_smart_sidebar.is_enabled=!0,td_smart_sidebar.is_disabled_state_run_once=!1,!1===td_smart_sidebar.is_enabled_state_run_once&&(td_smart_sidebar.is_enabled_state_run_once=!0,td_smart_sidebar.log("smart_sidebar_enabled"))}td_smart_sidebar.compute()},log:function(b){},_is_smaller_or_equal:function(b,c){return 1<=Math.abs(b-c)?b<c?!0:!1:!0},_is_smaller:function(b,
-c){return 1<=Math.abs(b-c)?b<c?!0:!1:!1}};
+/* global jQuery:{} */
+/* global tdUtil:{} */
+/* global tdViewport:{} */
+/* global tdAffix:{} */
 
-// end minimized
+
+var tdSmartSidebar = {};
+
+(function(){
+
+    'use strict';
+
+    tdSmartSidebar = {
+        hasItems: false, // this class will only work when this flag is true. If we don't have any items, all the calculations on scroll will be disabled by this flag
+        items: [], //the array that has all the items
+        scroll_window_scrollTop_last: 0, //last scrollTop position, used to calculate the scroll direction
+
+
+        tds_snap_menu: tdUtil.getBackendVar( 'tds_snap_menu' ),   //read the snap menu setting from theme panel
+
+
+        /**
+         * @see tdSmartSidebar.td_events_resize
+         */
+        is_enabled: true, //if the smart sidebar is not needed (ex on mobile) put this flag to true
+        is_enabled_state_run_once: false, // make sure that we dun enable and disable only once
+        is_disabled_state_run_once: false,
+
+
+        is_tablet_grid: false, //we detect if the current grid is the tablet portrait one
+
+
+        _view_port_current_interval_index: tdViewport.getCurrentIntervalIndex(),
+
+
+        item: function() {
+            this.content_jquery_obj = '';
+            this.sidebar_jquery_obj = '';
+
+
+            // the position variables
+            this.sidebar_top = 0;
+            this.sidebar_bottom = 0;
+            this.sidebar_height = 0;
+
+
+            this.content_top = 0;
+            this.content_bottom = 0;
+
+            // the sidebar state
+            this.sidebar_state = '';
+
+            this.case_1_run_once = false;
+            this.case_2_run_once = false;
+            this.case_3_run_once = false;
+            this.case_3_last_sidebar_height = 0; // case 3 has to be recalculated if the sidebar height changes
+            this.case_3_last_content_height = 0; // recalculate case 3 if content height has changed
+            this.case_4_run_once = false;
+            this.case_4_last_menu_offset = 0;
+            this.case_5_run_once = false;
+            this.case_6_run_once = false;
+        },
+
+
+        //add item to the array
+        add_item: function( item ) {
+            tdSmartSidebar.hasItems = true; //put the flag that we have items
+
+            /**
+             * add clear fix to the content and sidebar.
+             * we need the clear fix to clear the margin of the first and last element
+             */
+            item.sidebar_jquery_obj
+                .prepend( '<div class="clearfix"></div>' )
+                .append( '<div class="clearfix"></div>' );
+
+            item.content_jquery_obj
+                .prepend( '<div class="clearfix"></div>' )
+                .append( '<div class="clearfix"></div>' );
+
+
+            tdSmartSidebar.items.push( item );
+        },
+
+
+        td_events_scroll: function( scrollTop ) {
+
+
+            // we don't have any smart sidebars, return
+            if ( false === tdSmartSidebar.hasItems ) {
+                return;
+            }
+
+
+            // check if the smart sidebar is enabled ( the sidebar can be enabled / disabled on runtime )
+            if ( false === tdSmartSidebar.is_enabled ) {
+
+                if ( false === tdSmartSidebar.is_disabled_state_run_once ) { // this call runs only ONCE / state change - we don't want any code to run on mobile
+                    tdSmartSidebar.is_disabled_state_run_once = true;
+                    for ( var item_index = 0; item_index < tdSmartSidebar.items.length; item_index++ ) {
+                        tdSmartSidebar.items[ item_index ].sidebar_jquery_obj.css({
+                            width: 'auto',
+                            position: 'static',
+                            top: 'auto',
+                            bottom: 'auto'
+                        });
+                    }
+                    tdSmartSidebar.log( 'smart_sidebar_disabled' );
+                }
+
+                return;
+            }
+
+
+            // all is done in an animation frame
+            window.requestAnimationFrame(function() {
+
+
+                /**
+                 * this is the height of the menu, computed live. We
+                 * @type {number}
+                 */
+                var td_affix_menu_computed_height = 0;
+                if ( '' !== tdSmartSidebar.tds_snap_menu ) { // if the menu is not snapping in any way - do not calculate this
+
+                    // The main_menu_height was replaced with the _get_menu_affix_height(), because we need the size of the
+                    // affix menu. In the 'Newspaper' the menu has different sizes when it is affix 'on' and 'off'.
+                    td_affix_menu_computed_height = tdAffix._get_menu_affix_height();
+
+                    // Menu offset value is added when we are on 'smart_snap_always' case
+                    if ('smart_snap_always' === tdAffix.tds_snap_menu) {
+                        td_affix_menu_computed_height += tdAffix.menu_offset;
+                    }
+                }
+                // The following height is added just for Newspaper theme.
+                // In the Newsmag theme, the sidebar elements have already a 'padding-top' of 20px
+
+                if ( ( 'undefined' !== typeof window.tdThemeName ) && ( 'Newspaper' === window.tdThemeName ) ) {
+                    td_affix_menu_computed_height += 20;
+                }
+
+
+
+
+
+                // compute the scrolling direction
+                var scroll_direction = '';
+                //check the direction
+                if ( scrollTop !== tdSmartSidebar.scroll_window_scrollTop_last ) { // compute direction only if we have different last scroll top
+                    // compute the direction of the scroll
+                    if ( scrollTop > tdSmartSidebar.scroll_window_scrollTop_last ) {
+                        scroll_direction = 'down';
+                    } else {
+                        scroll_direction = 'up';
+                    }
+                }
+                tdSmartSidebar.scroll_window_scrollTop_last = scrollTop;
+
+
+
+                /**
+                 * scrollTop - is the distance that is scrolled from the top of the document PLUS the height of the menu
+                 */
+
+
+
+                var view_port_height = jQuery( window ).height(); // ~ we can get this only once + on resize
+                var view_port_bottom = scrollTop + view_port_height;
+
+                scrollTop = scrollTop + td_affix_menu_computed_height;
+
+                // go in all the sidebar items
+                for ( var item_index = 0; item_index < tdSmartSidebar.items.length; item_index++ ) {
+
+                    var cur_item_ref = tdSmartSidebar.items[ item_index ];
+
+                    cur_item_ref.content_top = cur_item_ref.content_jquery_obj.offset().top;
+                    cur_item_ref.content_height = cur_item_ref.content_jquery_obj.height();
+                    cur_item_ref.content_bottom = cur_item_ref.content_top + cur_item_ref.content_height;
+
+                    cur_item_ref.sidebar_top = cur_item_ref.sidebar_jquery_obj.offset().top;
+                    cur_item_ref.sidebar_height = cur_item_ref.sidebar_jquery_obj.height();
+                    cur_item_ref.sidebar_bottom = cur_item_ref.sidebar_top + cur_item_ref.sidebar_height;
+
+
+
+
+
+                    /**
+                     * Is the sidebar smaller than the content ?
+                     */
+                    if ( cur_item_ref.content_height <= cur_item_ref.sidebar_height ) {
+                        cur_item_ref.sidebar_state = 'case_6_content_too_small';
+
+
+
+                        /**
+                         * the sidebar is smaller than the view port?  that means that we have to switch to a more simpler sidebar AKA affix
+                         */
+
+                    } else if ( cur_item_ref.sidebar_height < view_port_height ) {
+
+                        // ref value used to compare the scroll top
+                        var ref_value = cur_item_ref.content_top;
+
+                        // For 'Newsmag' the ref value is incremented with td_affix_menu_computed_height
+                        // It solves a case when the affix menu leaves the 'case_2_top_of_content' phase to 'case_4_fixed_up' too early
+                        // It's because of how the grid, and smart sidebar, are built on Newspaper vs Newsmag
+                        if ( ! tdAffix.is_menu_affix && ( 'undefined' !== typeof window.tdThemeName ) && ( 'Newsmag' === window.tdThemeName ) && ( 'smart_snap_always' === tdAffix.tds_snap_menu ) ) {
+                            ref_value += td_affix_menu_computed_height;
+                        }
+
+                        //if (tdSmartSidebar._is_smaller_or_equal(scrollTop, cur_item_ref.content_top)) {
+                        if ( tdSmartSidebar._is_smaller_or_equal( scrollTop, ref_value ) ) {
+                            // not affix - we did not scroll to reach the sidebar
+                            cur_item_ref.sidebar_state = 'case_2_top_of_content';
+                        }
+
+                        // [1] if the sidebar is visible and we have enough space in the sidebar, place it at the top affix top
+                        // [2] if the sidebar is above the view port and nothing is visible, place the sidebar at the bottom of the column
+
+                        else if ( true === tdSmartSidebar._is_smaller( cur_item_ref.sidebar_bottom, scrollTop ) ) {
+                            if ( tdSmartSidebar._is_smaller( scrollTop, cur_item_ref.content_bottom - cur_item_ref.sidebar_height ) ) { //this is a special case where on the initial load, the bottom of the content is visible and we have a lot of space to show the widget at the top affixed.
+                                cur_item_ref.sidebar_state = 'case_4_fixed_up'; // [1]87
+                            } else {
+                                cur_item_ref.sidebar_state = 'case_3_bottom_of_content'; // [2]
+                            }
+
+
+                        } else {
+
+                            // affix
+                            if ( tdSmartSidebar._is_smaller_or_equal( cur_item_ref.content_bottom, cur_item_ref.sidebar_bottom ) ) { // check to see if we reached the bottom of the content / row
+                                if ( 'up' === scroll_direction && tdSmartSidebar._is_smaller_or_equal( scrollTop, cur_item_ref.sidebar_top ) ) {
+                                    cur_item_ref.sidebar_state = 'case_4_fixed_up'; // get out of the case_3_bottom_of_content state
+                                } else {
+                                    cur_item_ref.sidebar_state = 'case_3_bottom_of_content';
+                                }
+
+                            } else {
+                                if ( cur_item_ref.content_bottom - scrollTop >= cur_item_ref.sidebar_height ) {
+                                    // Make sure that we have space for the sidebar to affix it to the top
+                                    cur_item_ref.sidebar_state = 'case_4_fixed_up';  // we are not at the bottom of the content
+                                } else {
+
+                                    // this case isn't reached. It's accomplish by the tdSmartSidebar._is_smaller_or_equal(cur_item_ref.content_bottom, cur_item_ref.sidebar_bottom) case
+
+                                    cur_item_ref.sidebar_state = 'case_3_bottom_of_content';
+                                }
+                                //console.log(cur_item_ref.content_bottom + ' >= ' +  cur_item_ref.sidebar_bottom); //@todo fix this case pe http://0div.com:69/wp_marius/wp_010/homepage-with-a-post-featured/
+                            }
+                        }
+
+
+
+                        /**
+                         * the sidebar is larger than the view port and the content is bigger
+                         */
+
+
+                    } else {
+
+                        //// if the sidebar is above the view port and nothing is visible, place the sidebar at the bottom of the column
+                        //if (tdSmartSidebar._is_smaller(cur_item_ref.sidebar_bottom, scrollTop) === true) {
+                        //    cur_item_ref.sidebar_state = 'case_3_bottom_of_content';
+                        //    tdSmartSidebar.log(cur_item_ref.sidebar_bottom + ' ~ ' + scrollTop);
+                        //}
+
+
+                        // if the sidebar is above the view port and nothing is visible, place the sidebar fixed up if it's smaller than the viewport,
+                        //      fixed down, meaning that a possible previous operation could be 'scroll down'
+                        // if none of the above operations meets the conditions, the sidebar is placed at the bottom of the content
+                        if ( true === tdSmartSidebar._is_smaller( cur_item_ref.sidebar_bottom, scrollTop ) ) {
+
+                            if ( true === tdSmartSidebar._is_smaller_or_equal(scrollTop, cur_item_ref.sidebar_top ) &&
+
+                                true === tdSmartSidebar._is_smaller_or_equal( cur_item_ref.content_top, scrollTop ) //we are scrolling up ... make sure that we don't overshoot the sidebar by going over content_top. This happens when the sidebar is offseted by x number of pixels vs content
+                            ) {
+                                //console.log('sidebar_top' + cur_item_ref.sidebar_top + ' content top:' + cur_item_ref.content_top);
+                                cur_item_ref.sidebar_state = 'case_4_fixed_up';
+                            }
+                            else if (
+                                true === tdSmartSidebar._is_smaller( cur_item_ref.sidebar_bottom, view_port_bottom ) &&
+                                true === tdSmartSidebar._is_smaller( cur_item_ref.sidebar_bottom, cur_item_ref.content_bottom ) &&
+                                cur_item_ref.content_bottom >= view_port_bottom
+                            ) {
+                                cur_item_ref.sidebar_state = 'case_1_fixed_down';
+                            }
+                            else {
+                                cur_item_ref.sidebar_state = 'case_3_bottom_of_content';
+                            }
+                        }
+
+
+
+                        // position:fixed; bottom:0
+                        else if (
+                            true === tdSmartSidebar._is_smaller( cur_item_ref.sidebar_bottom, view_port_bottom ) &&
+                            true === tdSmartSidebar._is_smaller( cur_item_ref.sidebar_bottom, cur_item_ref.content_bottom ) &&
+                            'down' === scroll_direction &&
+                            cur_item_ref.content_bottom >= view_port_bottom
+                        ) {
+                            //console.log(cur_item_ref.sidebar_bottom + ' < ' + cur_item_ref.content_bottom);
+                            cur_item_ref.sidebar_state = 'case_1_fixed_down';
+                        }
+
+                        // the sidebar is at the top of the content ( position:static )
+                        else if (
+                            true === tdSmartSidebar._is_smaller_or_equal( cur_item_ref.sidebar_top, cur_item_ref.content_top ) &&
+                            'up' === scroll_direction &&
+                            cur_item_ref.content_bottom >= view_port_bottom
+                        ) {
+                            cur_item_ref.sidebar_state = 'case_2_top_of_content';
+                        }
+
+
+
+
+                        // the sidebar reached the bottom of the content
+                        else if (
+                            ( true === tdSmartSidebar._is_smaller_or_equal(cur_item_ref.content_bottom, cur_item_ref.sidebar_bottom) && 'down' === scroll_direction ) ||
+                            cur_item_ref.content_bottom < view_port_bottom
+
+                        ) {
+                            cur_item_ref.sidebar_state = 'case_3_bottom_of_content';
+
+                        }
+                        // scrolling up, the sidebar is fixed up ( position:fixed; top:0 )
+                        else if ( true === tdSmartSidebar._is_smaller_or_equal( scrollTop, cur_item_ref.sidebar_top ) && 'up' === scroll_direction &&
+
+                            true === tdSmartSidebar._is_smaller_or_equal( cur_item_ref.content_top, scrollTop ) //we are scrolling up ... make sure that we don't overshoot the sidebar by going over content_top. This happens when the sidebar is offseted by x number of pixels vs content
+                        ) {
+                            //console.log('sidebar_top' + cur_item_ref.sidebar_top + ' content top:' + cur_item_ref.content_top);
+                            cur_item_ref.sidebar_state = 'case_4_fixed_up';
+                        }
+
+
+
+                        // when to put absolute?
+                        if (
+                            ( 'case_1_fixed_down' === cur_item_ref.sidebar_state && 'up' === scroll_direction ) ||
+                            ( 'case_4_fixed_up' === cur_item_ref.sidebar_state && 'down' === scroll_direction )
+                        ) {
+                            cur_item_ref.sidebar_state = 'case_5_absolute'; //absolute while going up?
+                        }
+
+                    } // end sidebar length check   cur_item_ref.sidebar_height < view_port_height
+
+
+
+
+                    /**
+                     * after we have the state, we enter this switch that makes sure that we only have one state change
+                     */
+
+                    // we have to set the content width via JS
+                    //var column_content_width = 339;
+                    //if (tdSmartSidebar.is_tablet_grid) {
+                    //    column_content_width = 251;
+                    //}
+
+
+                    var column_content_width = 0;
+
+                    var view_port_current_item = tdViewport.getCurrentIntervalItem();
+
+                    if ( null !== view_port_current_item ) {
+                        column_content_width = view_port_current_item.sidebarWidth;
+                        //tdSmartSidebar.log("column sidebar width : " + column_content_width);
+                    }
+
+
+
+                    switch ( cur_item_ref.sidebar_state ) {
+                        case 'case_1_fixed_down':
+
+                            if ( true === cur_item_ref.case_1_run_once ) {
+                                break;
+                            }
+
+                            tdSmartSidebar.log( 'sidebar_id: ' + item_index + ' ' + cur_item_ref.sidebar_state );
+
+                            cur_item_ref.case_1_run_once = true;
+                            cur_item_ref.case_2_run_once = false;
+                            cur_item_ref.case_3_run_once = false;
+                            cur_item_ref.case_4_run_once = false;
+                            cur_item_ref.case_5_run_once = false;
+                            cur_item_ref.case_6_run_once = false;
+
+
+                            cur_item_ref.sidebar_jquery_obj.css({
+                                width: column_content_width,
+                                position: 'fixed',
+                                top: 'auto',
+                                bottom: '0',
+                                'z-index': '1'
+                            });
+
+
+                            break;
+
+                        case 'case_2_top_of_content':
+
+                            if ( true === cur_item_ref.case_2_run_once ) {
+                                break;
+                            }
+
+                            tdSmartSidebar.log( 'sidebar_id: ' + item_index + ' ' + cur_item_ref.sidebar_state );
+
+                            cur_item_ref.case_1_run_once = false;
+                            cur_item_ref.case_2_run_once = true;
+                            cur_item_ref.case_3_run_once = false;
+                            cur_item_ref.case_4_run_once = false;
+                            cur_item_ref.case_5_run_once = false;
+                            cur_item_ref.case_6_run_once = false;
+
+
+                            cur_item_ref.sidebar_jquery_obj.css({
+                                width: 'auto',
+                                position: 'static',
+                                top: 'auto',
+                                bottom: 'auto'
+                            });
+                            break;
+
+                        case 'case_3_bottom_of_content':
+                            // case 3 has to be recalculated if the sidebar height changes
+
+                            if ( true === cur_item_ref.case_3_run_once &&
+                                cur_item_ref.case_3_last_sidebar_height === cur_item_ref.sidebar_height &&
+                                cur_item_ref.case_3_last_content_height === cur_item_ref.content_height
+                            ) { //if the case already runned AND the sidebar height did not change
+                                break;
+                            }
+
+                            tdSmartSidebar.log( 'sidebar_id: ' + item_index + ' ' + cur_item_ref.sidebar_state );
+
+                            cur_item_ref.case_1_run_once = false;
+                            cur_item_ref.case_2_run_once = false;
+                            cur_item_ref.case_3_run_once = true;
+                            cur_item_ref.case_3_last_sidebar_height = cur_item_ref.sidebar_height;
+                            cur_item_ref.case_3_last_content_height = cur_item_ref.content_height;
+                            cur_item_ref.case_4_run_once = false;
+                            cur_item_ref.case_5_run_once = false;
+                            cur_item_ref.case_6_run_once = false;
+
+
+                            cur_item_ref.sidebar_jquery_obj.css({
+                                width: column_content_width,
+                                position: 'absolute',
+                                top: cur_item_ref.content_bottom - cur_item_ref.sidebar_height - cur_item_ref.content_top,
+                                bottom: 'auto'
+                            });
+                            break;
+
+                        case 'case_4_fixed_up':
+
+                            if ( true === cur_item_ref.case_4_run_once && cur_item_ref.case_4_last_menu_offset === td_affix_menu_computed_height ) { //if the case already runned AND the menu height did not changed
+                                break;
+                            }
+
+                            tdSmartSidebar.log( 'sidebar_id: ' + item_index + ' ' + cur_item_ref.sidebar_state );
+
+                            cur_item_ref.case_1_run_once = false;
+                            cur_item_ref.case_2_run_once = false;
+                            cur_item_ref.case_3_run_once = false;
+                            cur_item_ref.case_4_run_once = true;
+                            cur_item_ref.case_4_last_menu_offset = td_affix_menu_computed_height;
+                            cur_item_ref.case_5_run_once = false;
+                            cur_item_ref.case_6_run_once = false;
+
+
+                            cur_item_ref.sidebar_jquery_obj.css({
+                                width: column_content_width,
+                                position: 'fixed',
+                                top: td_affix_menu_computed_height,
+                                bottom: 'auto'
+                            });
+                            break;
+
+                        case 'case_5_absolute':
+
+                            if ( true === cur_item_ref.case_5_run_once ) {
+                                break;
+                            }
+
+                            tdSmartSidebar.log( 'sidebar_id: ' + item_index + ' ' + cur_item_ref.sidebar_state );
+
+                            cur_item_ref.case_1_run_once = false;
+                            cur_item_ref.case_2_run_once = false;
+                            cur_item_ref.case_3_run_once = false;
+                            cur_item_ref.case_4_run_once = false;
+                            cur_item_ref.case_5_run_once = true;
+                            cur_item_ref.case_6_run_once = false;
+
+
+                            cur_item_ref.sidebar_jquery_obj.css({
+                                width: column_content_width,
+                                position: 'absolute',
+                                top: cur_item_ref.sidebar_top - cur_item_ref.content_top,
+                                bottom: 'auto'
+                            });
+                            break;
+
+                        case 'case_6_content_too_small':
+
+                            if ( true === cur_item_ref.case_6_run_once ) {
+                                break;
+                            }
+
+                            tdSmartSidebar.log( 'sidebar_id: ' + item_index + ' ' + cur_item_ref.sidebar_state );
+
+                            cur_item_ref.case_1_run_once = false;
+                            cur_item_ref.case_2_run_once = false;
+                            cur_item_ref.case_3_run_once = false;
+                            cur_item_ref.case_4_run_once = false;
+                            cur_item_ref.case_5_run_once = false;
+                            cur_item_ref.case_6_run_once = true;
+
+                            cur_item_ref.sidebar_jquery_obj.css({
+                                width: 'auto',
+                                position: 'static',
+                                top: 'auto',
+                                bottom: 'auto'
+                            });
+                            break;
+                    }
+                } // end for loop
+            }); // end request animation frame
+        }, // end td_events_scroll
+
+
+        compute: function() {
+
+            tdSmartSidebar.td_events_scroll( jQuery( window ).scrollTop() );
+        },
+
+
+        // resets the run once flags. It may fail sometimes due to case_3_last_sidebar_height & case_4_last_menu_offset
+        reset_run_once_flags: function () {
+            for ( var item_index = 0; item_index < tdSmartSidebar.items.length; item_index++ ) {
+                tdSmartSidebar.items[ item_index ].case_1_run_once = false;
+                tdSmartSidebar.items[ item_index ].case_2_run_once = false;
+                tdSmartSidebar.items[ item_index ].case_3_run_once = false;
+                tdSmartSidebar.items[ item_index ].case_3_last_sidebar_height = 0;
+                tdSmartSidebar.items[ item_index ].case_3_last_content_height = 0;
+                tdSmartSidebar.items[ item_index ].case_4_run_once = false;
+                tdSmartSidebar.items[ item_index ].case_4_last_menu_offset = 0;
+                tdSmartSidebar.items[ item_index ].case_5_run_once = false;
+                tdSmartSidebar.items[ item_index ].case_6_run_once = false;
+            }
+        },
+
+
+
+        td_events_resize: function() {
+            // enable and disable the smart sidebar
+
+            tdSmartSidebar._view_port_current_interval_index = tdViewport.getCurrentIntervalIndex();
+
+            switch ( tdSmartSidebar._view_port_current_interval_index ) {
+
+                case 0 :
+
+                    tdSmartSidebar.is_enabled = false;
+
+                    // flag marked false to be made true only once, when the view port has not the first interval index [0]
+                    tdSmartSidebar.is_enabled_state_run_once = false;
+
+                    break;
+
+                case 1 :
+                    if ( false === tdSmartSidebar.is_tablet_grid ) { // we switched
+
+                        tdSmartSidebar.reset_run_once_flags();
+
+                        tdSmartSidebar.is_tablet_grid = true;
+                        tdSmartSidebar.is_desktop_grid = false;
+
+                        tdSmartSidebar.log( 'view port tablet' );
+                    }
+                    tdSmartSidebar.is_enabled = true;
+                    tdSmartSidebar.is_disabled_state_run_once = false;
+
+                    if ( false === tdSmartSidebar.is_enabled_state_run_once ) {
+                        tdSmartSidebar.is_enabled_state_run_once = true;
+                        tdSmartSidebar.log( 'smart_sidebar_enabled' );
+                    }
+                    break;
+
+                case 2 :
+                case 3 :
+                    if ( true === tdSmartSidebar.is_tablet_grid ) { // we switched
+
+                        tdSmartSidebar.reset_run_once_flags();
+
+                        tdSmartSidebar.is_tablet_grid = false;
+                        tdSmartSidebar.is_desktop_grid = true;
+
+                        tdSmartSidebar.log( 'view port desktop' );
+                    }
+                    tdSmartSidebar.is_enabled = true;
+                    tdSmartSidebar.is_disabled_state_run_once = false;
+
+                    if ( false === tdSmartSidebar.is_enabled_state_run_once ) {
+                        tdSmartSidebar.is_enabled_state_run_once = true;
+                        tdSmartSidebar.log( 'smart_sidebar_enabled' );
+                    }
+                    break;
+            }
+
+            // @todo we may be able to delay the compute a bit (aka run it on the 500ms timer)
+            tdSmartSidebar.compute();
+        },
+
+
+        log: function( msg ) {
+            //console.log(msg);
+        },
+
+
+        /**
+         * check if the two numbers are approximately equal OR the number1 is smaller.
+         * This function is used to compensate for differences in the offset top reported by IE, FF but not chrome
+         * IE and FF have an error for offset top of +- 0.5
+         * @param number1 - this has to be smaller or approximately equal with number2 to return true
+         * @param number2
+         * @returns {boolean}
+         * @private
+         */
+        _is_smaller_or_equal: function( number1, number2 ) {
+            // check if the two numbers are approximately equal
+            // - first we check if the difference between the numbers is bigger than 1 unit
+            // - second we check if the first number is bigger than the second one
+            // if the two conditions are met, we return false
+
+
+            if ( Math.abs( number1 - number2 ) >= 1) {
+                // we have a difference that is bigger than 1 unit (px), check if the numbers are smaller or bigger
+                if ( number1 < number2 ) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                // the difference between the two numbers is smaller than one unit (1 px), this means that the two numbers are the same
+                return true;
+            }
+        },
+
+
+        /**
+         * Checks to see if number1 < number2 by at least one unit!
+         * @param number1
+         * @param number2
+         * @returns {boolean}
+         * @private
+         */
+        _is_smaller: function( number1, number2 ) {
+            if ( Math.abs( number1 - number2 ) >= 1) {
+                if ( number1 < number2 ) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                // the difference between the two numbers is smaller than one unit (1 px), this means that the two numbers are the same
+                return false;
+            }
+        }
+    };
+
+    //console.log(tdSmartSidebar.items);
+})();
+
+
 
 /**
  * Infinite loader v1.0 by Radu O. / tagDiv
  * USES:
- *  - td_events.js
+ *  - tdEvents.js
  *  - for blocks:
  *      - td_block::get_block_pagination - custom load more
- *      - in td_js_generator.php - main block object has ajax_pagination_infinite_stop - to stop the infinit scroll after x number of pages and show the load more button after that
+ *      - in td_js_generator.php - main block object has ajax_pagination_infinite_stop - to stop the infinite scroll after x number of pages and show the load more button after that
  *
  */
-"use strict";
+
+/* global jQuery:false */
+/* global tdBlocks:false */
+
 
 /**
- * - register and keep track of dom elements
- * - calculate position from the top of each element
- * - monitor on scroll event
- *  - if one or more of the dom elements is visible
- *  - fire the callback for that dom element! only ONCE
+ * Global infinite loader object
  */
+var tdInfiniteLoader = {};
 
-
-var td_infinite_loader = {
-
-    has_items: false, // this class will only work when this flag is true. If we don't have any items, all the calculations on scroll will be disabled by this flag
-
-    items: [], //the array that has all the items
-
-    // one item object (instantiable)
-    item: function() {
-        this.uid=''; // - an unique id of the item, usually is the block id!
-        this.jquery_obj = ''; //find the item easily for animation ??
-        this.bottom_top = 0;  //distance from the bottom of the dom element to top - computed in - @see td_infinite_loader.compute_top_distances();
-        this.is_visible_callback_enabled = true; //the callback will fire only when this flag is true. We set it to true after the blocks ajax run @see td_block_ajax_loading_end
-        this.is_visible_callback = function () { //callback when the item's bottom is visible :)
-
-        };
-    },
-
-    add_item: function(item) {
-        td_infinite_loader.has_items = true; //put the flag that we have items
-        td_infinite_loader.items.push(item);
-    },
-
+(function () {
+    "use strict";
 
     /**
-     * foreach element from items, compute the distances from the top
-     *  - this is done only on load or when the page is resized
+     * - register and keep track of dom elements
+     * - calculate position from the top of each element
+     * - monitor on scroll event
+     *  - if one or more of the dom elements is visible
+     *  - fire the callback for that dom element! only ONCE
      */
-    compute_top_distances: function compute_top_distances() {
-
-        //check the flag to see if we have any items
-        if (td_infinite_loader.has_items === false) {
-            return;
-        }
-
-        jQuery.each(td_infinite_loader.items, function(index, v_event) {
-            var top_top = td_infinite_loader.items[index].jquery_obj.offset().top;
-            //top of document to bottom of element
-            td_infinite_loader.items[index].bottom_top = top_top + td_infinite_loader.items[index].jquery_obj.height();
-        });
-
-        //also calculate the events
-        td_infinite_loader.compute_events();
-
-    },
 
 
-    /**
-     * calculate if we have to fire an event like is_visible_callback()
-     *  - this is done on scroll and on resize!
-     */
-    compute_events: function compute_events() {
-        //check the flag to see if we have any items
-        if (td_infinite_loader.has_items === false) {
-            return;
-        }
+    tdInfiniteLoader = {
 
-        var top_to_viewport_bottom = jQuery(window).height() + jQuery(window).scrollTop();
+        hasItems: false, // this class will only work when this flag is true. If we don't have any items, all the calculations on scroll will be disabled by this flag
+
+        items: [], //the array that has all the items
+
+        // one item object (instantiable)
+        item: function() {
+            this.uid=''; // - an unique id of the item, usually is the block id! - it is used to enable the callback on a per item basis
+            this.jqueryObj = ''; //find the item easily for animation ??
+            this.bottomTop = 0;  //distance from the bottom of the dom element to top - computed in - @see tdInfiniteLoader.compute_top_distances();
+            this.isVisibleCallbackEnabled = true; //the callback will fire only when this flag is true. We set it to true after the blocks ajax run @see tdBlocks.tdBlockAjaxLoadingEnd
+            this.isVisibleCallback = function () { //callback when the item's bottom is visible :)
+            };
+        },
+
+        addItem: function(item) {
+            tdInfiniteLoader.hasItems = true; //put the flag that we have items
+            tdInfiniteLoader.items.push(item);
+        },
 
 
-        jQuery.each(td_infinite_loader.items, function(index, item) {
-            if (td_infinite_loader.items[index].bottom_top < top_to_viewport_bottom + 400) {
+        /**
+         * foreach element from items, compute the distances from the top
+         *  - this is done only on load or when the page is resized
+         */
+        computeTopDistances: function() {
 
-                //check to see if we can call the callback again
-                if (td_infinite_loader.items[index].is_visible_callback_enabled === true) {
-                    td_infinite_loader.items[index].is_visible_callback_enabled = false;
-                    //the call
-                    td_infinite_loader.items[index].is_visible_callback();
+            //check the flag to see if we have any items
+            if ( tdInfiniteLoader.hasItems === false ) {
+                return;
+            }
+
+            jQuery.each(tdInfiniteLoader.items, function(index, v_event) {
+                var topTop = tdInfiniteLoader.items[index].jqueryObj.offset().top;
+                //top of document to bottom of element
+                tdInfiniteLoader.items[index].bottomTop = topTop + tdInfiniteLoader.items[index].jqueryObj.height();
+            });
+
+            //also calculate the events
+            tdInfiniteLoader.computeEvents();
+
+        },
+
+
+        /**
+         * calculate if we have to fire an event like isVisibleCallback()
+         *  - this is done on scroll and on resize!
+         */
+        computeEvents: function() {
+            //check the flag to see if we have any items
+            if ( tdInfiniteLoader.hasItems === false ) {
+                return;
+            }
+
+            var topToViewportBottom = jQuery(window).height() + jQuery(window).scrollTop();
+
+
+            jQuery.each(tdInfiniteLoader.items, function(index, item) {
+                if ( tdInfiniteLoader.items[index].bottomTop < topToViewportBottom + 700 ) {
+
+                    //check to see if we can call the callback again
+                    if ( tdInfiniteLoader.items[index].isVisibleCallbackEnabled === true ) {
+                        tdInfiniteLoader.items[index].isVisibleCallbackEnabled = false;
+                        //the call
+                        tdInfiniteLoader.items[index].isVisibleCallback();
+                    }
                 }
-            }
 
 
-        });
-    },
+            });
+        },
 
 
-    /**
-     * enables the is_visible_callback - it is called by td_blocks.js only when a block receives an infinite loading ajax reply
-     * @param $item_uid - an unique id of the item, usually is the block id!
-     * @see td_block_ajax_loading_end
-     */
-    enable_is_visible_callback: function enable_is_visible_callback($item_uid) {
-        jQuery.each(td_infinite_loader.items, function(index, item) {
-            if (item.uid === $item_uid) {
-                td_infinite_loader.items[index].is_visible_callback_enabled = true;
-                return false; //brake jquery each
-            }
-        });
-    }
-
-};
-
-
-
-
-
-
-/**
- * we are using td_ajax_infinite to know when to trigger a block loading
- */
-jQuery('.td_ajax_infinite').each(function() {
-
-    // create a new infinite loader item
-    var td_infinite_loader_item = new td_infinite_loader.item();
-
-    td_infinite_loader_item.jquery_obj = jQuery(this);
-    td_infinite_loader_item.uid = jQuery(this).data('td_block_id');
-
-
-    /**
-     * the callback when the bottom of the element is visible on screen and we need to do something - like load another page
-     * - the callback does not fire again until td_infinite_loader.enable_is_visible_callback is called @see td_infinite_loader.js:95
-     */
-    td_infinite_loader_item.is_visible_callback = function () {      // the is_visible callback is called when we have to pull new content up because the element is visible
-
-        // get the current block object
-        var current_block_obj = td_getBlockObjById(td_infinite_loader_item.jquery_obj.data('td_block_id'));
-
-        // if we don't have a infinite stop limit or if we have one we dint' hit it yet
-        if (current_block_obj.ajax_pagination_infinite_stop == '' || current_block_obj.td_current_page < (parseInt(current_block_obj.ajax_pagination_infinite_stop) + 1)) {
-
-            // get the block data and increment the pagination
-            current_block_obj.td_current_page++;
-            td_ajax_do_block_request(current_block_obj, 'infinite_load');
-
-        } else {
-            /**
-             * show the load more button. The button is already there, hidden - do not know if it's the best solution :)
-             * @see td_block::get_block_pagination  in td_block.php
-             */
-            if (current_block_obj.td_current_page < current_block_obj.max_num_pages) {
-                setTimeout(function(){
-                    jQuery('#infinite-lm-' + current_block_obj.id).show();
-                }, 400);
-            }
+        /**
+         * enables the isVisibleCallback - it is called by td_blocks.js only when a block receives an infinite loading ajax reply
+         * @param $item_uid - an unique id of the item, usually is the block id!
+         * @see tdBlocks.tdBlockAjaxLoadingEnd
+         */
+        enable_is_visible_callback: function($item_uid) {
+            jQuery.each(tdInfiniteLoader.items, function(index, item) {
+                if ( item.uid === $item_uid ) {
+                    tdInfiniteLoader.items[index].isVisibleCallbackEnabled = true;
+                    return false; //brake jquery each
+                }
+            });
         }
-
-
-
 
     };
 
 
-    td_infinite_loader.add_item(td_infinite_loader_item);
-});
 
 
-//compute to
-jQuery(window).load(function() {
-    td_infinite_loader.compute_top_distances();
-});
 
-jQuery().ready(function() {
-    td_infinite_loader.compute_top_distances();
-});
 
+    /**
+     * we are using td_ajax_infinite to know when to trigger a block loading
+     */
+    jQuery('.td_ajax_infinite').each( function() {
+
+        // create a new infinite loader item
+        var tdInfiniteLoaderItem = new tdInfiniteLoader.item();
+
+        tdInfiniteLoaderItem.jqueryObj = jQuery(this);
+        tdInfiniteLoaderItem.uid = jQuery(this).data('td_block_id');
+
+
+        /**
+         * the callback when the bottom of the element is visible on screen and we need to do something - like load another page
+         * - the callback does not fire again until tdInfiniteLoader.enable_is_visible_callback is called @see tdInfiniteLoader.js:95
+         */
+        tdInfiniteLoaderItem.isVisibleCallback = function () {      // the is_visible callback is called when we have to pull new content up because the element is visible
+
+            // get the current block object
+            var currentBlockObj = tdBlocks.tdGetBlockObjById(tdInfiniteLoaderItem.jqueryObj.data('td_block_id'));
+
+            // if we don't have a infinite stop limit or if we have one we dint' hit it yet
+            if ( currentBlockObj.ajax_pagination_infinite_stop === '' ||
+                    currentBlockObj.td_current_page < (parseInt(currentBlockObj.ajax_pagination_infinite_stop) + 1) ) {
+
+                // get the block data and increment the pagination
+                currentBlockObj.td_current_page++;
+                tdBlocks.tdAjaxDoBlockRequest(currentBlockObj, 'infinite_load');
+
+            } else {
+                /**
+                 * show the load more button. The button is already there, hidden - do not know if it's the best solution :)
+                 * @see td_block::get_block_pagination  in td_block.php
+                 */
+                if ( currentBlockObj.td_current_page < currentBlockObj.max_num_pages ) {
+                    setTimeout( function(){
+                        jQuery('#infinite-lm-' + currentBlockObj.id)
+                            .css('display', 'block')
+                            .css('visibility', 'visible')
+                        ;
+                    }, 400);
+                }
+            }
+        };
+        tdInfiniteLoader.addItem(tdInfiniteLoaderItem);
+    });
+
+
+
+
+
+
+
+
+    //compute to
+    jQuery(window).load( function() {
+        tdInfiniteLoader.computeTopDistances();
+    });
+
+    jQuery().ready( function() {
+        tdInfiniteLoader.computeTopDistances();
+    });
+})();
 /**
  * activate smooth scroll
  */
 
 if (typeof window['tds_smooth_scroll'] !== 'undefined') {
 
-    if (td_detect.is_chrome === true && td_detect.is_android === false) {
+    if (tdDetect.isChrome === true && tdDetect.isAndroid === false) {
+
         td_smooth_scroll();
     }
 }
@@ -3997,347 +5602,399 @@ var Froogaloop=function(){function e(a){return new e.fn.init(a)}function h(a,c,b
  * v 1.0 - wp_011
  */
 
-"use strict";
+/* global tdAnimationScroll:{} */
+/* global tdAnimationStack:{} */
+/* global tdPullDown:{} */
+/* global tdBackstr:{} */
+/* global td_backstretch_items:Array */
+/* global td_compute_backstretch_item:Function */
 
-var td_custom_events = {
+var tdCustomEvents = {};
 
+(function(){
 
-    /**
-     * - callback real scroll called from td_events
-     * @private
-     */
-    _callback_scroll: function _callback_scroll() {
-        td_animation_scroll.compute_all_items();
-    },
+    'use strict';
 
-
-    /**
-     * - callback real resize called from td_events
-     * @private
-     */
-    _callback_resize: function _callback_resize() {
-
-    },
+    tdCustomEvents = {
 
 
-    /**
-     * - callback lazy scroll called from td_events at 100ms
-     * @private
-     */
-    _lazy_callback_scroll_100: function _lazy_callback_scroll_100() {
-        if (td_animation_stack.activated === true) {
-            td_animation_stack.td_events_scroll();
+        /**
+         * - callback real scroll called from td_events
+         * @private
+         */
+        _callback_scroll: function() {
+            tdAnimationScroll.compute_all_items();
+        },
+
+
+        /**
+         * - callback real resize called from td_events
+         * @private
+         */
+        _callback_resize: function() {
+
+        },
+
+
+        /**
+         * - callback lazy scroll called from td_events at 100ms
+         * @private
+         */
+        _lazy_callback_scroll_100: function() {
+            if ( true === tdAnimationStack.activated ) {
+                tdAnimationStack.td_events_scroll();
+            }
+        },
+
+
+        /**
+         * - callback lazy scroll called from td_events at 500ms
+         * @private
+         */
+        _lazy_callback_scroll_500: function() {
+
+        },
+
+
+
+        /**
+         * - callback lazy resize called from td_events at 100ms
+         * @private
+         */
+        _lazy_callback_resize_100: function() {
+            tdPullDown.td_events_resize();
+            tdBackstr.td_events_resize();
+            tdAnimationScroll.td_events_resize();
+        },
+
+
+        /**
+         * - callback lazy resize called from td_events at 500ms
+         * @private
+         */
+        _lazy_callback_resize_500: function() {
+            if ( true === tdAnimationStack.activated ) {
+                tdAnimationStack.td_events_resize();
+            }
+
+            // - every tdAnimationScroll.item item of the td_backstretch_items array must be reinitialized and repositioned for parallax effect
+            for ( var i = 0; i < td_backstretch_items.length; i++ ) {
+                tdAnimationScroll.reinitialize_item( td_backstretch_items[ i ], true );
+                td_compute_backstretch_item( td_backstretch_items[ i ] );
+
+                // compute_all_items is used instead, for requestAnimationFrame
+                //tdAnimationScroll.compute_item(td_backstretch_items[i]);
+            }
+
+            // for better performance it's used tdAnimationScroll.compute_all_items, because it uses requestAnimationFrame
+            tdAnimationScroll.compute_all_items();
         }
-    },
+    };
+})();
 
-
-    /**
-     * - callback lazy scroll called from td_events at 500ms
-     * @private
-     */
-    _lazy_callback_scroll_500: function _lazy_callback_scroll_500() {
-
-    },
-
-
-
-    /**
-     * - callback lazy resize called from td_events at 100ms
-     * @private
-     */
-    _lazy_callback_resize_100: function _lazy_callback_resize_100() {
-        td_pulldown.td_events_resize();
-        td_backstr.td_events_resize();
-        td_animation_scroll.td_events_resize();
-    },
-
-
-    /**
-     * - callback lazy resize called from td_events at 500ms
-     * @private
-     */
-    _lazy_callback_resize_500: function _lazy_callback_resize_500() {
-        if (td_animation_stack.activated === true) {
-            td_animation_stack.td_events_resize();
-        }
-
-        // - every td_animation_scroll.item item of the td_backstretch_items array must be reinitialized and repositioned for parallax effect
-        for (var i = 0; i < td_backstretch_items.length; i++) {
-            td_animation_scroll.reinitialize_item(td_backstretch_items[i], true);
-            td_compute_backstretch_item(td_backstretch_items[i]);
-
-            // compute_all_items is used instead, for requestAnimationFrame
-            //td_animation_scroll.compute_item(td_backstretch_items[i]);
-        }
-
-        // for better performance it's used td_animation_scroll.compute_all_items, because it uses requestAnimationFrame
-        td_animation_scroll.compute_all_items();
-    }
-};
-
-/* td_events.js - handles the events that require throttling
+/* tdEvents.js - handles the events that require throttling
  * v 2.0 - wp_010
  *
  * moved in theme from wp_booster
  */
 
-"use strict";
+/* global jQuery:{} */
+/* global tdAffix:{} */
+/* global tdSmartSidebar:{} */
+/* global tdViewport:{} */
+/* global tdInfiniteLoader:{} */
+/* global td_more_articles_box:{} */
+/* global tdDetect:{} */
+/* global tdCustomEvents:{} */
 
-var td_events = {
+/* global td_events_scroll_scroll_to_top:Function */
 
-    //the events - we have timers that look at the variables and fire the event if the flag is true
-    scroll_event_slow_run: false,
-    scroll_event_medium_run: false,
+var tdEvents = {};
 
-    resize_event_slow_run: false, //when true, fire up the resize event
-    resize_event_medium_run: false,
+(function(){
+    'use strict';
 
+    tdEvents = {
 
-    scroll_window_scrollTop: 0, //used to store the scrollTop
+        //the events - we have timers that look at the variables and fire the event if the flag is true
+        scroll_event_slow_run: false,
+        scroll_event_medium_run: false,
 
-    window_pageYOffset: window.pageYOffset, // @todo see if it can replace scroll_window_scrollTop [used by others]
-    window_innerHeight: window.innerHeight, // used to store the window height
-    window_innerWidth: window.innerWidth, // used to store the window width
-
-    init: function init() {
-
-        jQuery(window).scroll(function() {
-            td_events.scroll_event_slow_run = true;
-            td_events.scroll_event_medium_run = true;
-
-            //read the scroll top
-            td_events.scroll_window_scrollTop = jQuery(window).scrollTop();
-            td_events.window_pageYOffset = window.pageYOffset;
-
-            /*  ----------------------------------------------------------------------------
-             Run affix menu event
-             */
-
-            td_affix.td_events_scroll(td_events.scroll_window_scrollTop); //main menu
-
-            td_smart_sidebar.td_events_scroll(td_events.scroll_window_scrollTop); //smart sidebar scroll
+        resize_event_slow_run: false, //when true, fire up the resize event
+        resize_event_medium_run: false,
 
 
-            // call real td_custom_events scroll
-            td_custom_events._callback_scroll();
-        });
+        scroll_window_scrollTop: 0, //used to store the scrollTop
+
+        window_pageYOffset: window.pageYOffset, // @todo see if it can replace scroll_window_scrollTop [used by others]
+        window_innerHeight: window.innerHeight, // used to store the window height
+        window_innerWidth: window.innerWidth, // used to store the window width
+
+        init: function() {
+
+            jQuery( window ).scroll(function() {
+                tdEvents.scroll_event_slow_run = true;
+                tdEvents.scroll_event_medium_run = true;
+
+                //read the scroll top
+                tdEvents.scroll_window_scrollTop = jQuery( window ).scrollTop();
+                tdEvents.window_pageYOffset = window.pageYOffset;
+
+                /*  ----------------------------------------------------------------------------
+                 Run affix menu event
+                 */
+
+                tdAffix.td_events_scroll( tdEvents.scroll_window_scrollTop ); //main menu
+
+                tdSmartSidebar.td_events_scroll( tdEvents.scroll_window_scrollTop ); //smart sidebar scroll
 
 
-        jQuery(window).resize(function() {
-            td_events.resize_event_slow_run = true;
-            td_events.resize_event_medium_run = true;
-
-            td_events.window_innerHeight = window.innerHeight;
-            td_events.window_innerWidth = window.innerWidth;
-
-            //var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-
-            //w = jQuery(document).width();
-            //console.log(w);
+                // call real tdCustomEvents scroll
+                tdCustomEvents._callback_scroll();
+            });
 
 
-            // call real td_custom_events resize
-            td_custom_events._callback_resize();
-        });
+            jQuery( window ).resize(function() {
+                tdEvents.resize_event_slow_run = true;
+                tdEvents.resize_event_medium_run = true;
+
+                tdEvents.window_innerHeight = window.innerHeight;
+                tdEvents.window_innerWidth = window.innerWidth;
+
+                //var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+
+                //w = jQuery(document).width();
+                //console.log(w);
 
 
-
-        //medium resolution timer for rest?
-        setInterval(function() {
-
-            // it must run before any others
-            td_viewport.detect_changes();
-
-            //scroll event
-            if (td_events.scroll_event_medium_run) {
-                td_events.scroll_event_medium_run = false;
-                //compute events for the infinite scroll
-                td_infinite_loader.compute_events();
-
-
-                // call lazy td_custom_events scroll
-                td_custom_events._lazy_callback_scroll_100();
-            }
-
-            if (td_events.resize_event_medium_run) {
-                td_events.resize_event_medium_run = false;
-                td_smart_sidebar.td_events_resize();
-
-
-                // call lazy td_custom_events resize
-                td_custom_events._lazy_callback_resize_100();
-            }
-        }, 100);
+                // call real tdCustomEvents resize
+                tdCustomEvents._callback_resize();
+            });
 
 
 
-        //low resolution timer for rest?
-        setInterval(function() {
-            //scroll event
-            if (td_events.scroll_event_slow_run) {
-                td_events.scroll_event_slow_run = false;
+            //medium resolution timer for rest?
+            setInterval(function() {
 
-                //back to top
-                td_events_scroll_scroll_to_top(td_events.scroll_window_scrollTop);
+                // it must run before any others
+                tdViewport.detectChanges();
 
-                //more articles box
-                td_more_articles_box.td_events_scroll(td_events.scroll_window_scrollTop);
-
-
-                // call lazy td_custom_events scroll
-                td_custom_events._lazy_callback_scroll_500();
-            }
-
-            //resize event
-            if (td_events.resize_event_slow_run) {
-                td_events.resize_event_slow_run = false;
-                td_affix.compute_wrapper();
-                td_affix.compute_top();
-                td_detect.run_is_phone_screen();
+                //scroll event
+                if ( tdEvents.scroll_event_medium_run ) {
+                    tdEvents.scroll_event_medium_run = false;
+                    //compute events for the infinite scroll
+                    tdInfiniteLoader.computeEvents();
 
 
-                // call lazy td_custom_events resize
-                td_custom_events._lazy_callback_resize_500();
-            }
-        }, 500);
+                    // call lazy tdCustomEvents scroll
+                    tdCustomEvents._lazy_callback_scroll_100();
+                }
 
-    }
+                if ( tdEvents.resize_event_medium_run ) {
+                    tdEvents.resize_event_medium_run = false;
+                    tdSmartSidebar.td_events_resize();
+
+
+                    // call lazy tdCustomEvents resize
+                    tdCustomEvents._lazy_callback_resize_100();
+                }
+            }, 100);
 
 
 
-};
+            //low resolution timer for rest?
+            setInterval(function() {
+                //scroll event
+                if ( tdEvents.scroll_event_slow_run ) {
+                    tdEvents.scroll_event_slow_run = false;
 
-td_events.init();
-'use strict';
+                    //back to top
+                    td_events_scroll_scroll_to_top( tdEvents.scroll_window_scrollTop );
+
+                    //more articles box
+                    td_more_articles_box.td_events_scroll( tdEvents.scroll_window_scrollTop );
+
+
+                    // call lazy tdCustomEvents scroll
+                    tdCustomEvents._lazy_callback_scroll_500();
+                }
+
+                //resize event
+                if ( tdEvents.resize_event_slow_run ) {
+                    tdEvents.resize_event_slow_run = false;
+                    tdAffix.compute_wrapper();
+                    tdAffix.compute_top();
+                    tdDetect.runIsPhoneScreen();
+
+
+                    // call lazy tdCustomEvents resize
+                    tdCustomEvents._lazy_callback_resize_500();
+                }
+            }, 500);
+        }
+    };
+
+    tdEvents.init();
+})();
+
 /**
  * updates the view counter thru ajax
  */
-var td_ajax_count = {
 
-    td_get_views_counts_ajax : function td_get_views_counts_ajax (page_type, array_ids) {
+/* global jQuery:{} */
+/* global td_ajax_url:string */
 
-        //what function to call based on page type
-        var page_type_action = 'td_ajax_get_views';//page_type = page
-        if(page_type == "post") {
-            page_type_action = 'td_ajax_update_views';
-        }
+var tdAjaxCount = {};
 
-        jQuery.ajax({
-            type: 'POST',
-            url: td_ajax_url,
-            cache:true,
+(function(){
 
-            data: {
-                action: page_type_action,
-                td_post_ids: array_ids
-            },
-            success: function(data, textStatus, XMLHttpRequest){
-                var td_ajax_post_counts = jQuery.parseJSON(data);//get the return dara
+    'use strict';
 
-                //check the return var to be object
-                if (td_ajax_post_counts instanceof Object) {
-                    //alert('value is Object!');
+    tdAjaxCount = {
 
-                    //itinerate thru the object
-                    jQuery.each(td_ajax_post_counts, function(id_post, value) {
-                        //alert(id_post + ": " + value);
+        //td_get_views_counts_ajax : function( page_type, array_ids ) {
+        tdGetViewsCountsAjax : function( postType, arrayIds ) {
 
-                        //this is the count placeholder in witch we write the post count
-                        var current_post_count = ".td-nr-views-" + id_post;
-
-                        jQuery(current_post_count).html(value);
-                        //console.log(current_post_count + ': ' + value);
-                    });
-                }
-            },
-            error: function(MLHttpRequest, textStatus, errorThrown){
-                //console.log(errorThrown);
+            //what function to call based on postType
+            var pageTypeAction = 'td_ajax_get_views';//postType = page
+            if ( 'post' === postType ) {
+                pageTypeAction = 'td_ajax_update_views';
             }
-        });
 
-    }
-};
+            jQuery.ajax({
+                type: 'POST',
+                url: td_ajax_url,
+                cache: true,
+                data: {
+                    action: pageTypeAction,
+                    td_post_ids: arrayIds
+                },
+                success: function( data, textStatus, XMLHttpRequest ) {
+                    var tdAjaxPostCounts = jQuery.parseJSON( data );//get the return dara
+
+                    //check the return var to be object
+                    if ( tdAjaxPostCounts instanceof Object ) {
+                        //alert('value is Object!');
+
+                        //iterate throw the object
+                        jQuery.each( tdAjaxPostCounts, function( idPost, value ) {
+                            //alert(id_post + ": " + value);
+
+                            //this is the count placeholder in witch we write the post count
+                            var currentPostCount = '.td-nr-views-' + idPost;
+
+                            jQuery( currentPostCount ).html( value );
+                            //console.log(current_post_count + ': ' + value);
+                        });
+                    }
+                },
+                error: function( MLHttpRequest, textStatus, errorThrown ) {
+                    //console.log(errorThrown);
+                }
+            });
+        }
+    };
+})();
+
 /*
  td_video_playlist.js
  v1.1
  */
 
-"use strict";
+
+/* global jQuery:{} */
+/* global YT:{} */
+/* global tdDetect:{} */
+/* global $f:{} */
+
+/* global td_youtube_list_ids:{} */
+/* global td_vimeo_list_ids:{} */
+
+/* jshint -W069 */
+
+var tdYoutubePlayer = {};
+var tdVimeoPlaylistObj = {};
+var tdPlaylistGeneralFunctions = {};
+
+
+// @todo this ready hook function must be moved from here
 // jQuery(window).load(function() {//
 jQuery().ready(function() {
 
+    'use strict';
+
     //click on a youtube movie
-    jQuery('.td_click_video_youtube').click(function(){
+    jQuery( '.td_click_video_youtube' ).click(function(){
 
         //this flag is check to see if to start the movie
-        td_youtube_player.td_playlist_video_autoplay_youtube = 1;
+        tdYoutubePlayer.tdPlaylistVideoAutoplayYoutube = 1;
 
         //add pause to playlist control
-        td_playlist_general_functions.td_playlist_add_play_control('.td_youtube_control');
+        tdPlaylistGeneralFunctions.tdPlaylistAddPlayControl( '.td_youtube_control' );
 
         //create  and play the clicked video
-        var td_youtube_video = jQuery(this).attr("id").substring(3);
-        if(td_youtube_video != '') {
-            td_youtube_player.playVideo(td_youtube_video);
+        var tdYoutubeVideo = jQuery( this ).attr( 'id' ).substring( 3 );
+        if ( '' !== tdYoutubeVideo ) {
+            tdYoutubePlayer.playVideo( tdYoutubeVideo );
         }
     });
 
 
 
     //click on youtube play control
-    jQuery('.td_youtube_control').click(function(){
+    jQuery( '.td_youtube_control' ).click(function(){
 
         //click to play
-        if(jQuery(this).hasClass('td-sp-video-play')){
+        if ( jQuery( this ).hasClass( 'td-sp-video-play' ) ){
             //this is to enable video playing
-            td_youtube_player.td_playlist_video_autoplay_youtube = 1;
+            tdYoutubePlayer.tdPlaylistVideoAutoplayYoutube = 1;
 
             //play the video
-            td_youtube_player.td_playlist_youtube_play_video();
+            tdYoutubePlayer.tdPlaylistYoutubePlayVideo();
 
         } else {
 
             //put pause to the player
-            td_youtube_player.td_playlist_youtube_pause_video();
+            tdYoutubePlayer.tdPlaylistYoutubePauseVideo();
         }
     });
 
 
 
     //check for youtube wrapper and add api code to create the player
-    if(jQuery('.td_wrapper_playlist_player_youtube').length > 0) {
+    if ( jQuery( '.td_wrapper_playlist_player_youtube' ).length > 0) {
 
-        if(jQuery('.td_wrapper_playlist_player_youtube').data("autoplay") == "1") {
-            td_youtube_player.td_playlist_video_autoplay_youtube = 1;
+        if ( '1' == jQuery( '.td_wrapper_playlist_player_youtube').data( 'autoplay' ) ) {
+            tdYoutubePlayer.tdPlaylistVideoAutoplayYoutube = 1;
         }
 
-        var first_video = jQuery('.td_wrapper_playlist_player_youtube').data('first-video');
+        var firstVideo = jQuery( '.td_wrapper_playlist_player_youtube' ).data( 'first-video' );
 
-        if(first_video != '') {
-            td_youtube_player.td_playlist_id_youtube_video_running = first_video;
+        if ( '' !== firstVideo ) {
+            tdYoutubePlayer.tdPlaylistIdYoutubeVideoRunning = firstVideo;
 
-            td_youtube_player.playVideo(first_video);
+            tdYoutubePlayer.playVideo( firstVideo );
         }
     }
 
 
 
     //check autoplay vimeo
-    if(jQuery('.td_wrapper_playlist_player_vimeo').data("autoplay") == "1") {
-        td_vimeo_playlist_obj.td_playlist_video_autoplay_vimeo = 1;
+    if ( '1' == jQuery( '.td_wrapper_playlist_player_vimeo' ).data( 'autoplay' ) ) {
+        tdVimeoPlaylistObj.tdPlaylistVideoAutoplayVimeo = 1;
     }
 
     //click on a vimeo
-    jQuery('.td_click_video_vimeo').click(function(){
+    jQuery( '.td_click_video_vimeo' ).click(function(){
 
         //this flag is check to see if to start the movie
-        td_vimeo_playlist_obj.td_playlist_video_autoplay_vimeo = 1;
+        tdVimeoPlaylistObj.tdPlaylistVideoAutoplayVimeo = 1;
 
         //add pause to playlist control
-        td_playlist_general_functions.td_playlist_add_play_control('.td_vimeo_control');
+        tdPlaylistGeneralFunctions.tdPlaylistAddPlayControl( '.td_vimeo_control' );
 
         //create  and play the clicked video
-        td_vimeo_playlist_obj.create_player(jQuery(this).attr("id").substring(3));
+        tdVimeoPlaylistObj.createPlayer( jQuery( this ).attr( 'id' ).substring( 3 ) );
     });
 
 
@@ -4345,311 +6002,325 @@ jQuery().ready(function() {
 
 
     //check for vimeo wrapper and add api code to create the player
-    if(jQuery('.td_wrapper_playlist_player_vimeo').length > 0) {
+    if ( jQuery( '.td_wrapper_playlist_player_vimeo' ).length > 0 ) {
 
         //add play to playlist control
-        td_playlist_general_functions.td_playlist_add_play_control('.td_vimeo_control');
+        tdPlaylistGeneralFunctions.tdPlaylistAddPlayControl( '.td_vimeo_control' );
 
         //create the iframe with the video
-        td_vimeo_playlist_obj.create_player(jQuery('.td_wrapper_playlist_player_vimeo').data("first-video"));
+        tdVimeoPlaylistObj.createPlayer( jQuery( '.td_wrapper_playlist_player_vimeo' ).data('first-video' ) );
     }
 
 
 
 
     //click on youtube play control
-    jQuery('.td_vimeo_control').click(function(){
+    jQuery( '.td_vimeo_control' ).click(function(){
 
         //click to play
-        if(jQuery(this).hasClass('td-sp-video-play')){
+        if ( jQuery( this ).hasClass( 'td-sp-video-play' ) ) {
             //this is to enable video playing
-            td_vimeo_playlist_obj.td_playlist_video_autoplay_vimeo = 1;
+            tdVimeoPlaylistObj.tdPlaylistVideoAutoplayVimeo = 1;
 
             //play the video
-            td_vimeo_playlist_obj.td_playlisty_player_vimeo.api("play");
+            tdVimeoPlaylistObj.tdPlaylistPlayerVimeo.api( 'play' );
 
         } else {
 
             //put pause to the player
-            td_vimeo_playlist_obj.td_playlisty_player_vimeo.api("pause");
+            tdVimeoPlaylistObj.tdPlaylistPlayerVimeo.api( 'pause' );
         }
     });
 
 });
 
 
-var td_youtube_player = {
-    td_yt_player: '',
+(function() {
+    'use strict';
 
-    td_player_container: 'player_youtube',
+    tdYoutubePlayer = {
+        tdYtPlayer: '',
 
-    td_playlist_video_autoplay_youtube: 0,
+        tdPlayerContainer: 'player_youtube',
 
-    td_playlist_id_youtube_video_running: '',
+        tdPlaylistVideoAutoplayYoutube: 0,
 
-
-    playVideo: function(videoId) {
-        if (typeof(YT) == 'undefined' || typeof(YT.Player) == 'undefined') {
-            window.onYouTubePlayerAPIReady = function() {
-                td_youtube_player.loadPlayer(td_youtube_player.td_player_container, videoId);
-            };
-            jQuery.getScript('https://www.youtube.com/player_api');
-        } else {
-            td_youtube_player.loadPlayer(td_youtube_player.td_player_container, videoId);
-        }
-    },
+        tdPlaylistIdYoutubeVideoRunning: '',
 
 
-    loadPlayer: function(container, videoId) {
-        //container is here in case we need to add multiple players on page
-        td_youtube_player.td_playlist_id_youtube_video_running = videoId;
-
-        var current_video_name = td_youtube_list_ids['td_' + td_youtube_player.td_playlist_id_youtube_video_running]['title'];
-        var current_video_time = td_youtube_list_ids['td_' + td_youtube_player.td_playlist_id_youtube_video_running]['time'];
-
-        //remove focus from all videos from playlist
-        td_playlist_general_functions.td_video_playlist_remove_focused('.td_click_video_youtube');
-
-        //add focus class on current playing video
-        jQuery('#td_' + videoId).addClass('td_video_currently_playing');
-
-        //ading the current video playing title and time to the control area
-        jQuery('#td_current_video_play_title_youtube').html(current_video_name);
-        jQuery('#td_current_video_play_time_youtube').html(current_video_time);
-
-        td_youtube_player.td_yt_player = '';
-        jQuery(".td_wrapper_playlist_player_youtube").html("<div id="+ td_youtube_player.td_player_container +"></div>");
-
-        td_youtube_player.td_yt_player = new YT.Player(container, {//window.myPlayer = new YT.Player(container, {
-            playerVars: {
-                //modestbranding: 1,
-                //rel: 0,
-                //showinfo: 0,
-                autoplay: td_youtube_player.td_playlist_video_autoplay_youtube
-            },
-            height: '100%',
-            width: '100%',
-            videoId: videoId,
-            events: {
-                'onReady': td_youtube_player.onPlayerReady,
-                'onStateChange': td_youtube_player.onPlayerStateChange
+        playVideo: function( videoId ) {
+            if ( 'undefined' === typeof( YT ) || 'undefined' === typeof( YT.Player ) ) {
+                window.onYouTubePlayerAPIReady = function() {
+                    tdYoutubePlayer.loadPlayer( tdYoutubePlayer.tdPlayerContainer, videoId );
+                };
+                jQuery.getScript( 'https://www.youtube.com/player_api' );
+            } else {
+                tdYoutubePlayer.loadPlayer( tdYoutubePlayer.tdPlayerContainer, videoId );
             }
-        });
-    },
+        },
 
 
-    onPlayerStateChange: function onPlayerStateChange(event) {
-        if (event.data == YT.PlayerState.PLAYING) {
+        loadPlayer: function( container, videoId ) {
+            //container is here in case we need to add multiple players on page
+            tdYoutubePlayer.tdPlaylistIdYoutubeVideoRunning = videoId;
 
-            //add pause to playlist control
-            td_playlist_general_functions.td_playlist_add_pause_control('.td_youtube_control');
+            var current_video_name = td_youtube_list_ids['td_' + tdYoutubePlayer.tdPlaylistIdYoutubeVideoRunning]['title'];
+            var current_video_time = td_youtube_list_ids['td_' + tdYoutubePlayer.tdPlaylistIdYoutubeVideoRunning]['time'];
 
-        } else if (event.data == YT.PlayerState.ENDED) {
-            //video_events_js.on_stop('youtube');
+            //remove focus from all videos from playlist
+            tdPlaylistGeneralFunctions.tdVideoPlaylistRemoveFocused( '.td_click_video_youtube' );
+
+            //add focus class on current playing video
+            jQuery( '#td_' + videoId ).addClass( 'td_video_currently_playing' );
+
+            //ading the current video playing title and time to the control area
+            jQuery( '#td_current_video_play_title_youtube' ).html( current_video_name );
+            jQuery( '#td_current_video_play_time_youtube' ).html( current_video_time );
+
+            tdYoutubePlayer.tdYtPlayer = '';
+            jQuery( '.td_wrapper_playlist_player_youtube' ).html( '<div id=' + tdYoutubePlayer.tdPlayerContainer + '></div>' );
+
+            tdYoutubePlayer.tdYtPlayer = new YT.Player( container, {//window.myPlayer = new YT.Player(container, {
+                playerVars: {
+                    //modestbranding: 1,
+                    //rel: 0,
+                    //showinfo: 0,
+                    autoplay: tdYoutubePlayer.tdPlaylistVideoAutoplayYoutube
+                },
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                events: {
+                    'onReady': tdYoutubePlayer.onPlayerReady,
+                    'onStateChange': tdYoutubePlayer.onPlayerStateChange
+                }
+            });
+        },
+
+
+        onPlayerStateChange: function( event ) {
+            if ( event.data === YT.PlayerState.PLAYING ) {
+
+                //add pause to playlist control
+                tdPlaylistGeneralFunctions.tdPlaylistAddPauseControl( '.td_youtube_control' );
+
+            } else if ( event.data === YT.PlayerState.ENDED ) {
+                //video_events_js.on_stop('youtube');
+
+                //add play to playlist control
+                tdPlaylistGeneralFunctions.tdPlaylistAddPlayControl( '.td_youtube_control' );
+
+                //if a video has ended then make auto play = 1; This is the case when the user set autoplay = 0 but start watching videos
+                tdYoutubePlayer.tdPlaylistVideoAutoplayYoutube = 1;
+
+                //get the next video
+                var nextVideoId = tdPlaylistGeneralFunctions.tdPlaylistChooseNextVideo( [ td_youtube_list_ids, tdYoutubePlayer.tdPlaylistIdYoutubeVideoRunning ] );
+                if ( '' !== nextVideoId ) {
+                    tdYoutubePlayer.playVideo( nextVideoId );
+                }
+
+            } else if ( YT.PlayerState.PAUSED ) {
+                //add play to playlist control
+                tdPlaylistGeneralFunctions.tdPlaylistAddPlayControl( '.td_youtube_control' );
+            }
+        },
+
+        tdPlaylistYoutubeStopVideo: function() {
+            tdYoutubePlayer.tdYtPlayer.stopVideo();
+        },
+
+        tdPlaylistYoutubePlayVideo: function() {
+            if ( ! tdDetect.isMobileDevice ) {
+                tdYoutubePlayer.tdYtPlayer.playVideo();
+            }
+        },
+
+        tdPlaylistYoutubePauseVideo: function() {
+            tdYoutubePlayer.tdYtPlayer.pauseVideo();
+        }
+    };
+
+
+
+    //VIMEO
+    tdVimeoPlaylistObj = {
+
+        currentVideoPlaying : '',
+
+        tdPlaylistPlayerVimeo: '',//a copy of the vimeo player : needed when playing or pausing the vimeo pleyer from the playlist control
+
+        //tdPlaylistVideoAutoplayVimeo: '',//autoplay
+        tdPlaylistVideoAutoplayVimeo: 0,//autoplay
+
+        createPlayer: function ( videoId ) {
+            if ( '' !== videoId ) {
+
+                var vimeo_iframe_autoplay = '';
+
+                this.currentVideoPlaying = videoId;
+
+                //remove focus class
+                tdPlaylistGeneralFunctions.tdVideoPlaylistRemoveFocused( '.td_click_video_vimeo' );
+
+                //add focus clas on play movie
+                jQuery( '#td_' + videoId ).addClass( 'td_video_currently_playing' );
+
+                //put movie data to control box
+                this.putMovieDataToControlBox( videoId );
+
+                //check autoplay
+                if ( 0 !== this.tdPlaylistVideoAutoplayVimeo ) {
+                    vimeo_iframe_autoplay = '&autoplay=1';
+                }
+
+
+                jQuery( '.td_wrapper_playlist_player_vimeo' ).html( '' );
+                jQuery( '.td_wrapper_playlist_player_vimeo' ).html( '<iframe id="player_vimeo_1" src="https://player.vimeo.com/video/' + videoId + '?api=1&player_id=player_vimeo_1' + vimeo_iframe_autoplay + '"  frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>' );//width="100%" height="100%"
+
+                this.createVimeoObjectPlayer( jQuery );
+            }
+
+        },
+
+        putMovieDataToControlBox: function( videoId ){
+            jQuery( '#td_current_video_play_title_vimeo' ).html( td_vimeo_list_ids['td_' + videoId]['title'] );
+            jQuery( '#td_current_video_play_time_vimeo' ).html( td_vimeo_list_ids['td_' + videoId]['time'] );
+        },
+
+        createVimeoObjectPlayer : function( $ ) {
+            var iframe = '';
+            var player = '';
+
+            iframe = $( '#player_vimeo_1' )[0];
+            player = $f( iframe );
+
+            //a copy of the vimeo player : needed when playing or pausing the vimeo pleyer from the playlist control
+            this.tdPlaylistPlayerVimeo = player;
+
+            // When the player is ready, add listeners for pause, finish, and playProgress
+            player.addEvent( 'ready', function() {
+                //status.text('ready');
+
+                player.addEvent( 'play', tdVimeoPlaylistObj.onPlay );
+                player.addEvent( 'pause', tdVimeoPlaylistObj.onPause );
+                player.addEvent( 'finish', tdVimeoPlaylistObj.onFinish );
+                player.addEvent( 'playProgress', tdVimeoPlaylistObj.onPlayProgress );
+            });
+        },
+
+        onPlay : function( id ) {
+            tdPlaylistGeneralFunctions.tdPlaylistAddPauseControl( '.td_vimeo_control' );
+
+            tdVimeoPlaylistObj.tdPlaylistVideoAutoplayVimeo = 1;
+        },
+
+        onPause : function( id ) {
+            tdPlaylistGeneralFunctions.tdPlaylistAddPlayControl( '.td_vimeo_control' );
+        },
+
+        onFinish : function( id ) {
+            //status.text('finished');
 
             //add play to playlist control
-            td_playlist_general_functions.td_playlist_add_play_control('.td_youtube_control');
+            tdPlaylistGeneralFunctions.tdPlaylistAddPlayControl( '.td_vimeo_control' );
 
             //if a video has ended then make auto play = 1; This is the case when the user set autoplay = 0 but start watching videos
-            td_youtube_player.td_playlist_video_autoplay_youtube = 1;
+            tdVimeoPlaylistObj.tdPlaylistVideoAutoplayVimeo = 1;
 
-            //get the next video
-            var next_video_id = td_playlist_general_functions.td_playlist_choose_next_video([td_youtube_list_ids, td_youtube_player.td_playlist_id_youtube_video_running]);
-            if(next_video_id != '') {
-                td_youtube_player.playVideo(next_video_id);
+            if ( ! tdDetect.isMobileDevice || ! tdDetect.isAndroid ) {
+
+                //get the next video
+                var nextVideoId = tdPlaylistGeneralFunctions.tdPlaylistChooseNextVideo( [td_vimeo_list_ids, tdVimeoPlaylistObj.currentVideoPlaying] );
+                if ( '' !== nextVideoId ) {
+                    tdVimeoPlaylistObj.createPlayer( nextVideoId );
+                }
             }
+        },
 
-        } else if (YT.PlayerState.PAUSED) {
-            //add play to playlist control
-            td_playlist_general_functions.td_playlist_add_play_control('.td_youtube_control');
+        onPlayProgress : function onPlayProgress( data, id ) {
+            //status.text(data.seconds + 's played');
         }
-    },
-
-    td_playlist_youtube_stopVideo: function td_playlist_youtube_stopVideo() {
-        td_youtube_player.td_yt_player.stopVideo();
-    },
-
-    td_playlist_youtube_play_video: function td_playlist_youtube_play_video() {
-        if(td_detect.is_mobile_device) {
-            //alert('mobile');
-        } else {
-            td_youtube_player.td_yt_player.playVideo();
-        }
-    },
-
-    td_playlist_youtube_pause_video: function td_playlist_youtube_pause_video() {
-        td_youtube_player.td_yt_player.pauseVideo();
-    }
-};
+    };
 
 
 
 
-
-//VIMEO
-var td_vimeo_playlist_obj = {
-
-    current_video_playing : '',
-
-    td_playlisty_player_vimeo: '',//a copy of the vimeo player : needed when playing or pausing the vimeo pleyer from the playlist control
-
-    td_playlist_video_autoplay_vimeo: '',//autoplay
-
-    create_player: function (video_id){
-        if(video_id != '') {
-
-            var vimeo_iframe_autoplay = '';
-
-            this.current_video_playing = video_id;
-
+    //this object holds some functions used by both the youtube and vimeo
+    tdPlaylistGeneralFunctions = {
+        tdVideoPlaylistRemoveFocused: function( objClass ) {
             //remove focus class
-            td_playlist_general_functions.td_video_playlist_remove_focused('.td_click_video_vimeo');
+            jQuery( objClass ).each(function() {
+                jQuery( this ).removeClass( 'td_video_currently_playing' );
+            });
+        },
 
-            //add focus clas on play movie
-            jQuery('#td_' + video_id).addClass('td_video_currently_playing');
 
-            //put movie data to control box
-            this.put_movie_data_to_control_box(video_id);
+        /*
+         parram_array = array [
+         video_list,
+         current_video_id_playing
+         ]
+         */
+        tdPlaylistChooseNextVideo: function( parramArray ){
+            //alert('get next');
 
-            //check autoplay
-            if(this.td_playlist_video_autoplay_vimeo != 0) {
-                vimeo_iframe_autoplay = '&autoplay=1';
+            var videoList = parramArray[0];
+            var currentVideoIdPlaying = 'td_' + parramArray[1];
+
+            //get next video id
+            var nextVideoId = '';
+            var foundCurrent = '';
+            for ( var video in videoList ) {
+                if ( videoList.hasOwnProperty( video ) ) {
+                    if ( 'found' === foundCurrent ) {
+                        nextVideoId = video;
+                        foundCurrent = '';
+                        break;//found , now exit
+                    }
+                    if ( video === currentVideoIdPlaying ) {
+                        foundCurrent = 'found';
+                    }
+                }
             }
 
+            //play the next video
+            if ( '' !== nextVideoId ) {
 
-            jQuery('.td_wrapper_playlist_player_vimeo').html('');
-            jQuery('.td_wrapper_playlist_player_vimeo').html('<iframe id="player_vimeo_1" src="https://player.vimeo.com/video/' + video_id + '?api=1&player_id=player_vimeo_1' + vimeo_iframe_autoplay + '"  frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>');//width="100%" height="100%"
+                //remove 'td_' from the beginning of the string if necessary
+                if ( 'td_' === nextVideoId.substring( 0, 3 ) ) {
+                    nextVideoId = nextVideoId.substring( 3 );
+                }
 
-            this.create_vimeo_object_player(jQuery);
+                return nextVideoId;
+            }
+
+            return '';
+        },
+
+
+
+        //add pause button playlist control
+        tdPlaylistAddPauseControl: function( wrapperClass ){
+            jQuery( wrapperClass ).removeClass( 'td-sp-video-play' ).addClass( 'td-sp-video-pause' );
+        },
+
+        //add play button playlist control
+        tdPlaylistAddPlayControl: function( wrapperClass ){
+            jQuery( wrapperClass ).removeClass( 'td-sp-video-pause' ).addClass( 'td-sp-video-play' );
         }
-
-    },
-
-    put_movie_data_to_control_box: function (video_id){
-        jQuery('#td_current_video_play_title_vimeo').html(td_vimeo_list_ids['td_' + video_id]['title']);
-        jQuery('#td_current_video_play_time_vimeo').html(td_vimeo_list_ids['td_' + video_id]['time']);
-    },
-
-    create_vimeo_object_player : function ($) {
-        var iframe = '';
-        var player = '';
-
-        iframe = $('#player_vimeo_1')[0];
-        player = $f(iframe);
-
-        //a copy of the vimeo player : needed when playing or pausing the vimeo pleyer from the playlist control
-        this.td_playlisty_player_vimeo = player;
-
-        // When the player is ready, add listeners for pause, finish, and playProgress
-        player.addEvent('ready', function() {
-            //status.text('ready');
-
-            player.addEvent('play', td_vimeo_playlist_obj.onPlay);
-            player.addEvent('pause', td_vimeo_playlist_obj.onPause);
-            player.addEvent('finish', td_vimeo_playlist_obj.onFinish);
-            player.addEvent('playProgress', td_vimeo_playlist_obj.onPlayProgress);
-        });
-    },
-
-    onPlay : function onPlay(id) {
-        td_playlist_general_functions.td_playlist_add_pause_control('.td_vimeo_control');
-
-        td_vimeo_playlist_obj.td_playlist_video_autoplay_vimeo = 1;
-    },
-
-    onPause : function onPause(id) {
-        td_playlist_general_functions.td_playlist_add_play_control('.td_vimeo_control');
-    },
-
-    onFinish : function onFinish(id) {
-        //status.text('finished');
-
-        //add play to playlist control
-        td_playlist_general_functions.td_playlist_add_play_control('.td_vimeo_control');
-
-        //if a video has ended then make auto play = 1; This is the case when the user set autoplay = 0 but start watching videos
-        td_vimeo_playlist_obj.td_playlist_video_autoplay_vimeo = 1;
-
-        if(td_detect.is_mobile_device && td_detect.is_android) {
-            //alert('is android');
-        } else {
-
-            //get the next video
-            var next_video_id = td_playlist_general_functions.td_playlist_choose_next_video([td_vimeo_list_ids, td_vimeo_playlist_obj.current_video_playing]);
-            if(next_video_id != '') {
-                td_vimeo_playlist_obj.create_player(next_video_id);
-            }
-        }
-    },
-
-    onPlayProgress : function onPlayProgress(data, id) {
-        //status.text(data.seconds + 's played');
-    }
-};
-
-
-//this object holds some functions used by both the youtube and vimeo
-var td_playlist_general_functions = {
-    td_video_playlist_remove_focused: function td_video_playlist_remove_focused(obj_class) {
-        //remove focus class
-        jQuery( obj_class).each(function(){
-            jQuery(this).removeClass('td_video_currently_playing');
-        });
-    },
-
-
-    /*
-     parram_array = array [
-     video_list,
-     current_video_id_playing
-     ]
-     */
-    td_playlist_choose_next_video: function td_playlist_choose_next_video(parram_array){
-        //alert('get next');
-
-        var video_list = parram_array[0];
-        var current_video_id_playing = 'td_' + parram_array[1];
-
-        //get next video id
-        var next_video_id = '';
-        var found_current = '';
-        for(var video in video_list){
-            if(found_current == 'found') {
-                next_video_id = video;
-                found_current = '';
-                break;//found , now exit
-            }
-            if(video == current_video_id_playing) {
-                found_current = 'found';
-            }
-        }
-
-        //play the next video
-        if(next_video_id != '') {
-
-            //remove 'td_' from the beginning of the string if necessary
-            if(next_video_id.substring(0, 3) == 'td_') {
-                next_video_id = next_video_id.substring(3);
-            }
-
-            return next_video_id;
-        }
-
-        return '';
-    },
+    };
+})();
 
 
 
-    //add pause button playlist control
-    td_playlist_add_pause_control: function td_playlist_add_pause_control(wrapper_class){
-        jQuery(wrapper_class).removeClass('td-sp-video-play').addClass('td-sp-video-pause');
-    },
 
-    //add play button playlist control
-    td_playlist_add_play_control: function td_playlist_add_play_control(wrapper_class){
-        jQuery(wrapper_class).removeClass('td-sp-video-pause').addClass('td-sp-video-play');
-    }
-};
+
+
+
+
+
+
+
 /*
  td_slide.js
  */
@@ -4678,7 +6349,7 @@ function td_resize_smartlist_slides(args) {
 
     var current_slider = jQuery(args.data.obj[0]).attr("id");
 
-    if(!td_detect.is_ie8) {
+    if(!tdDetect.isIe8) {
         jQuery("#" + current_slider).css("overflow", "none");
         jQuery("#" + current_slider + " .td-item").css("overflow", "visible");
     }
@@ -4701,7 +6372,7 @@ function td_resize_smartlist_sliders_and_update() {
     jQuery(document).find('.td-smart-list-slider').each(function() {
         var current_slider = jQuery(this).attr("id");
 
-        if(!td_detect.is_ie8) {
+        if(!tdDetect.isIe8) {
             jQuery("#" + current_slider).css("overflow", "none");
             jQuery("#" + current_slider + " .td-item").css("overflow", "visible");
         }
@@ -4713,7 +6384,7 @@ function td_resize_smartlist_sliders_and_update() {
             height: setHeight
         });
 
-        if(td_detect.is_android) {
+        if(tdDetect.isAndroid) {
             setTimeout(function () {
                 jQuery("#" + current_slider).iosSlider("update");
             }, 2000);
@@ -4731,7 +6402,7 @@ function td_resize_normal_slide(args) {
     //get window width
     var window_wight = td_get_document_width();
 
-    if (!td_detect.is_ie8) {
+    if (!tdDetect.isIe8) {
         jQuery("#" + current_slider).css("overflow", "none");
         jQuery("#" + current_slider + " .td-item").css("overflow", "visible");
     }
@@ -4741,11 +6412,11 @@ function td_resize_normal_slide(args) {
 
     //only for android, width of the screen to start changing the height of the slide
     var max_wight_resize = 780;
-    if(td_detect.is_android) {
+    if(tdDetect.isAndroid) {
         max_wight_resize = 1000;
     }
 
-    if (window_wight < max_wight_resize && !td_detect.is_ipad) {//problem because we cannot get an accurate page width
+    if (window_wight < max_wight_resize && !tdDetect.isIpad) {//problem because we cannot get an accurate page width
         if(slide_outer_width > 300) {
             setHeight = slide_outer_width * 0.5;
         } else {
@@ -4774,7 +6445,7 @@ function td_resize_normal_slide_and_update(args) {
     //get window width
     var window_wight = td_get_document_width();
 
-    if(!td_detect.is_ie8) {
+    if(!tdDetect.isIe8) {
         jQuery("#" + current_slider).css("overflow", "none");
         jQuery("#" + current_slider + " .td-item").css("overflow", "visible");
     }
@@ -4784,11 +6455,11 @@ function td_resize_normal_slide_and_update(args) {
 
     //only for android, width of the screen to start changing the height of the slide
     var max_wight_resize = 780;
-    if(td_detect.is_android) {
+    if(tdDetect.isAndroid) {
         max_wight_resize = 1000;
     }
 
-    if (window_wight < max_wight_resize && !td_detect.is_ipad) {//problem because we cannot get an accurate page width
+    if (window_wight < max_wight_resize && !tdDetect.isIpad) {//problem because we cannot get an accurate page width
         if(slide_outer_width > 300) {
             setHeight = slide_outer_width * 0.5;
         } else {
@@ -4814,678 +6485,681 @@ function td_resize_normal_slide_and_update(args) {
  */
 
 
-"use strict";
+/* global tdViewport:{} */
+/* global jQuery:{} */
 
+var tdPullDown = {};
 
-var td_pulldown = {
+( function(){
 
+    'use strict';
 
-    // - keeps internally the current interval index
-    // - it's set at init()
-    _view_port_interval_index : td_viewport.INTERVAL_INITIAL_INDEX,
+    tdPullDown = {
 
 
+        // - keeps internally the current interval index
+        // - it's set at init()
+        _view_port_interval_index : tdViewport.INTERVAL_INITIAL_INDEX,
 
-    // this flag mark that the td_pulldown.items must be reinitialized at the changing view port size
-    reinitialize_items_at_change_view_port: false,
 
 
+        // this flag mark that the tdPullDown.items must be reinitialized at the changing view port size
+        reinitialize_items_at_change_view_port: false,
 
-    // - the list of items
-    items: [],
 
 
+        // - the list of items
+        items: [],
 
-    // - the item represents a pair of lists (a horizontal and a vertical one)
-    // - to be initialized, every property with 'IT MUST BE SPECIFIED' is mandatory
-    item: function item() {
 
-        // - the jquery object of the horizontal list.
-        // IT MUST BE SPECIFIED.
-        this.horizontal_jquery_obj = '';
 
-        // - the jquery object of the vertical list.
-        // IT MUST BE SPECIFIED
-        this.vertical_jquery_obj = '';
+        // - the item represents a pair of lists (a horizontal and a vertical one)
+        // - to be initialized, every property with 'IT MUST BE SPECIFIED' is mandatory
+        item: function item() {
 
-        // - the jquery container object.
-        // - it contains the horizontal and the vertical jquery objects
-        // IT MUST BE SPECIFIED.
-        this.container_jquery_obj = '';
+            // - the jquery object of the horizontal list.
+            // IT MUST BE SPECIFIED.
+            this.horizontal_jquery_obj = '';
 
-        // - the css class of an horizontal element.
-        // IT MUST BE SPECIFIED
-        this.horizontal_element_css_class = '';
+            // - the jquery object of the vertical list.
+            // IT MUST BE SPECIFIED
+            this.vertical_jquery_obj = '';
 
+            // - the jquery container object.
+            // - it contains the horizontal and the vertical jquery objects
+            // IT MUST BE SPECIFIED.
+            this.container_jquery_obj = '';
 
+            // - the css class of an horizontal element.
+            // IT MUST BE SPECIFIED
+            this.horizontal_element_css_class = '';
 
-        // the minimum no. of elements to be shown by the horizontal list
-        // - IT CAN BE SPECIFIED
-        this.minimum_elements = 2;
 
 
+            // the minimum no. of elements to be shown by the horizontal list
+            // - IT CAN BE SPECIFIED
+            this.minimum_elements = 2;
 
-        // - the array of jquery elements whose widths must be excluded from the width of the container object
-        // IT CAN BE SPECIFIED
-        this.excluded_jquery_elements = [];
 
-        // - the extra space of the horizontal jquery object occupied by the excluded jquery elements
-        // - it's not initialized with 0 because widths of the elements can not be integer values
-        // - now, it's set to 1px
-        this._horizontal_extra_space = 1;
 
+            // - the array of jquery elements whose widths must be excluded from the width of the container object
+            // IT CAN BE SPECIFIED
+            this.excluded_jquery_elements = [];
 
+            // - the extra space of the horizontal jquery object occupied by the excluded jquery elements
+            // - it's not initialized with 0 because widths of the elements can not be integer values
+            // - now, it's set to 1px
+            this._horizontal_extra_space = 1;
 
-        // - the array of objects from the horizontal list
-        this._horizontal_elements = [];
 
-        // - the array of objects from the vertical list
-        this._vertical_elements = [];
 
+            // - the array of objects from the horizontal list
+            this._horizontal_elements = [];
 
+            // - the array of objects from the vertical list
+            this._vertical_elements = [];
 
-        // - the jquery object of the first ul container in the vertical list
-        // - it is calculated as the first 'ul' of the vertical jquery object
-        this._vertical_ul_jquery_obj = '';
 
 
+            // - the jquery object of the first ul container in the vertical list
+            // - it is calculated as the first 'ul' of the vertical jquery object
+            this._vertical_ul_jquery_obj = '';
 
-        // - the outer width of the vertical top header (ex.'More')
-        // - it's used to calculate if the last vertical element has enough space in the horizontal list,
-        // without considering the vertical top header width
-        this._vertical_jquery_obj_outer_width = 0;
 
 
+            // - the outer width of the vertical top header (ex.'More')
+            // - it's used to calculate if the last vertical element has enough space in the horizontal list,
+            // without considering the vertical top header width
+            this._vertical_jquery_obj_outer_width = 0;
 
-        // flag used to mark the initialization item
-        this._is_initialized = false;
-    },
 
 
+            // flag used to mark the initialization item
+            this._is_initialized = false;
+        },
 
 
-    /**
-     * - function used to init the td_pulldown object
-     * - it must be called before any item adding
-     * - it initializes the _view_port_interval_index
-     * - the items list is initialized
-     */
-    init: function init() {
 
-        td_pulldown._view_port_interval_index = td_viewport.get_current_interval_index();
 
-        td_pulldown.items = [];
-    },
+        /**
+         * - function used to init the tdPullDown object
+         * - it must be called before any item adding
+         * - it initializes the _view_port_interval_index
+         * - the items list is initialized
+         */
+        init: function() {
 
+            tdPullDown._view_port_interval_index = tdViewport.getCurrentIntervalIndex();
 
+            tdPullDown.items = [];
+        },
 
 
-    /**
-     * - add an item to the item list and initialize it
-     *
-     * @param item The item to be added and initialized
-     */
-    add_item: function add_item(item) {
 
-        // the item is added in the item list
-        td_pulldown.items.push(item);
 
-        // the item is initialized only once when it is added
-        td_pulldown._initialize_item(item);
+        /**
+         * - add an item to the item list and initialize it
+         *
+         * @param item The item to be added and initialized
+         */
+        add_item: function( item ) {
 
-        //  the item is ready to be computed
-        td_pulldown._compute_item(item);
-    },
+            // the item is added in the item list
+            tdPullDown.items.push( item );
 
+            // the item is initialized only once when it is added
+            tdPullDown._initialize_item( item );
 
+            //  the item is ready to be computed
+            tdPullDown._compute_item( item );
+        },
 
 
-    /**
-     * - internal utility function used to initialize an item
-     * - an item must be initialized only once
-     * - every element having a specified css class is added in the horizontal list
-     *
-     * @param item {td_pulldown.item} The item to be initialized
-     * @private
-     */
-    _initialize_item: function _initialize_item(item) {
 
-        // an item must be initialized only once
-        if (item._is_initialized === true) {
-            return;
-        }
 
+        /**
+         * - internal utility function used to initialize an item
+         * - an item must be initialized only once
+         * - every element having a specified css class is added in the horizontal list
+         *
+         * @param item {tdPullDown.item} The item to be initialized
+         * @private
+         */
+        _initialize_item: function( item ) {
 
-        // the mandatory item properties are verified
-        if ((item.horizontal_jquery_obj == '') ||
-            (item.vertical_jquery_obj == '') ||
-            (item.container_jquery_obj == '') ||
-            (item.horizontal_element_css_class == '')) {
-
-            td_pulldown.log('Item can\' be initialized. It doesn\'t have all the mandatory properties');
-            return;
-        }
-
-
-        // the jquery object of the first ul container in the vertical list is initialized
-        item._vertical_ul_jquery_obj = item.vertical_jquery_obj.find('ul:first');
-
-        if (item._vertical_ul_jquery_obj.length == 0) {
-
-            td_pulldown.log('Item can\' be initialized. The vertical list doesn\'t have an \'ul\' container');
-            return;
-        }
-
-
-        // the elements of the horizontal jquery object, having a specified css class
-        var elements = item.horizontal_jquery_obj.find('.' + item.horizontal_element_css_class);
-
-        var local_jquery_element = null;
-        var local_object = null;
-
-        // for each element an object is added in the horizontal list
-        elements.each(function (index, element) {
-
-            local_jquery_element = jQuery(element);
-
-            // @todo here we need a css class
-            local_jquery_element.css('-webkit-transition', 'opacity 0.2s');
-            local_jquery_element.css('-moz-transition', 'opacity 0.2s');
-            local_jquery_element.css('-o-transition', 'opacity 0.2s');
-            local_jquery_element.css('transition', 'opacity 0.2s');
-
-            local_jquery_element.css('opacity', '1');
-
-
-            // the cached object used to keep the jquery object and its outerWidth
-            local_object = {
-
-                // the jquery element
-                jquery_object: local_jquery_element,
-
-                // the outer width including border
-                calculated_width: local_jquery_element.outerWidth(true)
-            };
-
-            // the horizontal list is populated
-            item._horizontal_elements.push(local_object);
-        });
-
-
-        // the outer width of the vertical top header (ex.'More') is initialized
-        item._vertical_jquery_obj_outer_width = item.vertical_jquery_obj.outerWidth(true);
-
-
-        // by default, the vertical jquery object is hidden, being shown when at least one element is moved in it
-        item.vertical_jquery_obj.css('display', 'none');
-
-
-
-        // the the extra space occupied by the horizontal jquery object is calculated
-
-        var horizontal_jquery_obj_padding_left = item.horizontal_jquery_obj.css('padding-left');
-        if ((horizontal_jquery_obj_padding_left != undefined) && (horizontal_jquery_obj_padding_left != '')) {
-            item._horizontal_extra_space += parseInt(horizontal_jquery_obj_padding_left.replace('px', ''));
-        }
-
-        var horizontal_jquery_obj_padding_right = item.horizontal_jquery_obj.css('padding-right');
-        if ((horizontal_jquery_obj_padding_right != undefined) && (horizontal_jquery_obj_padding_right != '')) {
-            item._horizontal_extra_space += parseInt(horizontal_jquery_obj_padding_right.replace('px', ''));
-        }
-
-
-        var horizontal_jquery_obj_margin_left = item.horizontal_jquery_obj.css('margin-left');
-        if ((horizontal_jquery_obj_margin_left != undefined) && (horizontal_jquery_obj_margin_left != '')) {
-            item._horizontal_extra_space += parseInt(horizontal_jquery_obj_margin_left.replace('px', ''));
-        }
-
-        var horizontal_jquery_obj_margin_right = item.horizontal_jquery_obj.css('margin-right');
-        if ((horizontal_jquery_obj_margin_right != undefined) && (horizontal_jquery_obj_margin_right != '')) {
-            item._horizontal_extra_space += parseInt(horizontal_jquery_obj_margin_right.replace('px', ''));
-        }
-
-
-        var horizontal_jquery_obj_border_left = item.horizontal_jquery_obj.css('border-left');
-        if ((horizontal_jquery_obj_border_left != undefined) && (horizontal_jquery_obj_border_left != '')) {
-            item._horizontal_extra_space += parseInt(horizontal_jquery_obj_border_left.replace('px', ''));
-        }
-
-        var horizontal_jquery_obj_border_right = item.horizontal_jquery_obj.css('border-right');
-        if ((horizontal_jquery_obj_border_right != undefined) && (horizontal_jquery_obj_border_right != '')) {
-            item._horizontal_extra_space += parseInt(horizontal_jquery_obj_border_right.replace('px', ''));
-        }
-
-
-        // the item is marked as initialized, being ready to be computed
-        item._is_initialized = true;
-    },
-
-
-
-
-    /**
-     * - internal utility function used to summarize width of the horizontal elements
-     *
-     * @param item {td_pulldown.item} The item whose horizontal list is processed
-     * @returns {number}
-     * @private
-     */
-    _get_horizontal_elements_width: function _get_horizontal_elements_width(item) {
-
-        var sum_width = 0;
-
-        for (var i = item._horizontal_elements.length - 1; i >= 0; i--) {
-            sum_width += item._horizontal_elements[i].calculated_width;
-        }
-        return sum_width;
-    },
-
-
-
-
-    /**
-     * - internal utility function used to reinitialize all items at the view resolution changing
-     */
-    _reinitialize_all_items: function _reinitialize_all_items() {
-
-        for (var i = td_pulldown.items.length - 1; i >= 0; i--) {
-            td_pulldown._reinitialize_item(td_pulldown.items[i]);
-        }
-    },
-
-
-
-
-    /**
-     * - internal utility function used to reinitialize an item at the view resolution changing
-     *
-     * @param item The item being reinitialized
-     */
-    _reinitialize_item: function _reinitialize_item(item) {
-
-        // a not initialized item can't be reinitialized
-        if (item._is_initialized === false) {
-            return;
-        }
-
-        //  the flag is marked, so any further operation on this item is stopped
-        item._is_initialized = false;
-
-        // the html elements of the vertical list are all moved into the horizontal jquery object
-        item.horizontal_jquery_obj.html(item.horizontal_jquery_obj.html() + item._vertical_ul_jquery_obj.html());
-
-        // the html content of the vertical list is cleared
-        item._vertical_ul_jquery_obj.html('');
-
-        // the horizontal list is empty initialized
-        item._horizontal_elements = [];
-
-        // the vertical list is empty initialized
-        item._vertical_elements = [];
-
-        // the extra space is initialized
-        item._horizontal_extra_space = 1;
-
-        // the item is ready to be initialized again
-        td_pulldown._initialize_item(item);
-    },
-
-
-
-
-    /**
-     * - an internal function used to move elements from the horizontal to the vertical list and vice versa, in according with
-     * the space for horizontal elements.
-     * - it's called every time at the viewport resize, when the space for horizontal elements is modified
-     *
-     * @param item - the item being computed
-     * @private
-     */
-    _compute_item: function _compute_item(item) {
-
-        // the item must be initialized first
-        if (item._is_initialized === false) {
-            return;
-        }
-
-
-
-        // the horizontal header margin is set 0 and the horizontal space is computing without its margin
-        // @see td_pulldown._prepare_horizontal_header
-        td_pulldown._prepare_horizontal_header(item, true);
-
-
-
-        // - the space where horizontal elements lie
-        // - it is the container width minus any extra horizontal space
-        var space_for_horizontal_elements = 0;
-
-        // the object container width
-        var container_jquery_width = item.container_jquery_obj.css('width');
-
-        if ((container_jquery_width != undefined) && (container_jquery_width != '')) {
-
-            // the space for new horizontal elements is initialized by the container width
-            space_for_horizontal_elements = container_jquery_width.replace('px', '');
-
-            // then this space is reduced by the widths of the excluded elements
-            for (var i = item.excluded_jquery_elements.length - 1; i >= 0; i--) {
-                space_for_horizontal_elements -= item.excluded_jquery_elements[i].contents().outerWidth(true);
-            }
-        }
-
-
-        // if the vertical list is empty, the space for horizontal elements does not contain the width of the vertical head list
-        if (item._vertical_elements.length > 0) {
-            space_for_horizontal_elements -= item._vertical_jquery_obj_outer_width;
-        }
-
-        // the space occupied by the horizontal elements is removed
-        space_for_horizontal_elements -= td_pulldown._get_horizontal_elements_width(item);
-
-        // the horizontal extra space is used to add an extra gap when the width of one element or a js math computation does a not integer value
-        space_for_horizontal_elements -= item._horizontal_extra_space;
-
-
-        // the current element being moved between the lists
-        var local_current_element;
-
-
-        // if there's not enough space for the horizontal elements, then the last of them are moved to the vertical list
-        while (space_for_horizontal_elements < 0) {
-
-            // if there's specified a minimum number of horizontal elements, this must be considered
-            if ((item.minimum_elements != 0) && (item._horizontal_elements.length <= item.minimum_elements)) {
-
-                // all elements are moved to the vertical list
-                td_pulldown._make_all_elements_vertical(item);
-
-
-
-
-                // the horizontal header margin is set before return
-                td_pulldown._prepare_horizontal_header(item);
-
-
-
-                // the following checks are not more eligible to do
+            // an item must be initialized only once
+            if ( true === item._is_initialized ) {
                 return;
+            }
 
-            } else {
 
-                // If the vertical list does not contain any elements yet,
-                // the space for horizontal elements is minimized by the vertical top header width
-                if (item._vertical_elements.length == 0) {
-                    space_for_horizontal_elements -= item._vertical_jquery_obj_outer_width;
+            // the mandatory item properties are verified
+            if ( ( '' === item.horizontal_jquery_obj ) ||
+                ( '' === item.vertical_jquery_obj ) ||
+                ( '' === item.container_jquery_obj ) ||
+                ( '' === item.horizontal_element_css_class ) ) {
+
+                tdPullDown.log( 'Item can\' be initialized. It doesn\'t have all the mandatory properties' );
+                return;
+            }
+
+
+            // the jquery object of the first ul container in the vertical list is initialized
+            item._vertical_ul_jquery_obj = item.vertical_jquery_obj.find( 'ul:first' );
+
+            if ( 0 === item._vertical_ul_jquery_obj.length ) {
+
+                tdPullDown.log( 'Item can\' be initialized. The vertical list doesn\'t have an \'ul\' container' );
+                return;
+            }
+
+
+            // the elements of the horizontal jquery object, having a specified css class
+            var elements = item.horizontal_jquery_obj.find( '.' + item.horizontal_element_css_class );
+
+            var local_jquery_element = null;
+            var local_object = null;
+
+            // for each element an object is added in the horizontal list
+            elements.each( function ( index, element ) {
+
+                local_jquery_element = jQuery( element );
+
+                // @todo here we need a css class
+                local_jquery_element.css( '-webkit-transition', 'opacity 0.2s' );
+                local_jquery_element.css( '-moz-transition', 'opacity 0.2s' );
+                local_jquery_element.css( '-o-transition', 'opacity 0.2s' );
+                local_jquery_element.css( 'transition', 'opacity 0.2s' );
+
+                local_jquery_element.css( 'opacity', '1' );
+
+
+                // the cached object used to keep the jquery object and its outerWidth
+                local_object = {
+
+                    // the jquery element
+                    jquery_object: local_jquery_element,
+
+                    // the outer width including border
+                    calculated_width: local_jquery_element.outerWidth( true )
+                };
+
+                // the horizontal list is populated
+                item._horizontal_elements.push( local_object );
+            });
+
+
+            // the outer width of the vertical top header (ex.'More') is initialized
+            item._vertical_jquery_obj_outer_width = item.vertical_jquery_obj.outerWidth( true );
+
+
+            // by default, the vertical jquery object is hidden, being shown when at least one element is moved in it
+            item.vertical_jquery_obj.css( 'display', 'none' );
+
+
+
+            // the the extra space occupied by the horizontal jquery object is calculated
+
+            var horizontal_jquery_obj_padding_left = item.horizontal_jquery_obj.css( 'padding-left' );
+            if ( ( undefined !== horizontal_jquery_obj_padding_left ) && ( '' !== horizontal_jquery_obj_padding_left ) ) {
+                item._horizontal_extra_space += parseInt( horizontal_jquery_obj_padding_left.replace( 'px', '' ) );
+            }
+
+            var horizontal_jquery_obj_padding_right = item.horizontal_jquery_obj.css( 'padding-right' );
+            if ( ( undefined !== horizontal_jquery_obj_padding_right ) && ( '' !== horizontal_jquery_obj_padding_right ) ) {
+                item._horizontal_extra_space += parseInt( horizontal_jquery_obj_padding_right.replace( 'px', '' ) );
+            }
+
+
+            var horizontal_jquery_obj_margin_left = item.horizontal_jquery_obj.css( 'margin-left' );
+            if ( ( undefined !== horizontal_jquery_obj_margin_left ) && ( '' !== horizontal_jquery_obj_margin_left ) ) {
+                item._horizontal_extra_space += parseInt( horizontal_jquery_obj_margin_left.replace( 'px', '' ) );
+            }
+
+            var horizontal_jquery_obj_margin_right = item.horizontal_jquery_obj.css( 'margin-right' );
+            if ( ( undefined !== horizontal_jquery_obj_margin_right ) && ( '' !== horizontal_jquery_obj_margin_right ) ) {
+                item._horizontal_extra_space += parseInt( horizontal_jquery_obj_margin_right.replace( 'px', '' ) );
+            }
+
+
+            var horizontal_jquery_obj_border_left = item.horizontal_jquery_obj.css( 'border-left' );
+            if ( ( undefined !== horizontal_jquery_obj_border_left ) && ( '' !== horizontal_jquery_obj_border_left ) ) {
+                item._horizontal_extra_space += parseInt( horizontal_jquery_obj_border_left.replace( 'px', '' ) );
+            }
+
+            var horizontal_jquery_obj_border_right = item.horizontal_jquery_obj.css( 'border-right' );
+            if ( ( undefined !== horizontal_jquery_obj_border_right ) && ( '' !== horizontal_jquery_obj_border_right ) ) {
+                item._horizontal_extra_space += parseInt( horizontal_jquery_obj_border_right.replace( 'px', '' ) );
+            }
+
+
+            // the item is marked as initialized, being ready to be computed
+            item._is_initialized = true;
+        },
+
+
+
+
+        /**
+         * - internal utility function used to summarize width of the horizontal elements
+         *
+         * @param item {tdPullDown.item} The item whose horizontal list is processed
+         * @returns {number}
+         * @private
+         */
+        _get_horizontal_elements_width: function( item ) {
+
+            var sum_width = 0;
+
+            for ( var i = item._horizontal_elements.length - 1; i >= 0; i-- ) {
+                sum_width += item._horizontal_elements[ i ].calculated_width;
+            }
+            return sum_width;
+        },
+
+
+
+
+        /**
+         * - internal utility function used to reinitialize all items at the view resolution changing
+         */
+        _reinitialize_all_items: function() {
+
+            for ( var i = tdPullDown.items.length - 1; i >= 0; i-- ) {
+                tdPullDown._reinitialize_item( tdPullDown.items[ i ] );
+            }
+        },
+
+
+
+
+        /**
+         * - internal utility function used to reinitialize an item at the view resolution changing
+         *
+         * @param item The item being reinitialized
+         */
+        _reinitialize_item: function( item ) {
+
+            // a not initialized item can't be reinitialized
+            if ( false === item._is_initialized ) {
+                return;
+            }
+
+            //  the flag is marked, so any further operation on this item is stopped
+            item._is_initialized = false;
+
+            // the html elements of the vertical list are all moved into the horizontal jquery object
+            item.horizontal_jquery_obj.html( item.horizontal_jquery_obj.html() + item._vertical_ul_jquery_obj.html() );
+
+            // the html content of the vertical list is cleared
+            item._vertical_ul_jquery_obj.html( '' );
+
+            // the horizontal list is empty initialized
+            item._horizontal_elements = [];
+
+            // the vertical list is empty initialized
+            item._vertical_elements = [];
+
+            // the extra space is initialized
+            item._horizontal_extra_space = 1;
+
+            // the item is ready to be initialized again
+            tdPullDown._initialize_item( item );
+        },
+
+
+
+
+        /**
+         * - an internal function used to move elements from the horizontal to the vertical list and vice versa, in according with
+         * the space for horizontal elements.
+         * - it's called every time at the viewport resize, when the space for horizontal elements is modified
+         *
+         * @param item - the item being computed
+         * @private
+         */
+        _compute_item: function( item ) {
+
+            // the item must be initialized first
+            if ( false === item._is_initialized ) {
+                return;
+            }
+
+
+
+            // the horizontal header margin is set 0 and the horizontal space is computing without its margin
+            // @see tdPullDown._prepare_horizontal_header
+            tdPullDown._prepare_horizontal_header( item, true );
+
+
+
+            // - the space where horizontal elements lie
+            // - it is the container width minus any extra horizontal space
+            var space_for_horizontal_elements = 0;
+
+            // the object container width
+            var container_jquery_width = item.container_jquery_obj.css( 'width' );
+
+            if ( ( undefined !== container_jquery_width ) && ( '' !== container_jquery_width ) ) {
+
+                // the space for new horizontal elements is initialized by the container width
+                space_for_horizontal_elements = container_jquery_width.replace( 'px', '' );
+
+                // then this space is reduced by the widths of the excluded elements
+                for ( var i = item.excluded_jquery_elements.length - 1; i >= 0; i-- ) {
+                    space_for_horizontal_elements -= item.excluded_jquery_elements[ i ].contents().outerWidth( true );
                 }
-
-                local_current_element = td_pulldown._make_element_vertical(item);
-                space_for_horizontal_elements += local_current_element.calculated_width;
-            }
-        }
-
-
-
-        // This is the case when there's specified a no. of minimum horizontal elements and the horizontal list is empty.
-        // If the following conditions are accomplished the horizontal list is refilled with elements from the vertical list
-        //
-        //  - if there's specified a no. of minimum horizontal elements
-        //  - if there is no horizontal elements
-        //  - if there are vertical elements
-        //  - if there's enough horizontal space for the first vertical element
-
-        if ((item.minimum_elements != 0)
-            && (item._horizontal_elements.length == 0)
-            && (item._vertical_elements.length > 0)
-            && (space_for_horizontal_elements >= item._vertical_elements[0].calculated_width)) {
-
-            // the necessary space needed for the minimum no. of horizontal elements
-            var local_necessary_space = 0;
-
-            for (var i = 0; (i < item.minimum_elements) && (i < item._vertical_elements.length); i++) {
-                local_necessary_space += item._vertical_elements[i].calculated_width;
             }
 
-            // the necessary space really occupied by the minimum no. of horizontal elements
-            var local_space = 0;
-            var local_minimum_elements = item.minimum_elements;
 
-            while ((local_minimum_elements > 0)
-                && (item._vertical_elements.length > 0)
-                && (space_for_horizontal_elements >= local_necessary_space)) {
+            // if the vertical list is empty, the space for horizontal elements does not contain the width of the vertical head list
+            if ( item._vertical_elements.length > 0 ) {
+                space_for_horizontal_elements -= item._vertical_jquery_obj_outer_width;
+            }
 
-                local_current_element = td_pulldown._make_element_horizontal(item);
+            // the space occupied by the horizontal elements is removed
+            space_for_horizontal_elements -= tdPullDown._get_horizontal_elements_width( item );
 
-                if (local_current_element != null) {
-                    local_space += local_current_element.calculated_width;
-                    local_minimum_elements--;
-                } else {
+            // the horizontal extra space is used to add an extra gap when the width of one element or a js math computation does a not integer value
+            space_for_horizontal_elements -= item._horizontal_extra_space;
+
+
+            // the current element being moved between the lists
+            var local_current_element;
+
+
+            // if there's not enough space for the horizontal elements, then the last of them are moved to the vertical list
+            while ( space_for_horizontal_elements < 0 ) {
+
+                // if there's specified a minimum number of horizontal elements, this must be considered
+                if ( ( item.minimum_elements !== 0 ) && ( item._horizontal_elements.length <= item.minimum_elements ) ) {
+
+                    // all elements are moved to the vertical list
+                    tdPullDown._make_all_elements_vertical( item );
+
 
 
 
                     // the horizontal header margin is set before return
-                    td_pulldown._prepare_horizontal_header(item);
+                    tdPullDown._prepare_horizontal_header( item );
 
+
+
+                    // the following checks are not more eligible to do
+                    return;
+
+                } else {
+
+                    // If the vertical list does not contain any elements yet,
+                    // the space for horizontal elements is minimized by the vertical top header width
+                    if ( 0 === item._vertical_elements.length ) {
+                        space_for_horizontal_elements -= item._vertical_jquery_obj_outer_width;
+                    }
+
+                    local_current_element = tdPullDown._make_element_vertical( item );
+                    space_for_horizontal_elements += local_current_element.calculated_width;
+                }
+            }
+
+
+
+            // This is the case when there's specified a no. of minimum horizontal elements and the horizontal list is empty.
+            // If the following conditions are accomplished the horizontal list is refilled with elements from the vertical list
+            //
+            //  - if there's specified a no. of minimum horizontal elements
+            //  - if there is no horizontal elements
+            //  - if there are vertical elements
+            //  - if there's enough horizontal space for the first vertical element
+
+            if ( ( 0 !== item.minimum_elements ) &&
+                ( 0 === item._horizontal_elements.length ) &&
+                ( item._vertical_elements.length > 0 ) &&
+                ( space_for_horizontal_elements >= item._vertical_elements[ 0 ].calculated_width ) ) {
+
+                // the necessary space needed for the minimum no. of horizontal elements
+                var local_necessary_space = 0;
+
+                for ( var j = 0; ( j < item.minimum_elements ) && ( j < item._vertical_elements.length ); j++ ) {
+                    local_necessary_space += item._vertical_elements[ j ].calculated_width;
+                }
+
+                // the necessary space really occupied by the minimum no. of horizontal elements
+                var local_space = 0;
+                var local_minimum_elements = item.minimum_elements;
+
+                while ( ( local_minimum_elements > 0 ) &&
+                    ( item._vertical_elements.length > 0 ) &&
+                    ( space_for_horizontal_elements >= local_necessary_space ) ) {
+
+                    local_current_element = tdPullDown._make_element_horizontal( item );
+
+                    if ( null !== local_current_element ) {
+                        local_space += local_current_element.calculated_width;
+                        local_minimum_elements--;
+                    } else {
+
+                        // the horizontal header margin is set before return
+                        tdPullDown._prepare_horizontal_header( item );
+
+                        return;
+                    }
+
+                }
+                space_for_horizontal_elements -= local_space;
+            }
+
+
+
+            // It's the case when there isn't specified a no. of minimum horizontal elements or it is specified and the
+            // horizontal list is not empty, and in the same time there's enough horizontal space for more elements
+            while ( ( ( item._horizontal_elements.length > 0 ) || ( 0 === item._horizontal_elements.length && 0 === item.minimum_elements ) ) &&
+                ( item._vertical_elements.length > 0 ) &&
+                ( space_for_horizontal_elements >= item._vertical_elements[ 0 ].calculated_width ) ) {
+
+                local_current_element = tdPullDown._make_element_horizontal( item );
+
+                if ( null !== local_current_element ) {
+                    space_for_horizontal_elements -= local_current_element.calculated_width;
+                } else {
+
+                    // the horizontal header margin is set before return
+                    tdPullDown._prepare_horizontal_header( item );
 
                     return;
                 }
-
             }
-            space_for_horizontal_elements -= local_space;
-        }
 
 
 
-        // It's the case when there isn't specified a no. of minimum horizontal elements or it is specified and the
-        // horizontal list is not empty, and in the same time there's enough horizontal space for more elements
-        while (((item._horizontal_elements.length > 0) || (item._horizontal_elements.length == 0 && item.minimum_elements == 0))
-            && (item._vertical_elements.length > 0)
-            && (space_for_horizontal_elements >= item._vertical_elements[0].calculated_width)) {
-
-            local_current_element = td_pulldown._make_element_horizontal(item);
-
-            if (local_current_element != null) {
-                space_for_horizontal_elements -= local_current_element.calculated_width;
-            } else {
-
-
-                // the horizontal header margin is set before return
-                td_pulldown._prepare_horizontal_header(item);
-
-
-                return;
+            // if the vertical list contains just one element, the horizontal space for it must be calculated without considering the vertical top header width (ex.'More')
+            if ( ( 1 === item._vertical_elements.length ) &&
+                ( space_for_horizontal_elements + item._vertical_jquery_obj_outer_width >= item._vertical_elements[ 0 ].calculated_width ) ) {
+                tdPullDown._make_element_horizontal( item );
             }
-        }
 
 
-
-        // if the vertical list contains just one element, the horizontal space for it must be calculated without considering the vertical top header width (ex.'More')
-        if ((item._vertical_elements.length == 1)
-            && (space_for_horizontal_elements + item._vertical_jquery_obj_outer_width >= item._vertical_elements[0].calculated_width)) {
-            td_pulldown._make_element_horizontal(item);
-        }
+            // the horizontal header margin is set before return
+            tdPullDown._prepare_horizontal_header( item );
+        },
 
 
-        // the horizontal header margin is set before return
-        td_pulldown._prepare_horizontal_header(item);
-    },
+        /**
+         * - add margin to the element with '.block-title' css class, to keep the vertical_jquery_obj not overlapping over it when
+         * there are no horizontal elements and it is too wide [more strings in name]
+         * @param item tdPullDown.item
+         * @param clear_margin boolean True to just clear margin, or false to check the horizontal elements length and then set the margin
+         * @private
+         */
+        _prepare_horizontal_header: function _prepare_horizontal_header( item, clear_margin ) {
+            var block_title_jquery_obj = item.horizontal_jquery_obj.parent().siblings( '.block-title:first' );
 
+            if ( 1 === block_title_jquery_obj.length ) {
+                var content_element = block_title_jquery_obj.find( 'span:first' );
 
-    /**
-     * - add margin to the element with '.block-title' css class, to keep the vertical_jquery_obj not overlapping over it when
-     * there are no horizontal elements and it is too wide [more strings in name]
-     * @param item td_pulldown.item
-     * @param clear_margin boolean True to just clear margin, or false to check the horizontal elements length and then set the margin
-     * @private
-     */
-    _prepare_horizontal_header: function _prepare_horizontal_header(item, clear_margin) {
-        var block_title_jquery_obj = item.horizontal_jquery_obj.parent().siblings('.block-title:first');
+                if ( 1 === content_element.length ) {
 
-        if (block_title_jquery_obj.length) {
-            var content_element = block_title_jquery_obj.find('span:first');
-
-            if (content_element.length) {
-
-                if ('undefined' !== typeof(clear_margin) && clear_margin == true) {
-                    content_element.css('margin-right', 0);
-                } else {
-                    if (item._horizontal_elements.length == 0) {
-                        content_element.css('margin-right', item._vertical_jquery_obj_outer_width + 'px');
+                    if ( 'undefined' !== typeof( clear_margin ) && true === clear_margin ) {
+                        content_element.css( 'margin-right', 0 );
                     } else {
-                        content_element.css('margin-right', 0);
+                        if ( 0 === item._horizontal_elements.length ) {
+                            content_element.css( 'margin-right', item._vertical_jquery_obj_outer_width + 'px' );
+                        } else {
+                            content_element.css( 'margin-right', 0 );
+                        }
                     }
                 }
             }
-        }
-    },
+        },
 
 
 
 
-    /**
-     * - function used to compute all items in the item list
-     *
-     * @private
-     */
-    _compute_all_items: function _compute_all_items() {
-        for (var i = td_pulldown.items.length - 1; i >= 0; i--) {
+        /**
+         * - function used to compute all items in the item list
+         *
+         * @private
+         */
+        _compute_all_items: function() {
+            for ( var i = tdPullDown.items.length - 1; i >= 0; i-- ) {
 
-            // a type check is done for every item in the item list
-            if (td_pulldown.items[i].constructor === td_pulldown.item) {
-                td_pulldown._compute_item(td_pulldown.items[i]);
+                // a type check is done for every item in the item list
+                if ( tdPullDown.items[ i ].constructor === tdPullDown.item ) {
+                    tdPullDown._compute_item( tdPullDown.items[ i ] );
+                }
             }
+        },
+
+
+
+
+        /**
+         * - function used to move one element from the vertical list to the horizontal one
+         * - the function returns the element that has been moved, otherwise null
+         * - the last element moving hides the vertical top header
+         *
+         * @param item - the item whose element is moved
+         * @returns {T} - the moved element
+         * @private
+         */
+        _make_element_horizontal: function( item ) {
+
+            // the item must be initialized and the vertical list must contain at least an element
+            if ( false === item._is_initialized || 0 === item._vertical_elements.length ) {
+                return null;
+            }
+
+            // the first element of the vertical list is shifted
+            var local_element = item._vertical_elements.shift();
+
+            // the vertical list is shown when there's at least one vertical element
+            if ( 0 === item._vertical_elements.length ) {
+                item.vertical_jquery_obj.css( 'display', 'none' );
+            }
+
+            // the element is added on the last position in the horizontal list
+            item._horizontal_elements.push( local_element );
+
+            local_element.jquery_object.css( 'opacity', '0' );
+
+            // the DOM is changing
+            local_element.jquery_object.detach().appendTo( item.horizontal_jquery_obj );
+
+            setTimeout( function() {
+                local_element.jquery_object.css( 'opacity', '1' );
+            }, 50);
+
+            //tdPullDown.log('horizontal');
+
+            return local_element;
+        },
+
+
+
+
+        /**
+         * - function used to move one element from the horizontal list to the vertical one
+         * - the function returns the element that has been moved, otherwise null
+         * - the first element moving shows the vertical top header
+         *
+         * @param item - the item whose element is moved
+         * @returns {T} - the moved element
+         * @private
+         */
+        _make_element_vertical: function( item ) {
+
+            // the item must be initialized and the horizontal list must contain at least an element
+            if ( false === item._is_initialized || 0 === item._horizontal_elements.length ) {
+                return null;
+            }
+
+            // the last element of the horizontal list is popped out
+            var local_element = item._horizontal_elements.pop();
+
+            // the vertical list is hidden when there are no vertical elements
+            if ( 0 === item._vertical_elements.length ) {
+                item.vertical_jquery_obj.css( 'display', '' );
+            }
+
+            //the element is added on the first position into the vertical list
+            item._vertical_elements.unshift( local_element );
+
+            // the DOM is changed
+            local_element.jquery_object.detach().prependTo( item._vertical_ul_jquery_obj );
+
+            //tdPullDown.log('vertical');
+
+            return local_element;
+        },
+
+
+
+
+        /**
+         * - function used to move all elements to the vertical list
+         * - it's used when the minimum horizontal elements is greater than 0
+         *
+         * @param item - the item whose elements are moved
+         * @private
+         */
+        _make_all_elements_vertical: function( item ) {
+            while ( item._horizontal_elements.length > 0 ) {
+                tdPullDown._make_element_vertical( item );
+            }
+        },
+
+
+
+
+
+
+        /**
+         * - function necessary to be called when the window is being resized
+         */
+        td_events_resize: function() {
+
+            if ( 0 === tdPullDown.items.length ) {
+                return;
+            }
+
+            if ( true === tdPullDown.reinitialize_items_at_change_view_port && tdPullDown._view_port_interval_index !== tdViewport.getCurrentIntervalIndex() ) {
+                tdPullDown._reinitialize_all_items();
+            }
+
+            tdPullDown._compute_all_items();
+        },
+
+
+
+
+        log: function log( msg ) {
+            //console.log(msg);
         }
-    },
+    };
 
 
+    tdPullDown.init();
 
-
-    /**
-     * - function used to move one element from the vertical list to the horizontal one
-     * - the function returns the element that has been moved, otherwise null
-     * - the last element moving hides the vertical top header
-     *
-     * @param item - the item whose element is moved
-     * @returns {T} - the moved element
-     * @private
-     */
-    _make_element_horizontal: function _make_element_horizontal(item) {
-
-        // the item must be initialized and the vertical list must contain at least an element
-        if (item._is_initialized === false || item._vertical_elements.length == 0) {
-            return null;
-        }
-
-        // the first element of the vertical list is shifted
-        var local_element = item._vertical_elements.shift();
-
-        // the vertical list is shown when there's at least one vertical element
-        if (item._vertical_elements.length == 0) {
-            item.vertical_jquery_obj.css('display', 'none');
-        }
-
-        // the element is added on the last position in the horizontal list
-        item._horizontal_elements.push(local_element);
-
-        local_element.jquery_object.css('opacity', '0');
-
-        // the DOM is changing
-        local_element.jquery_object.detach().appendTo(item.horizontal_jquery_obj);
-
-        setTimeout(function() {
-            local_element.jquery_object.css('opacity', '1');
-        }, 50);
-
-        //td_pulldown.log('horizontal');
-
-        return local_element;
-    },
-
-
-
-
-    /**
-     * - function used to move one element from the horizontal list to the vertical one
-     * - the function returns the element that has been moved, otherwise null
-     * - the first element moving shows the vertical top header
-     *
-     * @param item - the item whose element is moved
-     * @returns {T} - the moved element
-     * @private
-     */
-    _make_element_vertical: function _make_element_vertical(item) {
-
-        // the item must be initialized and the horizontal list must contain at least an element
-        if (item._is_initialized === false || item._horizontal_elements.length == 0) {
-            return null;
-        }
-
-        // the last element of the horizontal list is popped out
-        var local_element = item._horizontal_elements.pop();
-
-        // the vertical list is hidden when there are no vertical elements
-        if (item._vertical_elements.length == 0) {
-            item.vertical_jquery_obj.css('display', '');
-        }
-
-        //the element is added on the first position into the vertical list
-        item._vertical_elements.unshift(local_element);
-
-        // the DOM is changed
-        local_element.jquery_object.detach().prependTo(item._vertical_ul_jquery_obj);
-
-        //td_pulldown.log('vertical');
-
-        return local_element;
-    },
-
-
-
-
-    /**
-     * - function used to move all elements to the vertical list
-     * - it's used when the minimum horizontal elements is greater than 0
-     *
-     * @param item - the item whose elements are moved
-     * @private
-     */
-    _make_all_elements_vertical: function _make_all_elements_vertical(item) {
-        while (item._horizontal_elements.length > 0) {
-            td_pulldown._make_element_vertical(item);
-        }
-    },
-
-
-
-
-
-
-    /**
-     * - function necessary to be called when the window is being resized
-     */
-    td_events_resize: function td_events_resize() {
-
-        if (td_pulldown.items.length == 0) {
-            return;
-        }
-
-        if (td_pulldown.reinitialize_items_at_change_view_port === true && (td_pulldown._view_port_interval_index != td_viewport.get_current_interval_index())) {
-            td_pulldown._reinitialize_all_items();
-        }
-
-        td_pulldown._compute_all_items();
-    },
-
-
-
-
-    log: function log(msg) {
-        //console.log(msg);
-    }
-};
-
-
-td_pulldown.init();
+})();
 
 
 
@@ -5557,193 +7231,171 @@ var td_fps = {
  * Created by tagdiv on 16.02.2015.
  */
 
-"use strict";
+/* global jQuery: {} */
+/* global tdEvents: {} */
 
-var td_animation_scroll = {
+var tdAnimationScroll = {};
 
+(function() {
 
-    // the bunch of td_animation_scroll items
-    items: [],
+    'use strict';
 
-
-
-    // the current request animation frame id
-    rAFIndex: 0,
+    tdAnimationScroll = {
 
 
-
-    // flag used to not call 'requestAnimationFrame' when it's steel running
-    animation_running: false,
+        // the bunch of tdAnimationScroll items
+        items: [],
 
 
 
-    item: function item() {
-
-        // the computed percent value of the jquery object in the viewport
-        // - 0 when the top of object enters into the viewport
-        // - 100 when the bottom of the object goes outside of the viewport
-        this.percent_value = 0;
-
-        // the animation callback function
-        this.animation_callback = null;
-
-        // the jquery object of the td_animation_scroll.item
-        this.jquery_obj = '';
-
-        // optional - a jquery object that wraps the current item. Used in callback
-        this.wrapper_jquery_obj;
-
-        // a jquery span obj added dynamically added at the top of jquery_obj
-        this.top_marker_jquery_obj = '';
-
-        // the full outer height of the item
-        this.full_height;
-
-        // the offset top of the top_marker_jquery_obj
-        this.offset_top = '';
-
-        // the offset top of the top_marker_jquery_obj and the full_height
-        this.offset_bottom_top = '';
-
-        // the properties registered with the item
-        this.properties = {};
-
-        // the computed properties that probably will be applied by animation callback function over the jquery object
-        this.computed_item_properties = {};
-
-        // flag made 'true' for items having at least one computed property
-        this.redraw = false;
-
-        // top is out of screen
-        this.top_is_out = false;
-
-        // flag used to mark the initialization item
-        this._is_initialized = false;
-
-        // flag used to stop an item to be computed
-        this.computation_stopped = false;
+        // the current request animation frame id
+        rAFIndex: 0,
 
 
 
+        // flag used to not call 'requestAnimationFrame' when it's steel running
+        animation_running: false,
 
-        /**
-         * - when a new item property is added, it's added as a real property in the item.properties object.
-         * - if it's already added, the settings of the property are appended
-         * - the settings for an item property must be added in order of the percents
-         * - the percent intervals must not be overloaded (ex. 10-30 and 20-40)
-         * - it doesn't matter how many settings are added to an item property
-         * - after an adding the space of percentage is full, that means after adding
-         * ex: add_item_property('opacity', 10, 30, 0, 1, easing)
-         *
-         * item.properties.opacity.settings :
-         * [
-         *  [0, 10, 0, 0, '']
-         *  [10, 30, 0, 1, easing] - property added
-         *  [30, 100, 1, 1, '']
-         * ]
-         *
-         * ex: add_item_property('opacity', 40, 50, 1, 0)
-         *
-         * item.properties.opacity.settings :
-         * [
-         *  [0, 10, 0, 0, '']
-         *  [10, 30, 0, 1, easing] - property added
-         *  [30, 40, 1, 1, '']
-         *  [40, 50, 1, 0, easing] - property added
-         *  [50, 100, 0, 0, '']
-         * ]
-         *
-         * - callable jQuery easing functions:
-         * swing
-         * easeInQuad
-         * easeOutQuad
-         * easeInOutQuad
-         * easeInCubic
-         * easeOutCubic
-         * easeInOutCubic
-         * easeInQuart
-         * easeOutQuart
-         * easeInOutQuart
-         * easeInQuint
-         * easeOutQuint
-         * easeInOutQuint
-         * easeInSine
-         * easeOutSine
-         * easeInOutSine
-         * easeInExpo
-         * easeOutExpo
-         * easeInOutExpo
-         * easeInCirc
-         * easeOutCirc
-         * easeInOutCirc
-         * easeInElastic
-         * easeOutElastic
-         * easeInOutElastic
-         * easeInBack
-         * easeOutBack
-         * easeInOutBack
-         * easeInBounce
-         * easeOutBounce
-         * easeInOutBounce
-         *
-         * @param name string
-         * @param start_percent numeric
-         * @param end_percent numeric
-         * @param start_value numeric
-         * @param end_value numeric
-         * @param easing string [optional]
-         */
-        this.add_item_property = function add_item_property(name, start_percent, end_percent, start_value, end_value, easing) {
 
-            if (start_percent >= end_percent) {
-                return;
-            }
 
-            if (this.properties[name] === undefined) {
+        item: function item() {
 
-                this.properties[name] = {
-                    computed_value: '',
-                    settings: []
-                };
+            // the computed percent value of the jquery object in the viewport
+            // - 0 when the top of object enters into the viewport
+            // - 100 when the bottom of the object goes outside of the viewport
+            this.percent_value = 0;
 
-                if (start_percent != 0) {
-                    this.properties[name].settings[this.properties[name].settings.length] = {
-                        start_percent: 0,
-                        end_percent: start_percent,
-                        start_value: start_value,
-                        end_value: start_value,
-                        easing: ''
-                    };
+            // the animation callback function
+            this.animation_callback = null;
+
+            // the jquery object of the tdAnimationScroll.item
+            this.jqueryObj = '';
+
+            // optional - a jquery object that wraps the current item. Used in callback
+            this.wrapper_jquery_obj = undefined;
+
+            // a jquery span obj added dynamically added at the top of jqueryObj
+            this.top_marker_jquery_obj = '';
+
+            // the full outer height of the item
+            this.full_height = 0;
+
+            // the offset top of the top_marker_jquery_obj
+            this.offset_top = '';
+
+            // the offset top of the top_marker_jquery_obj and the full_height
+            this.offset_bottom_top = '';
+
+            // the properties registered with the item
+            this.properties = {};
+
+            // the computed properties that probably will be applied by animation callback function over the jquery object
+            this.computed_item_properties = {};
+
+            // flag made 'true' for items having at least one computed property
+            this.redraw = false;
+
+            // top is out of screen
+            this.top_is_out = false;
+
+            // flag used to mark the initialization item
+            this._is_initialized = false;
+
+            // flag used to stop an item to be computed
+            this.computation_stopped = false;
+
+
+
+
+            /**
+             * - when a new item property is added, it's added as a real property in the item.properties object.
+             * - if it's already added, the settings of the property are appended
+             * - the settings for an item property must be added in order of the percents
+             * - the percent intervals must not be overloaded (ex. 10-30 and 20-40)
+             * - it doesn't matter how many settings are added to an item property
+             * - after an adding the space of percentage is full, that means after adding
+             * ex: add_item_property('opacity', 10, 30, 0, 1, easing)
+             *
+             * item.properties.opacity.settings :
+             * [
+             *  [0, 10, 0, 0, '']
+             *  [10, 30, 0, 1, easing] - property added
+             *  [30, 100, 1, 1, '']
+             * ]
+             *
+             * ex: add_item_property('opacity', 40, 50, 1, 0)
+             *
+             * item.properties.opacity.settings :
+             * [
+             *  [0, 10, 0, 0, '']
+             *  [10, 30, 0, 1, easing] - property added
+             *  [30, 40, 1, 1, '']
+             *  [40, 50, 1, 0, easing] - property added
+             *  [50, 100, 0, 0, '']
+             * ]
+             *
+             * - callable jQuery easing functions:
+             * swing
+             * easeInQuad
+             * easeOutQuad
+             * easeInOutQuad
+             * easeInCubic
+             * easeOutCubic
+             * easeInOutCubic
+             * easeInQuart
+             * easeOutQuart
+             * easeInOutQuart
+             * easeInQuint
+             * easeOutQuint
+             * easeInOutQuint
+             * easeInSine
+             * easeOutSine
+             * easeInOutSine
+             * easeInExpo
+             * easeOutExpo
+             * easeInOutExpo
+             * easeInCirc
+             * easeOutCirc
+             * easeInOutCirc
+             * easeInElastic
+             * easeOutElastic
+             * easeInOutElastic
+             * easeInBack
+             * easeOutBack
+             * easeInOutBack
+             * easeInBounce
+             * easeOutBounce
+             * easeInOutBounce
+             *
+             * @param name string
+             * @param start_percent numeric
+             * @param end_percent numeric
+             * @param start_value numeric
+             * @param end_value numeric
+             * @param easing string [optional]
+             */
+            this.add_item_property = function add_item_property(name, start_percent, end_percent, start_value, end_value, easing) {
+
+                if (start_percent >= end_percent) {
+                    return;
                 }
 
-                this.properties[name].settings[this.properties[name].settings.length] = {
-                    start_percent: start_percent,
-                    end_percent: end_percent,
-                    start_value: start_value,
-                    end_value: end_value,
-                    easing: easing
-                };
+                if (undefined === this.properties[name]) {
 
-                this.properties[name].settings[this.properties[name].settings.length] = {
-                    start_percent: end_percent,
-                    end_percent: 100,
-                    start_value: end_value,
-                    end_value: end_value,
-                    easing: ''
-                };
-
-            } else {
-
-                var last_setting = this.properties[name].settings[this.properties[name].settings.length - 1];
-
-                if (last_setting.start_percent != start_percent) {
-                    this.properties[name].settings[this.properties[name].settings.length - 1] = {
-                        start_percent: last_setting.start_percent,
-                        end_percent: start_percent,
-                        start_value: last_setting.end_value,
-                        end_value: last_setting.end_value,
-                        easing: ''
+                    this.properties[name] = {
+                        computed_value: '',
+                        settings: []
                     };
+
+                    if (0 !== start_percent) {
+                        this.properties[name].settings[this.properties[name].settings.length] = {
+                            start_percent: 0,
+                            end_percent: start_percent,
+                            start_value: start_value,
+                            end_value: start_value,
+                            easing: ''
+                        };
+                    }
 
                     this.properties[name].settings[this.properties[name].settings.length] = {
                         start_percent: start_percent,
@@ -5752,17 +7404,7 @@ var td_animation_scroll = {
                         end_value: end_value,
                         easing: easing
                     };
-                } else {
-                    this.properties[name].settings[this.properties[name].settings.length - 1] = {
-                        start_percent: start_percent,
-                        end_percent: end_percent,
-                        start_value: start_value,
-                        end_value: end_value,
-                        easing: easing
-                    };
-                }
 
-                if (end_percent != 100) {
                     this.properties[name].settings[this.properties[name].settings.length] = {
                         start_percent: end_percent,
                         end_percent: 100,
@@ -5770,406 +7412,445 @@ var td_animation_scroll = {
                         end_value: end_value,
                         easing: ''
                     };
+
+                } else {
+
+                    var last_setting = this.properties[name].settings[this.properties[name].settings.length - 1];
+
+                    if (last_setting.start_percent !== start_percent) {
+                        this.properties[name].settings[this.properties[name].settings.length - 1] = {
+                            start_percent: last_setting.start_percent,
+                            end_percent: start_percent,
+                            start_value: last_setting.end_value,
+                            end_value: last_setting.end_value,
+                            easing: ''
+                        };
+
+                        this.properties[name].settings[this.properties[name].settings.length] = {
+                            start_percent: start_percent,
+                            end_percent: end_percent,
+                            start_value: start_value,
+                            end_value: end_value,
+                            easing: easing
+                        };
+                    } else {
+                        this.properties[name].settings[this.properties[name].settings.length - 1] = {
+                            start_percent: start_percent,
+                            end_percent: end_percent,
+                            start_value: start_value,
+                            end_value: end_value,
+                            easing: easing
+                        };
+                    }
+
+                    if (100 !== end_percent) {
+                        this.properties[name].settings[this.properties[name].settings.length] = {
+                            start_percent: end_percent,
+                            end_percent: 100,
+                            start_value: end_value,
+                            end_value: end_value,
+                            easing: ''
+                        };
+                    }
                 }
-            }
-        };
+            };
+
+
+            /**
+             * remove an item property
+             *
+             * @param name {String} The name of the property
+             * @returns {boolean}
+             */
+            this.remove_item_property = function remove_item_property(name) {
+                if (undefined === this.properties[name]) {
+                    return false;
+                }
+
+                delete this.properties[name];
+
+                return true;
+            };
+        },
+
+
 
 
         /**
-         * remove an item property
+        * - function used to init the tdAnimationScroll object
+        * - it must be called before adding any item
+        * - the _view_port_interval_index flag is initialized
+        * - the items list is empty initialized
+        */
+        init: function init() {
+
+            tdAnimationScroll.items = [];
+        },
+
+
+
+
+        /**
+         * - used to add an item to the item list and initialize it
          *
-         * @param name {String} The name of the property
-         * @returns {boolean}
+         * @param item The item to be added and initialized
          */
-        this.remove_item_property = function remove_item_property(name) {
-            if (this.properties[name] === undefined) {
-                return false;
+        add_item: function add_item(item) {
+
+            if (item.constructor !== tdAnimationScroll.item) {
+                return;
             }
 
-            delete this.properties[name];
+            // the item is added in the item list
+            tdAnimationScroll.items.push(item);
 
-            return true;
-        };
-    },
+            // the item is initialized only once when it is added
+            tdAnimationScroll._initialize_item(item);
 
-
-
-
-    /**
-    * - function used to init the td_animation_scroll object
-    * - it must be called before adding any item
-    * - the _view_port_interval_index flag is initialized
-    * - the items list is empty initialized
-    */
-    init: function init() {
-
-        td_animation_scroll.items = [];
-    },
+            // for efficiently rendering all items are computed at once, so do not compute item individually
+        },
 
 
 
 
-    /**
-     * - used to add an item to the item list and initialize it
-     *
-     * @param item The item to be added and initialized
-     */
-    add_item: function add_item(item) {
+        /**
+         * - used to initialize an item
+         * - an item must be initialized only once
+         *
+         * @param item
+         * @private
+         */
+        _initialize_item: function _initialize_item(item) {
 
-        if (item.constructor != td_animation_scroll.item) {
-            return;
-        }
+            // an item must be initialized only once
+            if (true === item._is_initialized) {
+                return;
+            }
 
-        // the item is added in the item list
-        td_animation_scroll.items.push(item);
-
-        // the item is initialized only once when it is added
-        td_animation_scroll._initialize_item(item);
-
-        // for efficiently rendering all items are computed at once, so do not compute item individually
-    },
-
-
-
-
-    /**
-     * - used to initialize an item
-     * - an item must be initialized only once
-     *
-     * @param item
-     * @private
-     */
-    _initialize_item: function _initialize_item(item) {
-
-        // an item must be initialized only once
-        if (item._is_initialized === true) {
-            return;
-        }
-
-        // the item full height is computed
-        if (item.wrapper_jquery_obj != undefined) {
-            item.full_height = item.wrapper_jquery_obj.height();
-        } else {
-            item.full_height = item.jquery_obj.outerHeight(true);
-        }
-
-        if (item.full_height == 0) {
-            return;
-        }
-
-        var new_jquery_obj_reference = jQuery('<div class="td_marker_animation" style="height: 0; width: 0">');
-
-        new_jquery_obj_reference.insertBefore(item.jquery_obj);
-
-        item.top_marker_jquery_obj = new_jquery_obj_reference;
-
-        item.offset_top = item.top_marker_jquery_obj.offset().top;
-
-        //console.log("initializare " + td_animation_scroll.items.length + " : " + item.top_marker_jquery_obj.offset().top);
-
-        item.offset_bottom_top = item.offset_top + item.full_height;
-
-        item.top_is_out = td_events.window_pageYOffset > item.offset_top;
-
-        // the item is marked as initialized, being ready to be computed
-        // for efficiently rendering all items are computed at once
-        item._is_initialized = true;
-
-
-        // maybe it's better to try a request animation frame after every initialization, for computing the already added items
-        //td_animation_scroll.compute_all_items();
-    },
-
-
-
-
-    /**
-     * - used to reinitialize all items at the view resolution changing
-     *
-     * @param recompute_height boolean True if it's necessary to recompute the item's height [when view port changes]
-     */
-    reinitialize_all_items: function reinitialize_all_items(recompute_height) {
-
-        for (var i = td_animation_scroll.items.length - 1; i >= 0; i--) {
-            td_animation_scroll.reinitialize_item(td_animation_scroll.items[i], recompute_height);
-        }
-    },
-
-
-
-
-
-
-    /**
-     * - used to reinitialize an item at the view resolution changing
-     *
-     * @param item td_animation_scroll.item
-     * @param recompute_height boolean True if it's necessary to recompute the item height [when view port changes]
-     * @private
-     */
-    reinitialize_item: function reinitialize_item(item, recompute_height) {
-
-        // a not initialized item can't be reinitialized
-        if (item._is_initialized === false) {
-            return;
-        }
-
-        // prevent the following item computing, till the reinitialization is finished
-        item._is_initialized = false;
-
-        item.offset_top = item.top_marker_jquery_obj.offset().top;
-
-        //console.log("reinitializare " + td_animation_scroll.items.length + " : " + item.top_marker_jquery_obj.offset().top);
-
-        if (recompute_height === true) {
-            if (item.wrapper_jquery_obj != undefined) {
-                item.full_height = item.wrapper_jquery_obj.height();
+            // the item full height is computed
+            if (undefined === item.wrapper_jquery_obj) {
+                item.full_height = item.jqueryObj.outerHeight(true);
             } else {
-                item.full_height = item.jquery_obj.outerHeight(true);
+                item.full_height = item.wrapper_jquery_obj.height();
             }
 
-            if (item.full_height == 0) {
+            if (0 === item.full_height) {
                 return;
             }
-        }
 
-        item.offset_bottom_top = item.offset_top + item.full_height;
+            var new_jquery_obj_reference = jQuery('<div class="td_marker_animation" style="height: 0; width: 0">');
 
-        item._is_initialized = true;
-    },
+            new_jquery_obj_reference.insertBefore(item.jqueryObj);
+
+            item.top_marker_jquery_obj = new_jquery_obj_reference;
+
+            item.offset_top = item.top_marker_jquery_obj.offset().top;
+
+            //console.log("initializare " + tdAnimationScroll.items.length + " : " + item.top_marker_jquery_obj.offset().top);
+
+            item.offset_bottom_top = item.offset_top + item.full_height;
+
+            item.top_is_out = tdEvents.window_pageYOffset > item.offset_top;
+
+            // the item is marked as initialized, being ready to be computed
+            // for efficiently rendering all items are computed at once
+            item._is_initialized = true;
+
+
+            // maybe it's better to try a request animation frame after every initialization, for computing the already added items
+            //tdAnimationScroll.compute_all_items();
+        },
 
 
 
 
-    /**
-     * - used for computing item properties
-     *
-     * @param item The item whose properties are computed
-     * @private
-     */
-    _compute_item_properties: function _compute_item_properties(item) {
+        /**
+         * - used to reinitialize all items at the view resolution changing
+         *
+         * @param recompute_height boolean True if it's necessary to recompute the item's height [when view port changes]
+         */
+        reinitialize_all_items: function reinitialize_all_items(recompute_height) {
 
-        var computed_properties = {},
-            current_item_property;
+            for (var i = tdAnimationScroll.items.length - 1; i >= 0; i--) {
+                tdAnimationScroll.reinitialize_item(tdAnimationScroll.items[i], recompute_height);
+            }
+        },
 
-        for (var property in item.properties) {
 
-            if (item.properties.hasOwnProperty(property) === false) {
+
+
+
+
+        /**
+         * - used to reinitialize an item at the view resolution changing
+         *
+         * @param item tdAnimationScroll.item
+         * @param recompute_height boolean True if it's necessary to recompute the item height [when view port changes]
+         * @private
+         */
+        reinitialize_item: function reinitialize_item(item, recompute_height) {
+
+            // a not initialized item can't be reinitialized
+            if (false === item._is_initialized) {
                 return;
             }
-            current_item_property = item.properties[property];
 
-            var current_setting,
-                new_computed_value,
-                local_computed_value,
-                easing_step,
-                easing_computed_value,
-                easing_division_interval = 1000;
+            // prevent the following item computing, till the reinitialization is finished
+            item._is_initialized = false;
 
-            for (var i = 0; i < current_item_property.settings.length; i++) {
+            item.offset_top = item.top_marker_jquery_obj.offset().top;
 
-                current_setting = current_item_property.settings[i];
+            //console.log("reinitializare " + tdAnimationScroll.items.length + " : " + item.top_marker_jquery_obj.offset().top);
 
-                // the check is done using this form [...) of the interval or the last position 100%
-                if ((current_setting.start_percent <= item.percent_value && item.percent_value < current_setting.end_percent)
-                    || (item.percent_value == current_setting.end_percent && item.percent_value == 100)) {
+            if (true === recompute_height) {
+                if (undefined === item.wrapper_jquery_obj) {
+                    item.full_height = item.jqueryObj.outerHeight(true);
+                } else {
+                    item.full_height = item.wrapper_jquery_obj.height();
+                }
 
-                    if (current_setting.start_value != current_setting.end_value) {
+                if (0 === item.full_height) {
+                    return;
+                }
+            }
 
-                        // local computed value can have a positive value or a negative value, it depends of the difference end_value - start_value
-                        // for a linear easing function, the new computed value is the start_value + local_computed_value
-                        // if start_value < end_value, the variable local_computed_value is positive
-                        // if start_value > end_value, the variable local_computed_value is negative
-                        local_computed_value = (item.percent_value - current_setting.start_percent) / (current_setting.end_percent - current_setting.start_percent) * (current_setting.end_value - current_setting.start_value);
+            item.offset_bottom_top = item.offset_top + item.full_height;
+
+            item._is_initialized = true;
+        },
 
 
-                        // if there's specified an easing function, it's applied over the computed_value
-                        if ((current_setting.easing == undefined) || (current_setting.easing == '')) {
 
-                            // linear easing function
 
-                            new_computed_value = current_setting.start_value + local_computed_value;
+        /**
+         * - used for computing item properties
+         *
+         * @param item The item whose properties are computed
+         * @private
+         */
+        _compute_item_properties: function _compute_item_properties(item) {
 
-                        } else {
+            var computed_properties = {},
+                current_item_property;
 
-                            // specifying an easing function
+            for (var property in item.properties) {
 
-                            easing_step = Math.abs(current_setting.start_value - current_setting.end_value) / easing_division_interval;
+                if (true === item.properties.hasOwnProperty(property)) {
 
-                            if (current_setting.start_value < current_setting.end_value) {
+                    current_item_property = item.properties[property];
 
-                                easing_computed_value = current_setting.start_value + jQuery.easing[current_setting.easing](
-                                    null,
-                                    local_computed_value,
-                                    0,
-                                    easing_step,
-                                    current_setting.end_value - current_setting.start_value) * easing_division_interval;
+                    var current_setting,
+                        new_computed_value,
+                        local_computed_value,
+                        easing_step,
+                        easing_computed_value,
+                        easing_division_interval = 1000;
+
+                    for (var i = 0; i < current_item_property.settings.length; i++) {
+
+                        current_setting = current_item_property.settings[i];
+
+                        // the check is done using this form [...) of the interval or the last position 100%
+                        if ((current_setting.start_percent <= item.percent_value && item.percent_value < current_setting.end_percent) ||
+                            (item.percent_value === current_setting.end_percent && 100 === item.percent_value)) {
+
+                            if (current_setting.start_value === current_setting.end_value) {
+
+                                new_computed_value = current_setting.start_value;
 
                             } else {
 
-                                easing_computed_value = current_setting.start_value - jQuery.easing[current_setting.easing](
-                                    null,
-                                    -local_computed_value,
-                                    0,
-                                    easing_step,
-                                    current_setting.start_value - current_setting.end_value) * easing_division_interval;
+                                // local computed value can have a positive value or a negative value, it depends of the difference end_value - start_value
+                                // for a linear easing function, the new computed value is the start_value + local_computed_value
+                                // if start_value < end_value, the variable local_computed_value is positive
+                                // if start_value > end_value, the variable local_computed_value is negative
+                                local_computed_value = (item.percent_value - current_setting.start_percent) / (current_setting.end_percent - current_setting.start_percent) * (current_setting.end_value - current_setting.start_value);
+
+
+                                // if there's specified an easing function, it's applied over the computed_value
+                                if ((undefined === current_setting.easing) || ('' === current_setting.easing)) {
+
+                                    // linear easing function
+
+                                    new_computed_value = current_setting.start_value + local_computed_value;
+
+                                } else {
+
+                                    // specifying an easing function
+
+                                    easing_step = Math.abs(current_setting.start_value - current_setting.end_value) / easing_division_interval;
+
+                                    if (current_setting.start_value < current_setting.end_value) {
+
+                                        easing_computed_value = current_setting.start_value + jQuery.easing[current_setting.easing](
+                                            null,
+                                            local_computed_value,
+                                            0,
+                                            easing_step,
+                                            current_setting.end_value - current_setting.start_value) * easing_division_interval;
+
+                                    } else {
+
+                                        easing_computed_value = current_setting.start_value - jQuery.easing[current_setting.easing](
+                                            null,
+                                            -local_computed_value,
+                                            0,
+                                            easing_step,
+                                            current_setting.start_value - current_setting.end_value) * easing_division_interval;
+                                    }
+
+                                    new_computed_value = easing_computed_value;
+
+                                    //console.log(current_setting.easing + ' : ' + easing_step + ' ~ ' + easing_computed_value + ' ~ ' + (current_setting.start_value + computed_value) + ' & ' + current_setting.start_value + ' $ ' + current_setting.end_value);
+                                }
                             }
 
-                            new_computed_value = easing_computed_value;
+                            // if the existing computed value is different, the new computed value is cached
+                            if (current_item_property.computed_value !== new_computed_value) {
+                                current_item_property.computed_value = new_computed_value;
+                                computed_properties[property] = new_computed_value;
 
-                            //console.log(current_setting.easing + ' : ' + easing_step + ' ~ ' + easing_computed_value + ' ~ ' + (current_setting.start_value + computed_value) + ' & ' + current_setting.start_value + ' $ ' + current_setting.end_value);
+                                // the item is marked that it has at least one property that need to be redraw
+                                // the animation callback functions are called just for the marked items
+                                item.redraw = true;
+                            }
+                            break;
                         }
-
-                    } else {
-                        new_computed_value = current_setting.start_value;
                     }
-
-                    // if the existing computed value is different, the new computed value is cached
-                    if (current_item_property.computed_value !== new_computed_value) {
-                        current_item_property.computed_value = new_computed_value;
-                        computed_properties[property] = new_computed_value;
-
-                        // the item is marked that it has at least one property that need to be redraw
-                        // the animation callback functions are called just for the marked items
-                        item.redraw = true;
-                    }
-                    break;
                 }
             }
-        }
 
-        // a plain javascript object is added if there is no computed property
-        item.computed_item_properties = computed_properties;
-    },
-
+            // a plain javascript object is added if there is no computed property
+            item.computed_item_properties = computed_properties;
+        },
 
 
 
-    /**
-     * - used for computing item
-     * - the item properties are computed only when the item is in the view port and it is moving
-     *
-     * @param item The td_animation_scroll.item to be computed
-     */
-    compute_item: function compute_item(item) {
-        //console.clear();
 
-        // the item must be initialized first
-        if (item._is_initialized === false) {
-            return;
-        }
+        /**
+         * - used for computing item
+         * - the item properties are computed only when the item is in the view port and it is moving
+         *
+         * @param item The tdAnimationScroll.item to be computed
+         */
+        compute_item: function compute_item(item) {
+            //console.clear();
 
-        var percent_display_value = 0;
-
-        if (td_events.window_pageYOffset + td_events.window_innerHeight >= item.offset_top) {
-
-            if (td_events.window_pageYOffset > item.offset_bottom_top) {
-                percent_display_value = 100;
-            } else {
-                percent_display_value = (td_events.window_pageYOffset + td_events.window_innerHeight - item.offset_top) * 100 / (td_events.window_innerHeight + item.full_height);
+            // the item must be initialized first
+            if (false === item._is_initialized) {
+                return;
             }
-        }
 
-        //console.log(window.pageYOffset + ' : ' + item.offset_top + ' : ' + item.offset_bottom_top);
+            var percent_display_value = 0;
 
-        if (item.percent_value != percent_display_value) {
-            item.percent_value = percent_display_value;
-            td_animation_scroll._compute_item_properties(item);
-        }
+            if (tdEvents.window_pageYOffset + tdEvents.window_innerHeight >= item.offset_top) {
 
-        item.top_is_out = td_events.window_pageYOffset > item.offset_top;
-
-
-        //console.log(percent_display_value);
-    },
-
-
-
-
-    /**
-     * - used to request an animation frame for computing all items
-     * - the flag animation_running is set to false by the last requestAnimationFrame callback (the last animation call),
-     * so a new call to requestAnimationFrame can be done
-     */
-    compute_all_items: function compute_all_items() {
-        //td_animation_scroll.animate();
-
-        if (td_animation_scroll.animation_running === false) {
-            td_animation_scroll.rAFIndex = window.requestAnimationFrame(td_animation_scroll._animate_all_items);
-        }
-
-        td_animation_scroll.animation_running = true;
-    },
-
-
-
-
-    /**
-     * - used to call the existing callback animate functions
-     *
-     * @private
-     */
-    _animate_all_items: function _animate_all_items() {
-        //var start_time = Date.now();
-
-        for (var i = 0; i < td_animation_scroll.items.length; i++) {
-            if (td_animation_scroll.items[i].computation_stopped === false) {
-                td_animation_scroll.compute_item(td_animation_scroll.items[i]);
+                if (tdEvents.window_pageYOffset > item.offset_bottom_top) {
+                    percent_display_value = 100;
+                } else {
+                    percent_display_value = (tdEvents.window_pageYOffset + tdEvents.window_innerHeight - item.offset_top) * 100 / (tdEvents.window_innerHeight + item.full_height);
+                }
             }
-        }
 
-        for (var i = 0; i < td_animation_scroll.items.length; i++) {
-            if (td_animation_scroll.items[i].redraw === true) {
-                td_animation_scroll.items[i].animation_callback();
+            //console.log(window.pageYOffset + ' : ' + item.offset_top + ' : ' + item.offset_bottom_top);
+
+            if (item.percent_value !== percent_display_value) {
+                item.percent_value = percent_display_value;
+                tdAnimationScroll._compute_item_properties(item);
             }
+
+            item.top_is_out = tdEvents.window_pageYOffset > item.offset_top;
+
+
+            //console.log(percent_display_value);
+        },
+
+
+
+
+        /**
+         * - used to request an animation frame for computing all items
+         * - the flag animation_running is set to false by the last requestAnimationFrame callback (the last animation call),
+         * so a new call to requestAnimationFrame can be done
+         */
+        compute_all_items: function compute_all_items() {
+            //tdAnimationScroll.animate();
+
+            if (false === tdAnimationScroll.animation_running) {
+                tdAnimationScroll.rAFIndex = window.requestAnimationFrame( tdAnimationScroll._animate_all_items );
+            }
+
+            tdAnimationScroll.animation_running = true;
+        },
+
+
+
+
+        /**
+         * - used to call the existing callback animate functions
+         *
+         * @private
+         */
+        _animate_all_items: function _animate_all_items() {
+            //var start_time = Date.now();
+
+            for (var i = 0; i < tdAnimationScroll.items.length; i++) {
+                if ( false === tdAnimationScroll.items[i].computation_stopped) {
+                    tdAnimationScroll.compute_item(tdAnimationScroll.items[i]);
+                }
+            }
+
+            for (var j = 0; j < tdAnimationScroll.items.length; j++) {
+                if (true === tdAnimationScroll.items[j].redraw) {
+                    tdAnimationScroll.items[j].animation_callback();
+                }
+            }
+
+            tdAnimationScroll.animation_running = false;
+
+            //var end_time = Date.now();
+            //
+            //var debug_table = jQuery("#debug_table");
+            //debug_table.html((end_time - start_time) + ' ms');
+        },
+
+
+
+
+
+        /** @todo we'll see if it's necessary to make reinitialization just at the view port changing. Now, it's not
+         * - necessary to be called when the window is being resized
+         */
+        td_events_resize: function td_events_resize() {
+
+            if (0 === tdAnimationScroll.items.length) {
+                return;
+            }
+
+            // this will be applied if it depends just by view port changing
+
+            //if (tdAnimationScroll._changed_view_port_width()) {
+            //    tdAnimationScroll.reinitialize_all_items();
+            //}
+
+            tdAnimationScroll.reinitialize_all_items(false);
+
+            tdAnimationScroll.compute_all_items();
+        },
+
+
+
+
+
+
+        log: function log(msg) {
+            //console.log(msg);
         }
+    };
 
-        td_animation_scroll.animation_running = false;
+    tdAnimationScroll.init();
 
-        //var end_time = Date.now();
-        //
-        //var debug_table = jQuery("#debug_table");
-        //debug_table.html((end_time - start_time) + ' ms');
-    },
-
-
-
-
-
-    /** @todo we'll see if it's necessary to make reinitialization just at the view port changing. Now, it's not
-     * - necessary to be called when the window is being resized
-     */
-    td_events_resize: function td_events_resize() {
-
-        if (td_animation_scroll.items.length == 0) {
-            return;
-        }
-
-        // this will be applied if it depends just by view port changing
-
-        //if (td_animation_scroll._changed_view_port_width()) {
-        //    td_animation_scroll.reinitialize_all_items();
-        //}
-
-        td_animation_scroll.reinitialize_all_items(false);
-
-        td_animation_scroll.compute_all_items();
-    },
-
-
-
-
-
-
-    log: function log(msg) {
-        //console.log(msg);
-    }
-};
-
-
-
-
-td_animation_scroll.init();
+})();
 
 
 
@@ -6177,165 +7858,161 @@ td_animation_scroll.init();
  * Created by tagdiv on 23.02.2015.
  */
 
-"use strict";
+var tdBackstr = {};
 
-var td_backstr = {
+(function(){
 
+    'use strict';
 
-
-    items: [],
-
-
-
-    item: function item() {
-
-        // check if is necessary to apply modification (css)
-        this.previous_value = 0;
-
-        // the image aspect ratio
-        this.image_aspect_rate = 0;
-
-        // the wrapper jquery object
-        this.wrapper_image_jquery_obj = '';
-
-        // the image jquery object
-        this.image_jquery_obj = '';
-    },
+    tdBackstr = {
 
 
+        items: [],
 
 
-    /**
-     *
-     * @param item
-     */
-    add_item: function add_item(item) {
+        item: function() {
 
-        if (item.constructor != td_backstr.item) {
-            return;
-        }
+            // check if is necessary to apply modification (css)
+            this.previous_value = 0;
 
-        //if ((item.image_jquery_obj.complete)
-        //
-        //    // this is a case when the image is still not loaded but the height() and width() return both 24px
-        //    // @todo it must be modified. It's used because for backstretch are usually used large images
-        //    && ((item.image_jquery_obj.height() != 24) && (item.image_jquery_obj.width() != 24))
-        //)
+            // the image aspect ratio
+            this.image_aspect_rate = 0;
 
-        if (item.image_jquery_obj.get(0).complete) {
-            td_backstr._load_item_image(item);
-        } else {
+            // the wrapper jquery object
+            this.wrapper_image_jquery_obj = '';
 
-            item.image_jquery_obj.on('load', function() {
-
-                td_backstr._load_item_image(item);
-            });
+            // the image jquery object
+            this.image_jquery_obj = '';
+        },
 
 
-            //var currentTimeStart = Date.now();
-            //
-            //var loaded_image_jquery_ojb = false;
-            //
-            //item.image_jquery_obj.on('load', function() {
-            //
-            //    loaded_image_jquery_ojb = true;
-            //
-            //
-            //    td_backstr._load_item_image(item);
-            //    console.log('backstr tarziu ' + item.image_jquery_obj.height() + ' > timp : ' + (Date.now() - currentTimeStart));
-            //});
-            //
-            //
-            //var indexInterval = setInterval(function() {
-            //    if (loaded_image_jquery_ojb) {
-            //        clearInterval(indexInterval);
-            //        console.log('imagine incarcata ' + item.image_jquery_obj.height() + ' > timp : ' + (Date.now() - currentTimeStart));
-            //    }
-            //}, 0);
-        }
-    },
+        /**
+         *
+         * @param item
+         */
+        add_item: function( item ) {
 
-
-
-
-    _load_item_image: function _load_item_image(item) {
-        item.image_aspect_rate = item.image_jquery_obj.width() / item.image_jquery_obj.height();
-        td_backstr.items.push(item);
-        td_backstr._compute_item(item);
-
-        item.image_jquery_obj.css('opacity', '1');
-    },
-
-
-
-
-    /**
-     *
-     * @param item
-     * @private
-     */
-    _compute_item: function _compute_item(item) {
-
-        // the wrapper aspect ratio can vary, so it's recomputed at computing item
-        var wrapper_aspect_rate = item.wrapper_image_jquery_obj.width() / item.wrapper_image_jquery_obj.height();
-
-        var current_value = 0;
-
-        if (wrapper_aspect_rate < item.image_aspect_rate) {
-
-            current_value = 1;
-
-            if (item.previous_value != current_value) {
-                item.image_jquery_obj.removeClass('td-stretch-width');
-                item.image_jquery_obj.addClass('td-stretch-height');
-
-                item.previous_value = current_value;
+            if ( item.constructor !== tdBackstr.item ) {
+                return;
             }
-        } else {
 
-            current_value = 2;
+            //if ((item.image_jquery_obj.complete)
+            //
+            //    // this is a case when the image is still not loaded but the height() and width() return both 24px
+            //    // @todo it must be modified. It's used because for backstretch are usually used large images
+            //    && ((item.image_jquery_obj.height() != 24) && (item.image_jquery_obj.width() != 24))
+            //)
 
-            if (item.previous_value != current_value) {
-                item.image_jquery_obj.removeClass('td-stretch-height');
-                item.image_jquery_obj.addClass('td-stretch-width');
+            if ( item.image_jquery_obj.get( 0 ).complete ) {
+                tdBackstr._load_item_image( item );
 
-                item.previous_value = current_value;
+            } else {
+
+                item.image_jquery_obj.on( 'load', function() {
+                    tdBackstr._load_item_image( item );
+                });
+
+
+                //var currentTimeStart = Date.now();
+                //
+                //var loaded_image_jquery_ojb = false;
+                //
+                //item.image_jquery_obj.on('load', function() {
+                //
+                //    loaded_image_jquery_ojb = true;
+                //
+                //
+                //    tdBackstr._load_item_image(item);
+                //    console.log('backstr tarziu ' + item.image_jquery_obj.height() + ' > timp : ' + (Date.now() - currentTimeStart));
+                //});
+                //
+                //
+                //var indexInterval = setInterval(function() {
+                //    if (loaded_image_jquery_ojb) {
+                //        clearInterval(indexInterval);
+                //        console.log('imagine incarcata ' + item.image_jquery_obj.height() + ' > timp : ' + (Date.now() - currentTimeStart));
+                //    }
+                //}, 0);
             }
+        },
+
+
+        _load_item_image: function( item ) {
+            item.image_aspect_rate = item.image_jquery_obj.width() / item.image_jquery_obj.height();
+            tdBackstr.items.push( item );
+            tdBackstr._compute_item( item );
+
+            item.image_jquery_obj.css( 'opacity', '1' );
+        },
+
+
+        /**
+         *
+         * @param item
+         * @private
+         */
+        _compute_item: function( item ) {
+
+            // the wrapper aspect ratio can vary, so it's recomputed at computing item
+            var wrapper_aspect_rate = item.wrapper_image_jquery_obj.width() / item.wrapper_image_jquery_obj.height();
+
+            var current_value = 0;
+
+            if ( wrapper_aspect_rate < item.image_aspect_rate ) {
+
+                current_value = 1;
+
+                if ( item.previous_value !== current_value ) {
+                    item.image_jquery_obj.removeClass( 'td-stretch-width' );
+                    item.image_jquery_obj.addClass( 'td-stretch-height' );
+
+                    item.previous_value = current_value;
+                }
+            } else {
+
+                current_value = 2;
+
+                if ( item.previous_value !== current_value ) {
+                    item.image_jquery_obj.removeClass( 'td-stretch-height' );
+                    item.image_jquery_obj.addClass( 'td-stretch-width' );
+
+                    item.previous_value = current_value;
+                }
+            }
+        },
+
+
+        /**
+         *
+         * @private
+         */
+        _compute_all_items: function() {
+            for ( var i = 0; i < tdBackstr.items.length; i++ ) {
+                tdBackstr._compute_item( tdBackstr.items[ i ] );
+            }
+        },
+
+
+        td_events_resize: function() {
+
+            if ( 0 === tdBackstr.items.length ) {
+                return;
+            }
+
+            tdBackstr._compute_all_items();
+        },
+
+
+
+
+        log: function( msg ) {
+            window.console.log( msg );
         }
-    },
+    };
 
 
+})();
 
-
-    /**
-     *
-     * @private
-     */
-    _compute_all_items: function _compute_all_items() {
-        for (var i = 0; i < td_backstr.items.length; i++) {
-            td_backstr._compute_item(td_backstr.items[i]);
-        }
-    },
-
-
-
-
-    td_events_resize: function td_events_resize() {
-
-        if (td_backstr.items.length == 0) {
-            return;
-        }
-
-        td_backstr._compute_all_items();
-    },
-
-
-
-
-    log: function log(msg) {
-        console.log(msg);
-    }
-};
 
 
 
@@ -6354,735 +8031,759 @@ var td_backstr = {
  * - td_block ajax request response use a sort method and add founded items into view port array or into items array
  */
 
-"use strict";
 
-var td_animation_stack = {
+/* global jQuery:false */
+/* global tdDetect:false */
+/* global tdEvents:{} */
 
-    /*
-        Important:
-        1. The first animation step is produced by the the body selector @see animation-stack.less
-        2. The second animation step can be applied by the animation_css_class1
-        3. The final (the main) animation step is applied by the animation_css_class2
-     */
+var tdAnimationStack = {};
 
+( function() {
 
+    "use strict";
 
+    tdAnimationStack = {
 
-    // - flag css class used by the non 'type0' animation effect
-    // - flag used just to look for not yet computed item
-    // - it's set by ready_init (on ready)
-    // - all dom components that need to be animated will be marked with this css class in ready_init
-    // - it can be used for a precomputed style, but carefully, because it's applied at ready_init (on ready)
-    _animation_css_class1: '',
-
-
-
-    // - flag css class used by the non 'type0' animation effect
-    // - flag css class used to animate custom
-    // - this css class applies the final animation
-    _animation_css_class2: '',
-
-
-
-    // - the default animation effect 'type0' is applied if the global window.td_animation_stack_effect is the empty string
-    // - it's used for consistency of animation effects presented into the animation-stack.less [all types have a name (...type...)]
-    _animation_default_effect: 'type0',
-
-
-
-    // - td_animation_stack runs just only when this flag is true
-    // - it's done true by the init function
-    activated: false,
-
-
-
-    // flag checked by the major animation operations
-    _ready_for_initialization: true,
-
-    // interval used by ready_init to check td_animation_stack state
-    _ready_init_timeout: undefined,
-
-
-    // max time[ms] interval waiting for first td_animation_stack.init call
-    max_waiting_for_init: 3000,
-
-
-
-    // the specific selectors are used to look for new elements inside of the specific sections
-    _specific_selectors: '',
-
-    // the general selectors are used to look for elements over extend areas in DOM
-    _general_selectors: '',
+        /*
+            Important:
+            1. The first animation step is produced by the the body selector @see animation-stack.less
+            2. The second animation step can be applied by the animation_css_class1
+            3. The final (the main) animation step is applied by the animation_css_class2
+         */
 
 
 
 
+        // - flag css class used by the non 'type0' animation effect
+        // - flag used just to look for not yet computed item
+        // - it's set by ready_init (on ready)
+        // - all dom components that need to be animated will be marked with this css class in ready_init
+        // - it can be used for a precomputed style, but carefully, because it's applied at ready_init (on ready)
+        _animation_css_class1: '',
 
 
-    /**
-     * - wait for td_animation_stack.init() for max_waiting_for_init time
-     * - if time is elapsed, the animation is canceled
-     * - the ready_init is canceled by a fast td_animation_stack.init call
-     */
-    ready_init: function ready_init() {
 
-        // - special case for IE8 and IE9
-        // - the animation is forced removed and the altered css body is cleaned
-        if (td_detect.is_ie8 || td_detect.is_ie9) {
-            td_animation_stack._ready_for_initialization = false;
+        // - flag css class used by the non 'type0' animation effect
+        // - flag css class used to animate custom
+        // - this css class applies the final animation
+        _animation_css_class2: '',
 
-            if (window.td_animation_stack_effect != undefined) {
-                if (window.td_animation_stack_effect == '') {
-                    window.td_animation_stack_effect = td_animation_stack._animation_default_effect;
+
+
+        // - the default animation effect 'type0' is applied if the global window.td_animation_stack_effect is the empty string
+        // - it's used for consistency of animation effects presented into the animation-stack.less [all types have a name (...type...)]
+        _animation_default_effect: 'type0',
+
+
+
+        // - tdAnimationStack runs just only when this flag is true
+        // - it's done true by the init function
+        activated: false,
+
+
+
+        // flag checked by the major animation operations
+        _ready_for_initialization: true,
+
+        // interval used by ready_init to check tdAnimationStack state
+        _ready_init_timeout: undefined,
+
+
+        // max time[ms] interval waiting for first tdAnimationStack.init call
+        max_waiting_for_init: 3000,
+
+
+
+        // the specific selectors are used to look for new elements inside of the specific sections
+        _specific_selectors: '',
+
+        // the general selectors are used to look for elements over extend areas in DOM
+        _general_selectors: '',
+
+
+
+
+
+
+        /**
+         * - wait for tdAnimationStack.init() for max_waiting_for_init time
+         * - if time is elapsed, the animation is canceled
+         * - the ready_init is canceled by a fast tdAnimationStack.init call
+         */
+        ready_init: function() {
+
+            // - special case for IE8 and IE9 (and if Visual Composer image carousel exists)
+            // Important! The Visual Compose images carousel has hidden elements (images) that does not allow for computing the real position of the other DOM elements in the viewport
+            // - the animation is forced removed and the altered css body is cleaned
+            if ( tdDetect.isIe8 || tdDetect.isIe9 || ( jQuery( '.vc_images_carousel' ).length > 0 ) ) {
+                tdAnimationStack._ready_for_initialization = false;
+
+                if ( undefined !== window.td_animation_stack_effect ) {
+                    if ( '' === window.td_animation_stack_effect ) {
+                        window.td_animation_stack_effect = tdAnimationStack._animation_default_effect;
+                    }
+                    jQuery( 'body' ).removeClass( 'td-animation-stack-' + window.td_animation_stack_effect );
                 }
-                jQuery('body').removeClass('td-animation-stack-' + window.td_animation_stack_effect);
-            }
-            return;
-        }
-
-
-        if (window.tds_animation_stack != undefined && window.td_animation_stack_effect != undefined) {
-
-            // the td_animation_stack._specific_selectors is set by the global variable window.td_animation_stack_specific_selectors
-            if (window.td_animation_stack_specific_selectors != undefined) {
-                td_animation_stack._specific_selectors = window.td_animation_stack_specific_selectors;
+                return;
             }
 
 
-            // if the global variable window.td_animation_stack_effect has the empty string value, the 'full fade' (type0) effect is prepared to be applied
-            if (window.td_animation_stack_effect == '') {
-                window.td_animation_stack_effect = td_animation_stack._animation_default_effect;
-            }
-
-            td_animation_stack._animation_css_class1 = 'td-animation-stack-' + window.td_animation_stack_effect + '-1';
-            td_animation_stack._animation_css_class2 = 'td-animation-stack-' + window.td_animation_stack_effect + '-2';
-
-
-            // - the td_animation_stack._general_selectors is set by the global variable window.td_animation_stack_general_selectors
-            if (window.td_animation_stack_general_selectors != undefined) {
-                td_animation_stack._general_selectors = window.td_animation_stack_general_selectors;
-            }
-
-            // the td_animation_stack._animation_css_class1 css class is applied for all elements need to be animated later
-            jQuery(td_animation_stack._general_selectors).addClass(td_animation_stack._animation_css_class1);
-
-
-            // - timeout used by the ready_init function, to cut down td_animation_stack.init calling at loading page, when the call comes too late
-            // - if td_animation_stack.init comes earlier, it does a clearTimeout call over the td_animation_stack._ready_init_timeout variable
-            td_animation_stack._ready_init_timeout = setTimeout(function() {
-
-                // if td_animation_stack is activated, do nothing
-                if (td_animation_stack.activated === true) {
-                    return;
-                }
+            if ( undefined === window.tds_animation_stack || undefined === window.td_animation_stack_effect ) {
 
                 // lock any further operation using the _ready_for_initialization flag
-                td_animation_stack._ready_for_initialization = false;
+                tdAnimationStack._ready_for_initialization = false;
 
-                // remove the loading animation css class effect from the body
-                // this class is applied from the theme settings
-                if (window.td_animation_stack_effect != undefined) {
-                    jQuery('body').removeClass('td-animation-stack-' + window.td_animation_stack_effect);
+            } else {
+
+                // the tdAnimationStack._specific_selectors is set by the global variable window.td_animation_stack_specific_selectors
+                if ( undefined !== window.td_animation_stack_specific_selectors ) {
+                    tdAnimationStack._specific_selectors = window.td_animation_stack_specific_selectors;
                 }
 
-            }, td_animation_stack.max_waiting_for_init);
 
-        } else {
-            // lock any further operation using the _ready_for_initialization flag
-            td_animation_stack._ready_for_initialization = false;
-        }
-    },
-
-
-    // flag marks items where they are
-    _ITEM_TO_VIEW_PORT: {
-
-        ITEM_ABOVE_VIEW_PORT: 0,
-
-        ITEM_IN_VIEW_PORT: 1,
-
-        ITEM_UNDER_VIEW_PORT: 2
-    },
-
-
-    // predefined sorting methods
-    SORTED_METHOD: {
-
-        sort_left_to_right: function sort_left_to_right(item1, item2) {
-            if (item1.offset_top > item2.offset_top) {
-                return 1;
-            } else if (item1.offset_top < item2.offset_top) {
-                return -1;
-            } else if (item1._order > item2._order) {
-                return 1;
-            } else if (item1._order < item2._order) {
-                return -1;
-            }
-            return 0;
-        },
-
-
-        sort_right_to_left: function sort_right_to_left(item1, item2) {
-            if (item1.offset_top > item2.offset_top) {
-                return 1;
-            } else if (item1.offset_top < item2.offset_top) {
-                return -1;
-            } else if (item1._order > item2._order) {
-                return -1;
-            } else if (item1._order < item2._order) {
-                return 1;
-            }
-            return -1;
-        }
-    },
-
-
-    // keeps the DOM reading order, used in the sorting methods
-    _order: 0,
-
-
-    // interval divided to animate items
-    // ex. interval 100 and 2 items => one item at 100 / 2 and one item at 100 / 1, but not lower than min_interval and not higher than max_interval
-    interval: 70,
-
-    // min interval of a set timer
-    min_interval: 17,
-
-    // max interval of a set timer
-    max_interval: 40,
-
-
-
-    // keep current setInterval
-    _current_interval: undefined,
-
-    // items in view port are moved here
-    _items_in_view_port: [],
-
-    // items above the view port are moved here
-    _items_above_view_port: [],
-
-    // all items that will be processed
-    items: [],
-
-
-
-
-
-
-
-
-    /**
-     * - td_animation_stack.item
-     */
-    item: function item() {
-        // offset from the top of the item, to the top
-        // it's set at the initialization item
-        this.offset_top = undefined;
-
-
-        // offset from the bottom of the item, to the top
-        // it's set at the initialization item
-        this.offset_bottom_to_top = undefined;
-
-
-        // jquery object reference
-        // it's set before the initialization of the item
-        this.jquery_obj = undefined;
-
-
-        // the reading order from DOM
-        // it's set at the initialization item
-        this._order = undefined;
-    },
-
-
-
-
-    /**
-     * - initialize a td_animation_stack.item and add it in td_animation_stack.items
-     * @param item td_animation_stack.item
-     */
-    //add_item: function add_item(item) {
-    //
-    //    if (item.constructor != td_animation_stack.item) {
-    //        return;
-    //    }
-    //
-    //    td_animation_stack.items.push(item);
-    //},
-
-
-
-    /**
-     * - initialize the offset top of the td_animation_stack.item parameter
-     * @param item td_animation_stack.item
-     * @private
-     */
-    _initialize_item: function _initialize_item(item) {
-        item._order = td_animation_stack._order++;
-
-        item.offset_top = item.jquery_obj.offset().top;
-        //item.offset_relative = Math.sqrt(Math.pow(item.jquery_obj.offset().top, 2) + Math.pow(item.jquery_obj.offset().left, 2));
-
-        item.offset_bottom_to_top = item.offset_top + item.jquery_obj.height();
-
-        //item.jquery_obj.parent().prepend('<div class="debug_item" style="position: absolute; width: 100%; height: 20px; border: 1px solid red; background-color: white">' + item.offset_top + '</div>');
-    },
-
-
-    /**
-     * - dynamically search for new elements to create new td_animation_stack.item
-     * - the items are added in the td_animation_stack._items_in_view_port, that means they are ready to be animated,
-     * or in the td_animation_stack.items to be computed later (checked if they are in the view port and animated)
-     * @param selector {string} - jQuery selector
-     * @param sort_type {td_animation_stack.SORTED_METHOD} - a preferred td_animation_stack.SORTED_METHOD
-     * @param in_view_port {boolean} - add an item in the td_animation_stack._items_in_view_port or in the td_animation_stack.items
-     */
-    check_for_new_items: function(selector, sort_type, in_view_port) {
-
-        // td_animation_stack must be activated and not stopped for initialization by the ready_init checker
-        if ((td_animation_stack.activated === false) || (td_animation_stack._ready_for_initialization === false)) {
-            return;
-        }
-
-
-        if (selector === undefined) {
-            selector = '';
-        }
-
-
-
-        // the local stack of searched items
-        var local_stack = [];
-
-
-
-        //if (window.td_animation_stack_effect === 'type0') {
-        //    // for every founded element there's an instantiated td_animation_stack.item, then initialized and added to the local stack
-        //    var founded_elements = jQuery(selector + ', .post').find(td_animation_stack._specific_selectors).filter(function() {
-        //        return jQuery(this).css('opacity') === '0';
-        //    });
-        //
-        //} else {
-            jQuery(td_animation_stack._general_selectors).not('.' + td_animation_stack._animation_css_class2).addClass(td_animation_stack._animation_css_class1);
-
-            // for every founded element there's an instantiated td_animation_stack.item, then initialized and added to the local stack
-            var founded_elements = jQuery(selector + ', .post').find(td_animation_stack._specific_selectors).filter(function() {
-                return jQuery(this).hasClass(td_animation_stack._animation_css_class1);
-            });
-        //}
-
-
-
-        founded_elements.each(function(index, element) {
-
-            var item_animation_stack = new td_animation_stack.item();
-
-            item_animation_stack.jquery_obj = jQuery(element);
-
-            td_animation_stack.log(index);
-
-            td_animation_stack._initialize_item(item_animation_stack);
-
-            local_stack.push(item_animation_stack);
-        });
-
-
-
-        // new scope having its own timer used for checking not yet loaded images
-        (function(){
-
-            var images_loaded = true;
-
-            for (var i = 0; i < local_stack.length; i++) {
-
-                // for every image element the 'complete' property is checked
-                // "If the image is finished loading, the complete property returns true"
-                // when td_animation_stack.init is called on load, as normally, it calls td_animation_stack.check_for_new_items and all these element has 'complete' property true
-                // when td_animation_stack.check_for_new_items is called by block's ajax response, the next timer is used to wait for all elements being loaded
-                if (founded_elements[i].complete == false) {
-                    images_loaded = false;
-                    break;
+                // if the global variable window.td_animation_stack_effect has the empty string value, the 'full fade' (type0) effect is prepared to be applied
+                if ( '' === window.td_animation_stack_effect ) {
+                    window.td_animation_stack_effect = tdAnimationStack._animation_default_effect;
                 }
-            }
 
-            // if there's at least one element not loaded, a timer is started to wait for
-            if (images_loaded === false) {
-
-                var date = new Date();
-                var start_time = date.getTime();
+                tdAnimationStack._animation_css_class1 = 'td-animation-stack-' + window.td_animation_stack_effect + '-1';
+                tdAnimationStack._animation_css_class2 = 'td-animation-stack-' + window.td_animation_stack_effect + '-2';
 
 
-                td_animation_stack.log('TIMER - started');
+                // - the tdAnimationStack._general_selectors is set by the global variable window.td_animation_stack_general_selectors
+                if ( undefined !== window.td_animation_stack_general_selectors ) {
+                    tdAnimationStack._general_selectors = window.td_animation_stack_general_selectors;
+                }
+
+                // the tdAnimationStack._animation_css_class1 css class is applied for all elements need to be animated later
+                jQuery( tdAnimationStack._general_selectors ).addClass( tdAnimationStack._animation_css_class1 );
 
 
-                // the timer is started
-                var interval_check_loading_image = setInterval(function() {
+                // - timeout used by the ready_init function, to cut down tdAnimationStack.init calling at loading page, when the call comes too late
+                // - if tdAnimationStack.init comes earlier, it does a clearTimeout call over the tdAnimationStack._ready_init_timeout variable
+                tdAnimationStack._ready_init_timeout = setTimeout( function() {
 
-                    // if there's too much time waiting for image loading, they are made visible
-                    var date = new Date();
-
-                    var i = 0;
-
-                    if ((date.getTime() - start_time) > td_animation_stack.max_waiting_for_init) {
-
-                        clearInterval(interval_check_loading_image);
-
-                        for (i = 0; i < local_stack.length; i++) {
-
-
-
-
-                            //if (window.td_animation_stack_effect === 'type0') {
-                            //    local_stack[i].jquery_obj.css('opacity', 1);
-                            //} else {
-                                local_stack[i].jquery_obj.removeClass(td_animation_stack._animation_css_class1);
-                                local_stack[i].jquery_obj.addClass(td_animation_stack._animation_css_class2);
-                            //}
-
-
-
-
-
-
-                        }
+                    // if tdAnimationStack is activated, do nothing
+                    if ( true === tdAnimationStack.activated ) {
                         return;
                     }
 
+                    // lock any further operation using the _ready_for_initialization flag
+                    tdAnimationStack._ready_for_initialization = false;
 
-                    // at every interval step, the element's 'complete' property is checked again
-                    images_loaded = true;
-
-                    for (i = 0; i < local_stack.length; i++) {
-
-                        if (founded_elements[i].complete == false) {
-                            images_loaded = false;
-                            break;
-                        }
+                    // remove the loading animation css class effect from the body
+                    // this class is applied from the theme settings
+                    if ( undefined !== window.td_animation_stack_effect ) {
+                        jQuery( 'body' ).removeClass( 'td-animation-stack-' + window.td_animation_stack_effect );
                     }
 
-                    if (images_loaded === true) {
+                }, tdAnimationStack.max_waiting_for_init );
+            }
+        },
 
-                        clearInterval(interval_check_loading_image);
 
-                        td_animation_stack.log('TIMER - stopped');
+        // flag marks items where they are
+        _ITEM_TO_VIEW_PORT: {
 
-                        td_animation_stack._precompute_items(local_stack, sort_type, in_view_port);
-                        td_animation_stack.compute_items();
-                    }
+            ITEM_ABOVE_VIEW_PORT: 0,
 
-                }, 100);
+            ITEM_IN_VIEW_PORT: 1,
 
-            } else {
-                td_animation_stack._precompute_items(local_stack, sort_type, in_view_port);
-                td_animation_stack.compute_items();
+            ITEM_UNDER_VIEW_PORT: 2
+        },
+
+
+        // predefined sorting methods
+        SORTED_METHOD: {
+
+            sort_left_to_right: function sort_left_to_right( item1, item2 ) {
+                if ( item1.offset_top > item2.offset_top ) {
+                    return 1;
+                } else if ( item1.offset_top < item2.offset_top ) {
+                    return -1;
+                } else if ( item1._order > item2._order ) {
+                    return 1;
+                } else if ( item1._order < item2._order ) {
+                    return -1;
+                }
+                return 0;
+            },
+
+
+            sort_right_to_left: function sort_right_to_left( item1, item2 ) {
+                if ( item1.offset_top > item2.offset_top ) {
+                    return 1;
+                } else if ( item1.offset_top < item2.offset_top ) {
+                    return -1;
+                } else if ( item1._order > item2._order ) {
+                    return -1;
+                } else if ( item1._order < item2._order ) {
+                    return 1;
+                }
+                return -1;
+            }
+        },
+
+
+        // keeps the DOM reading order, used in the sorting methods
+        _order: 0,
+
+
+        // interval divided to animate items
+        // ex. interval 100 and 2 items => one item at 100 / 2 and one item at 100 / 1, but not lower than min_interval and not higher than max_interval
+        interval: 70,
+
+        // min interval of a set timer
+        min_interval: 17,
+
+        // max interval of a set timer
+        max_interval: 40,
+
+
+
+        // keep current setInterval
+        _current_interval: undefined,
+
+        // items in view port are moved here
+        _items_in_view_port: [],
+
+        // items above the view port are moved here
+        _items_above_view_port: [],
+
+        // all items that will be processed
+        items: [],
+
+
+
+
+
+
+
+
+        /**
+         * - tdAnimationStack.item
+         */
+        item: function() {
+            // offset from the top of the item, to the top
+            // it's set at the initialization item
+            this.offset_top = undefined;
+
+
+            // offset from the bottom of the item, to the top
+            // it's set at the initialization item
+            this.offset_bottom_to_top = undefined;
+
+
+            // jquery object reference
+            // it's set before the initialization of the item
+            this.jqueryObj = undefined;
+
+
+            // the reading order from DOM
+            // it's set at the initialization item
+            this._order = undefined;
+        },
+
+
+
+
+        /**
+         * - initialize a tdAnimationStack.item and add it in tdAnimationStack.items
+         * @param item tdAnimationStack.item
+         */
+        //add_item: function add_item(item) {
+        //
+        //    if (item.constructor != tdAnimationStack.item) {
+        //        return;
+        //    }
+        //
+        //    tdAnimationStack.items.push(item);
+        //},
+
+
+
+        /**
+         * - initialize the offset top of the tdAnimationStack.item parameter
+         * @param item tdAnimationStack.item
+         * @private
+         */
+        _initialize_item: function( item ) {
+            item._order = tdAnimationStack._order++;
+
+            item.offset_top = item.jqueryObj.offset().top;
+            //item.offset_relative = Math.sqrt(Math.pow(item.jqueryObj.offset().top, 2) + Math.pow(item.jqueryObj.offset().left, 2));
+
+            item.offset_bottom_to_top = item.offset_top + item.jqueryObj.height();
+
+            //item.jqueryObj.parent().prepend('<div class="debug_item" style="position: absolute; width: 100%; height: 20px; border: 1px solid red; background-color: white">' + item.offset_top + '</div>');
+        },
+
+
+        /**
+         * - dynamically search for new elements to create new tdAnimationStack.item
+         * - the items are added in the tdAnimationStack._items_in_view_port, that means they are ready to be animated,
+         * or in the tdAnimationStack.items to be computed later (checked if they are in the view port and animated)
+         * @param selector {string} - jQuery selector
+         * @param sort_type {tdAnimationStack.SORTED_METHOD} - a preferred tdAnimationStack.SORTED_METHOD
+         * @param in_view_port {boolean} - add an item in the tdAnimationStack._items_in_view_port or in the tdAnimationStack.items
+         */
+        check_for_new_items: function( selector, sort_type, in_view_port ) {
+
+            // tdAnimationStack must be activated and not stopped for initialization by the ready_init checker
+            if ( ( false === tdAnimationStack.activated ) || ( false === tdAnimationStack._ready_for_initialization ) ) {
+                return;
             }
 
-        })();
 
-        td_animation_stack.log('checked for new items finished');
-    },
-
-
-    /**
-     * - _precompute_items sorts and adds items in the td_animation_stack.items array or even in the
-     * td_animation_stack._items_in_view_port array
-     * - this function is necessary because at scroll just the td_animation_stack.compute_items function is called
-     *
-     * @param stack_items {[]} founded items
-     * @param sort_type {function} sorting method
-     * @param in_view_port {boolean} add in view port to be already computed, or in the general items array
-     * @private
-     */
-    _precompute_items: function _precompute_items(stack_items, sort_type, in_view_port) {
-
-        stack_items.sort(sort_type);
-
-        if (in_view_port === true) {
-
-            while (stack_items.length > 0) {
-                td_animation_stack.log('add item 1 : ' + stack_items.length);
-                td_animation_stack._items_in_view_port.push(stack_items.shift());
+            if ( undefined === selector ) {
+                selector = '';
             }
 
-        } else {
-
-            while (stack_items.length > 0) {
-                td_animation_stack.log('add item 2 : ' + stack_items.length);
-                td_animation_stack.items.push(stack_items.shift());
-            }
-        }
-    },
 
 
-
-    /**
-     * - IT'S CALLED ON PAGE LOAD [actually in td_last_init.js]
-     * - the general init function
-     * - the items are added to the td_animation_stack.items using check_for_new_items method, and then computed
-     * - the arrays are cleared to be prepared for a reinitialization
-     */
-    init: function init() {
-        if (window.tds_animation_stack === undefined) {
-            return;
-        }
-
-        // td_animation_stack must not be already stopped for initialization by a pre_init checker
-        if (td_animation_stack._ready_for_initialization === false) {
-            return;
-        }
-
-        // clear the _ready_init_timeout, to stop it doing more checking
-        clearTimeout(td_animation_stack._ready_init_timeout);
-
-        // the td_animation_stack is activated
-        td_animation_stack.activated = true;
-
-        td_animation_stack.check_for_new_items('.td-animation-stack', td_animation_stack.SORTED_METHOD.sort_left_to_right, false);
-    },
-
-
-    /**
-     * - the arrays are cleared to be prepared for a reinitialization
-     * - the init call is done
-     */
-    reinit: function reinit() {
-
-        // td_animation_stack must not be already stopped for initialization by a pre_init checker
-        if (td_animation_stack._ready_for_initialization === false) {
-            return;
-        }
-
-        td_animation_stack.items = [];
-        td_animation_stack._items_in_view_port = [];
-        td_animation_stack._items_above_view_port = [];
-
-        td_animation_stack.init();
-    },
-
-
-    /**
-     * - compute all items
-     */
-    compute_items: function compute_items() {
-
-        // td_animation_stack must be activated and not stopped for initialization by the ready_init checker
-        if ((td_animation_stack.activated === false) || (td_animation_stack._ready_for_initialization === false)) {
-            return;
-        }
-
-        // the td_animation_stack.items are processed
-        td_animation_stack._separate_items();
-
-        // the items above the port view are animated
-        while (td_animation_stack._items_above_view_port.length > 0) {
-            td_animation_stack.log('animation - above the view port');
-
-            var item_above_view_port = td_animation_stack._items_above_view_port.shift();
+            // the local stack of searched items
+            var local_stack = [];
 
 
 
             //if (window.td_animation_stack_effect === 'type0') {
-            //    item_above_view_port.jquery_obj.css('opacity', 1);
+            //    // for every founded element there's an instantiated tdAnimationStack.item, then initialized and added to the local stack
+            //    var founded_elements = jQuery(selector + ', .post').find(tdAnimationStack._specific_selectors).filter(function() {
+            //        return jQuery(this).css('opacity') === '0';
+            //    });
+            //
             //} else {
-                item_above_view_port.jquery_obj.removeClass(td_animation_stack._animation_css_class1);
-                item_above_view_port.jquery_obj.addClass(td_animation_stack._animation_css_class2);
+                jQuery( tdAnimationStack._general_selectors).not( '.' + tdAnimationStack._animation_css_class2 ).addClass( tdAnimationStack._animation_css_class1 );
+
+                // for every founded element there's an instantiated tdAnimationStack.item, then initialized and added to the local stack
+                var founded_elements = jQuery( selector + ', .post' ).find( tdAnimationStack._specific_selectors ).filter( function() {
+                    return jQuery( this ).hasClass( tdAnimationStack._animation_css_class1 );
+                });
             //}
 
 
 
+            founded_elements.each( function( index, element ) {
 
-        }
+                var item_animation_stack = new tdAnimationStack.item();
 
+                item_animation_stack.jqueryObj = jQuery( element );
 
-        // the items in the port view are prepared to be animated
-        if (td_animation_stack._items_in_view_port.length > 0) {
+                tdAnimationStack.log( index );
 
-            // clear any opened interval by a previous compute_items call
-            clearInterval(td_animation_stack._current_interval);
+                tdAnimationStack._initialize_item( item_animation_stack );
 
-            var current_animation_item = td_animation_stack._get_item_from_view_port();
-
-
-
-
-            //if (window.td_animation_stack_effect === 'type0') {
-            //    current_animation_item.jquery_obj.css('opacity', 1);
-            //} else {
-                current_animation_item.jquery_obj.removeClass(td_animation_stack._animation_css_class1);
-                current_animation_item.jquery_obj.addClass(td_animation_stack._animation_css_class2);
-//            }
+                local_stack.push( item_animation_stack );
+            });
 
 
 
+            // new scope having its own timer used for checking not yet loaded images
+            ( function(){
+
+                var images_loaded = true;
+
+                for ( var i = 0; i < local_stack.length; i++ ) {
+
+                    // for every image element the 'complete' property is checked
+                    // "If the image is finished loading, the complete property returns true"
+                    // when tdAnimationStack.init is called on load, as normally, it calls tdAnimationStack.check_for_new_items and all these element has 'complete' property true
+                    // when tdAnimationStack.check_for_new_items is called by block's ajax response, the next timer is used to wait for all elements being loaded
+                    if ( false === founded_elements[ i ].complete ) {
+                        images_loaded = false;
+                        break;
+                    }
+                }
+
+                // if there's at least one element not loaded, a timer is started to wait for
+                if ( false === images_loaded ) {
+
+                    var date = new Date();
+                    var start_time = date.getTime();
 
 
-            if (td_animation_stack._items_in_view_port.length > 0) {
+                    tdAnimationStack.log( 'TIMER - started' );
 
-                td_animation_stack.log('start animation timer');
 
-                td_animation_stack._to_timer(td_animation_stack._get_right_interval(td_animation_stack.interval * (1 / td_animation_stack._items_in_view_port.length)));
+                    // the timer is started
+                    var interval_check_loading_image = setInterval( function() {
+
+                        // if there's too much time waiting for image loading, they are made visible
+                        var date = new Date();
+
+                        var i = 0;
+
+                        if ( ( date.getTime() - start_time ) > tdAnimationStack.max_waiting_for_init ) {
+
+                            clearInterval( interval_check_loading_image );
+
+                            for ( i = 0; i < local_stack.length; i++ ) {
+
+
+
+
+                                //if (window.td_animation_stack_effect === 'type0') {
+                                //    local_stack[i].jqueryObj.css('opacity', 1);
+                                //} else {
+                                    local_stack[ i ].jqueryObj.removeClass( tdAnimationStack._animation_css_class1 );
+                                    local_stack[ i ].jqueryObj.addClass( tdAnimationStack._animation_css_class2 );
+                                //}
+
+
+
+
+
+
+                            }
+                            return;
+                        }
+
+
+                        // at every interval step, the element's 'complete' property is checked again
+                        images_loaded = true;
+
+                        for ( i = 0; i < local_stack.length; i++ ) {
+
+                            if ( false === founded_elements[ i ].complete ) {
+                                images_loaded = false;
+                                break;
+                            }
+                        }
+
+                        if ( true === images_loaded ) {
+
+                            clearInterval( interval_check_loading_image );
+
+                            tdAnimationStack.log( 'TIMER - stopped' );
+
+                            tdAnimationStack._precompute_items( local_stack, sort_type, in_view_port );
+                            tdAnimationStack.compute_items();
+                        }
+
+                    }, 100);
+
+                } else {
+                    tdAnimationStack._precompute_items( local_stack, sort_type, in_view_port );
+                    tdAnimationStack.compute_items();
+                }
+
+            })();
+
+            tdAnimationStack.log( 'checked for new items finished' );
+        },
+
+
+        /**
+         * - _precompute_items sorts and adds items in the tdAnimationStack.items array or even in the
+         * tdAnimationStack._items_in_view_port array
+         * - this function is necessary because at scroll just the tdAnimationStack.compute_items function is called
+         *
+         * @param stack_items {[]} founded items
+         * @param sort_type {function} sorting method
+         * @param in_view_port {boolean} add in view port to be already computed, or in the general items array
+         * @private
+         */
+        _precompute_items: function( stack_items, sort_type, in_view_port ) {
+
+            stack_items.sort( sort_type );
+
+            if ( true === in_view_port ) {
+
+                while ( stack_items.length > 0 ) {
+                    tdAnimationStack.log( 'add item 1 : ' + stack_items.length );
+                    tdAnimationStack._items_in_view_port.push( stack_items.shift() );
+                }
+
+            } else {
+
+                while (stack_items.length > 0) {
+                    tdAnimationStack.log( 'add item 2 : ' + stack_items.length );
+                    tdAnimationStack.items.push( stack_items.shift() );
+                }
             }
-        }
-    },
+        },
 
 
-    /**
-     * - timer function initially called by a td_animation_stack.compute_items function, and then it's auto called
-     * - it calls a setInterval using the interval parameter
-     * @param interval {int} - interval ms
-     */
-    _to_timer: function _to_timer(interval) {
 
-        td_animation_stack._current_interval = setInterval(function () {
+        /**
+         * - IT'S CALLED ON PAGE LOAD [actually in tdLastInit.js]
+         * - the general init function
+         * - the items are added to the tdAnimationStack.items using check_for_new_items method, and then computed
+         * - the arrays are cleared to be prepared for a reinitialization
+         */
+        init: function() {
+            if ( undefined === window.tds_animation_stack ) {
+                return;
+            }
 
-            if (td_animation_stack._items_in_view_port.length > 0) {
+            // tdAnimationStack must not be already stopped for initialization by a pre_init checker
+            if ( false === tdAnimationStack._ready_for_initialization ) {
+                return;
+            }
 
-                var current_animation_item = td_animation_stack._get_item_from_view_port();
+            // clear the _ready_init_timeout, to stop it doing more checking
+            clearTimeout( tdAnimationStack._ready_init_timeout );
 
-                td_animation_stack.log('animation at interval: ' + interval);
+            // the tdAnimationStack is activated
+            tdAnimationStack.activated = true;
 
+            tdAnimationStack.check_for_new_items( '.td-animation-stack', tdAnimationStack.SORTED_METHOD.sort_left_to_right, false );
+        },
+
+
+        /**
+         * - the arrays are cleared to be prepared for a reinitialization
+         * - the init call is done
+         */
+        reinit: function() {
+
+            // tdAnimationStack must not be already stopped for initialization by a pre_init checker
+            if ( false === tdAnimationStack._ready_for_initialization ) {
+                return;
+            }
+
+            tdAnimationStack.items = [];
+            tdAnimationStack._items_in_view_port = [];
+            tdAnimationStack._items_above_view_port = [];
+
+            tdAnimationStack.init();
+        },
+
+
+        /**
+         * - compute all items
+         */
+        compute_items: function() {
+
+            // tdAnimationStack must be activated and not stopped for initialization by the ready_init checker
+            if ( ( false === tdAnimationStack.activated ) || ( false === tdAnimationStack._ready_for_initialization ) ) {
+                return;
+            }
+
+            // the tdAnimationStack.items are processed
+            tdAnimationStack._separate_items();
+
+            // the items above the port view are animated
+            while ( tdAnimationStack._items_above_view_port.length > 0 ) {
+                tdAnimationStack.log( 'animation - above the view port' );
+
+                var item_above_view_port = tdAnimationStack._items_above_view_port.shift();
 
 
 
                 //if (window.td_animation_stack_effect === 'type0') {
-                //    current_animation_item.jquery_obj.css('opacity', 1);
+                //    item_above_view_port.jqueryObj.css('opacity', 1);
                 //} else {
-                    current_animation_item.jquery_obj.removeClass(td_animation_stack._animation_css_class1);
-                    current_animation_item.jquery_obj.addClass(td_animation_stack._animation_css_class2);
+                    item_above_view_port.jqueryObj.removeClass( tdAnimationStack._animation_css_class1 );
+                    item_above_view_port.jqueryObj.addClass( tdAnimationStack._animation_css_class2 );
                 //}
 
 
 
 
-                clearInterval(td_animation_stack._current_interval);
+            }
 
-                if (td_animation_stack._items_in_view_port.length > 0) {
-                    td_animation_stack._to_timer(td_animation_stack._get_right_interval(td_animation_stack.interval * (1 / td_animation_stack._items_in_view_port.length)));
+
+            // the items in the port view are prepared to be animated
+            if ( tdAnimationStack._items_in_view_port.length > 0 ) {
+
+                // clear any opened interval by a previous compute_items call
+                clearInterval( tdAnimationStack._current_interval );
+
+                var current_animation_item = tdAnimationStack._get_item_from_view_port();
+
+
+
+
+                //if (window.td_animation_stack_effect === 'type0') {
+                //    current_animation_item.jqueryObj.css('opacity', 1);
+                //} else {
+                    current_animation_item.jqueryObj.removeClass( tdAnimationStack._animation_css_class1 );
+                    current_animation_item.jqueryObj.addClass( tdAnimationStack._animation_css_class2 );
+    //            }
+
+
+
+
+
+                if ( tdAnimationStack._items_in_view_port.length > 0 ) {
+
+                    tdAnimationStack.log( 'start animation timer' );
+
+                    tdAnimationStack._to_timer( tdAnimationStack._get_right_interval( tdAnimationStack.interval * ( 1 / tdAnimationStack._items_in_view_port.length ) ) );
                 }
             }
-        }, interval);
-    },
+        },
 
 
-    /**
-     * - get an item from the td_animation_stack._items_in_view_port array
-     * @returns {td_animation_stack.item}
-     * @private
-     */
-    _get_item_from_view_port: function _get_item_from_view_port() {
+        /**
+         * - timer function initially called by a tdAnimationStack.compute_items function, and then it's auto called
+         * - it calls a setInterval using the interval parameter
+         * @param interval {int} - interval ms
+         */
+        _to_timer: function( interval ) {
 
-        return td_animation_stack._items_in_view_port.shift();
-    },
+            tdAnimationStack._current_interval = setInterval( function () {
 
+                if ( tdAnimationStack._items_in_view_port.length > 0 ) {
 
+                    var current_animation_item = tdAnimationStack._get_item_from_view_port();
 
-    /**
-     * - get the interval considering td_animation_stack.min_interval and td_animation_stack.max_interval
-     * @param interval {int} - the checked interval value
-     * @returns {int} - the result interval value
-     * @private
-     */
-    _get_right_interval: function _get_right_interval(interval) {
-
-        if (interval < td_animation_stack.min_interval) {
-            return td_animation_stack.min_interval;
-
-        } else if (interval > td_animation_stack.max_interval) {
-            return td_animation_stack.max_interval;
-        }
-        return interval;
-    },
+                    tdAnimationStack.log( 'animation at interval: ' + interval );
 
 
-    /**
-     * - check where the item is to the view port
-     * @param item {td_animation_stack.item}
-     * @returns {number} _ITEM_TO_VIEW_PORT value
-     * @private
-     */
-    _item_to_view_port: function _item_to_view_port(item) {
-
-        if (td_events.window_pageYOffset + td_events.window_innerHeight < item.offset_top) {
-            return td_animation_stack._ITEM_TO_VIEW_PORT.ITEM_UNDER_VIEW_PORT;
-
-        } else if ((td_events.window_pageYOffset + td_events.window_innerHeight >= item.offset_top) && (td_events.window_pageYOffset <= item.offset_bottom_to_top)) {
-            return td_animation_stack._ITEM_TO_VIEW_PORT.ITEM_IN_VIEW_PORT;
-
-        }
-        return td_animation_stack._ITEM_TO_VIEW_PORT.ITEM_ABOVE_VIEW_PORT;
-    },
 
 
-    /**
-     * - check the sorted td_animation_stack.items and move them into the _items_above_view_port array or into the _items_in_view_port
-     * - the remaining items are kept by the td_animation_stack.items for next processing
-     * @private
-     */
-    _separate_items: function _separate_items() {
-        if (td_animation_stack.items.length == 0) {
-            return;
-        }
+                    //if (window.td_animation_stack_effect === 'type0') {
+                    //    current_animation_item.jqueryObj.css('opacity', 1);
+                    //} else {
+                        current_animation_item.jqueryObj.removeClass( tdAnimationStack._animation_css_class1 );
+                        current_animation_item.jqueryObj.addClass( tdAnimationStack._animation_css_class2 );
+                    //}
 
-        while (td_animation_stack.items.length > 0) {
-            var item_to_view_port = td_animation_stack._item_to_view_port(td_animation_stack.items[0]);
 
-            switch (item_to_view_port) {
-                case td_animation_stack._ITEM_TO_VIEW_PORT.ITEM_ABOVE_VIEW_PORT :
-                    td_animation_stack._items_above_view_port.push(td_animation_stack.items.shift());
-                    break;
 
-                case td_animation_stack._ITEM_TO_VIEW_PORT.ITEM_IN_VIEW_PORT :
-                    td_animation_stack._items_in_view_port.push(td_animation_stack.items.shift());
-                    break;
 
-                case td_animation_stack._ITEM_TO_VIEW_PORT.ITEM_UNDER_VIEW_PORT : return;
+                    clearInterval( tdAnimationStack._current_interval );
+
+                    if ( tdAnimationStack._items_in_view_port.length > 0 ) {
+                        tdAnimationStack._to_timer( tdAnimationStack._get_right_interval( tdAnimationStack.interval * ( 1 / tdAnimationStack._items_in_view_port.length ) ) );
+                    }
+                }
+            }, interval );
+        },
+
+
+        /**
+         * - get an item from the tdAnimationStack._items_in_view_port array
+         * @returns {tdAnimationStack.item}
+         * @private
+         */
+        _get_item_from_view_port: function() {
+
+            return tdAnimationStack._items_in_view_port.shift();
+        },
+
+
+
+        /**
+         * - get the interval considering tdAnimationStack.min_interval and tdAnimationStack.max_interval
+         * @param interval {int} - the checked interval value
+         * @returns {int} - the result interval value
+         * @private
+         */
+        _get_right_interval: function( interval ) {
+
+            if ( interval < tdAnimationStack.min_interval ) {
+                return tdAnimationStack.min_interval;
+
+            } else if ( interval > tdAnimationStack.max_interval ) {
+                return tdAnimationStack.max_interval;
             }
+            return interval;
+        },
+
+
+        /**
+         * - check where the item is to the view port
+         * @param item {tdAnimationStack.item}
+         * @returns {number} _ITEM_TO_VIEW_PORT value
+         * @private
+         */
+        _item_to_view_port: function( item ) {
+
+            tdAnimationStack.log( 'position item relative to the view port >> ' + tdEvents.window_pageYOffset + tdEvents.window_innerHeight + ' : ' + item.offset_top );
+
+            if ( tdEvents.window_pageYOffset + tdEvents.window_innerHeight < item.offset_top ) {
+                return tdAnimationStack._ITEM_TO_VIEW_PORT.ITEM_UNDER_VIEW_PORT;
+
+            } else if ( ( tdEvents.window_pageYOffset + tdEvents.window_innerHeight >= item.offset_top ) && ( tdEvents.window_pageYOffset <= item.offset_bottom_to_top ) ) {
+                return tdAnimationStack._ITEM_TO_VIEW_PORT.ITEM_IN_VIEW_PORT;
+
+            }
+            return tdAnimationStack._ITEM_TO_VIEW_PORT.ITEM_ABOVE_VIEW_PORT;
+        },
+
+
+        /**
+         * - check the sorted tdAnimationStack.items and move them into the _items_above_view_port array or into the _items_in_view_port
+         * - the remaining items are kept by the tdAnimationStack.items for next processing
+         * @private
+         */
+        _separate_items: function() {
+            if ( 0 === tdAnimationStack.items.length ) {
+                return;
+            }
+
+            while ( tdAnimationStack.items.length > 0 ) {
+                var item_to_view_port = tdAnimationStack._item_to_view_port( tdAnimationStack.items[ 0 ] );
+
+                switch ( item_to_view_port ) {
+                    case tdAnimationStack._ITEM_TO_VIEW_PORT.ITEM_ABOVE_VIEW_PORT :
+                        tdAnimationStack._items_above_view_port.push( tdAnimationStack.items.shift() );
+                        break;
+
+                    case tdAnimationStack._ITEM_TO_VIEW_PORT.ITEM_IN_VIEW_PORT :
+                        tdAnimationStack._items_in_view_port.push( tdAnimationStack.items.shift() );
+                        break;
+
+                    case tdAnimationStack._ITEM_TO_VIEW_PORT.ITEM_UNDER_VIEW_PORT :
+                        tdAnimationStack.log( 'after separation items >> above: ' + tdAnimationStack._items_above_view_port.length + ' in: ' + tdAnimationStack._items_in_view_port.length + ' under: ' + tdAnimationStack.items.length );
+                        return;
+                }
+            }
+        },
+
+
+        /**
+         * - scroll event usually called by tdCustomEvents
+         */
+        td_events_scroll: function() {
+            tdAnimationStack.compute_items();
+        },
+
+
+
+        /**
+         * - resize event usually called by tdCustomEvents
+         */
+        td_events_resize: function() {
+            // clear an existing interval
+            clearInterval( tdAnimationStack._current_interval );
+
+            // reinitialize tdAnimationStack searching in page for not already animated items [which were already repositioned by resize]
+            tdAnimationStack.reinit();
+        },
+
+
+
+        log: function( msg ) {
+            //console.log(msg);
         }
-    },
 
+    };
+})();
 
-    /**
-     * - scroll event usually called by td_custom_events
-     */
-    td_events_scroll: function td_events_scroll() {
-        td_animation_stack.compute_items();
-    },
+/* global jQuery:{} */
+/* global tdSmartSidebar:{} */
+/* global tdUtil:{} */
+/* global tdDetect:{} */
+/* global tdPullDown:{} */
+/* global tdAnimationScroll:{} */
+/* global tdAnimationStack:{} */
+/* global tdEvents:{} */
+/* global tdAffix:{} */
 
-
-
-    /**
-     * - resize event usually called by td_custom_events
-     */
-    td_events_resize: function td_events_resize() {
-        // clear an existing interval
-        clearInterval(td_animation_stack._current_interval);
-
-        // reinitialize td_animation_stack searching in page for not already animated items [which were already repositioned by resize]
-        td_animation_stack.reinit();
-    },
-
-
-
-    log: function log(msg) {
-        //console.log(msg);
-    }
-
-};
-
-"use strict";
-
-
+'use strict';
 
 /**
  * affix menu
  */
-td_affix.init({
+tdAffix.init({
     menu_selector: '.td-header-menu-wrap',
     menu_wrap_selector: '.td-header-menu-wrap-full',
-    tds_snap_menu: td_util.get_backend_var('tds_snap_menu'),
-    tds_snap_menu_logo: td_util.get_backend_var('tds_logo_on_sticky'),
+    tds_snap_menu: tdUtil.getBackendVar('tds_snap_menu'),
+    tds_snap_menu_logo: tdUtil.getBackendVar('tds_logo_on_sticky'),
     menu_affix_height: 48,   // value must be set because it can't be computed at runtime because at the time of td_affix.init() we can have no affixed menu on page
     menu_affix_height_on_mobile: 54
 });
@@ -7093,7 +8794,7 @@ td_affix.init({
  */
 /*
 jQuery().ready(function () {
-    if (td_detect.is_chrome === true && td_detect.is_osx === false) {
+    if (tdDetect.isChrome === true && tdDetect.isOsx === false) {
         td_smooth_scroll();
     }
 });
@@ -7103,28 +8804,28 @@ jQuery().ready(function () {
 /**
  * sidebar init
  */
-if (td_util.get_backend_var('tds_smart_sidebar') == 'enabled' && td_detect.is_ios === false) {
+if (tdUtil.getBackendVar('tds_smart_sidebar') == 'enabled' && tdDetect.isIos === false) {
     jQuery(window).load(function() {
         // find the rows and the sidebars objects and add them to the magic sidebar object array
         jQuery('.td-ss-row').each(function () {
             //@todo check to see if the sidebar + content is pressent
-            var td_smart_sidebar_item = new td_smart_sidebar.item();
+            var td_smart_sidebar_item = new tdSmartSidebar.item();
             td_smart_sidebar_item.sidebar_jquery_obj = jQuery(this).children('.td-pb-span4').children('.wpb_wrapper');
             td_smart_sidebar_item.content_jquery_obj = jQuery(this).children('.td-pb-span8').children('.wpb_wrapper');
-            td_smart_sidebar.add_item(td_smart_sidebar_item);
+            tdSmartSidebar.add_item(td_smart_sidebar_item);
         });
 
 
 
         // check the page to see if we have smart sidebar classes (.td-ss-main-content and .td-ss-main-sidebar)
         if (jQuery('.td-ss-main-content').length > 0 && jQuery('.td-ss-main-sidebar').length > 0) {
-            var td_smart_sidebar_item = new td_smart_sidebar.item();
+            var td_smart_sidebar_item = new tdSmartSidebar.item();
             td_smart_sidebar_item.sidebar_jquery_obj = jQuery('.td-ss-main-sidebar');
             td_smart_sidebar_item.content_jquery_obj = jQuery('.td-ss-main-content');
-            td_smart_sidebar.add_item(td_smart_sidebar_item);
+            tdSmartSidebar.add_item(td_smart_sidebar_item);
         }
 
-        td_smart_sidebar.td_events_resize();
+        tdSmartSidebar.td_events_resize();
     });
 }
 
@@ -7141,7 +8842,7 @@ jQuery('.td-subcat-filter').each(function(index, element) {
 
     if (horizontal_jquery_obj.length == 1 && vertical_jquery_obj.length == 1) {
 
-        var pulldown_item_obj = new td_pulldown.item();
+        var pulldown_item_obj = new tdPullDown.item();
 
         pulldown_item_obj.horizontal_jquery_obj = horizontal_jquery_obj;
         pulldown_item_obj.vertical_jquery_obj = vertical_jquery_obj;
@@ -7149,7 +8850,7 @@ jQuery('.td-subcat-filter').each(function(index, element) {
         pulldown_item_obj.container_jquery_obj = horizontal_jquery_obj.parents('.td_block_wrap:first');
         pulldown_item_obj.excluded_jquery_elements = [horizontal_jquery_obj.parent().siblings('.block-title:first')];
 
-        td_pulldown.add_item(pulldown_item_obj);
+        tdPullDown.add_item(pulldown_item_obj);
     }
 });
 
@@ -7160,14 +8861,14 @@ jQuery('.td-category-siblings').each(function(index, element) {
 
     if (horizontal_jquery_obj.length == 1 && vertical_jquery_obj.length == 1) {
 
-        var pulldown_item_obj = new td_pulldown.item();
+        var pulldown_item_obj = new tdPullDown.item();
 
         pulldown_item_obj.horizontal_jquery_obj = horizontal_jquery_obj;
         pulldown_item_obj.vertical_jquery_obj = vertical_jquery_obj;
         pulldown_item_obj.horizontal_element_css_class = 'entry-category';
         pulldown_item_obj.container_jquery_obj = horizontal_jquery_obj.parents('.td-category-siblings:first');
 
-        td_pulldown.add_item(pulldown_item_obj);
+        tdPullDown.add_item(pulldown_item_obj);
     }
 });
 
@@ -7179,7 +8880,7 @@ jQuery('.td-category-siblings').each(function(index, element) {
  * parallax effect
  */
 
-// array keeping the td_animation_scroll.item items used for backstretch
+// array keeping the tdAnimationScroll.item items used for backstretch
 var td_backstretch_items = [];
 
 
@@ -7189,17 +8890,17 @@ jQuery(window).ready(function() {
 
         if (!jQuery(element).hasClass('not-parallax')) {
 
-            var item = new td_animation_scroll.item();
-            item.jquery_obj = jQuery(element);
-            item.wrapper_jquery_obj = item.jquery_obj.parent();
+            var item = new tdAnimationScroll.item();
+            item.jqueryObj = jQuery(element);
+            item.wrapper_jquery_obj = item.jqueryObj.parent();
 
-            // - ideal translation is when the top of wrapper_jquery_obj is at the top of the view port, the jquery_obj image
+            // - ideal translation is when the top of wrapper_jquery_obj is at the top of the view port, the jqueryObj image
             // is also already translated at the top of the view port
-            // - the start_value should be item.wrapper_jquery_obj.offset().top + how much the jquery_obj was translated
+            // - the start_value should be item.wrapper_jquery_obj.offset().top + how much the jqueryObj was translated
 
-            td_animation_scroll.add_item(item);
+            tdAnimationScroll.add_item(item);
 
-            // we keep the td_animation_scroll.item to change operation settings when the viewport is changing
+            // we keep the tdAnimationScroll.item to change operation settings when the viewport is changing
             td_backstretch_items.push(item);
 
             td_compute_backstretch_item(item);
@@ -7209,8 +8910,8 @@ jQuery(window).ready(function() {
 
     jQuery('.td-parallax-header').each(function (index, element) {
 
-        var item = new td_animation_scroll.item();
-        item.jquery_obj = jQuery(element);
+        var item = new tdAnimationScroll.item();
+        item.jqueryObj = jQuery(element);
 
         item.add_item_property('move_y', 50, 100, 0, 100, '');
         item.add_item_property('opacity', 50, 100, 1, 0, '');
@@ -7220,29 +8921,29 @@ jQuery(window).ready(function() {
             var move_y_property = parseFloat(item.computed_item_properties['move_y']).toFixed();
             var opacity_property = parseFloat(item.computed_item_properties['opacity']);
 
-            item.jquery_obj.css({
+            item.jqueryObj.css({
                 '-webkit-transform': 'translate3d(0px,' + move_y_property + 'px, 0px)',
                 'transform': 'translate3d(0px,' + move_y_property + 'px, 0px)'
             });
 
-            item.jquery_obj.css('transform', 'translate3d(0px,' + move_y_property + 'px, 0px)');
+            item.jqueryObj.css('transform', 'translate3d(0px,' + move_y_property + 'px, 0px)');
 
-            item.jquery_obj.css('opacity', opacity_property);
+            item.jqueryObj.css('opacity', opacity_property);
 
             item.redraw = false;
         }
 
-        td_animation_scroll.add_item(item);
+        tdAnimationScroll.add_item(item);
     });
 
 
-    td_animation_scroll.compute_all_items();
+    tdAnimationScroll.compute_all_items();
 
 
 
 
     // load animation stack
-    td_animation_stack.ready_init();
+    tdAnimationStack.ready_init();
 });
 
 
@@ -7253,7 +8954,7 @@ jQuery(window).ready(function() {
  * It scales the object image and translate it. At first it is translated so its bottom is at the bottom of the viewport,
  * but considering the backstretch css classes applied
  *
- * @param item td_animation_scroll.item
+ * @param item tdAnimationScroll.item
  */
 function td_compute_backstretch_item(item) {
 
@@ -7261,10 +8962,10 @@ function td_compute_backstretch_item(item) {
 
         // percent when the object is in initial position
         // Important! It doesn't matter if the document is scrolled
-        var initial_percent = (td_events.window_innerHeight - item.offset_top) * 100 / (td_events.window_innerHeight + item.full_height);
+        var initial_percent = (tdEvents.window_innerHeight - item.offset_top) * 100 / (tdEvents.window_innerHeight + item.full_height);
 
         // percent when the object has its top at the top of the window
-        var intermediary_top_percent =  (td_events.window_innerHeight) * 100 / (td_events.window_innerHeight + item.full_height);
+        var intermediary_top_percent =  (tdEvents.window_innerHeight) * 100 / (tdEvents.window_innerHeight + item.full_height);
 
 
         // IMPORTANT! We suppose the item.offset_top is positive
@@ -7316,40 +9017,935 @@ function td_compute_backstretch_item(item) {
 
             var property_value = parseFloat(item.computed_item_properties['move_y']).toFixed();
 
-            item.jquery_obj.css({
+            item.jqueryObj.css({
                 'left': '50%',
                 '-webkit-transform': 'translate3d(-50%,' + property_value + 'px, 0px) scale(' + scale_factor + ',' + scale_factor + ')',
                 'transform': 'translate3d(-50%,' + property_value + 'px, 0px) scale(' + scale_factor + ',' + scale_factor + ')'
             });
 
             item.redraw = false;
-        }
+        };
 }
 
+/**
+ * Created by ra on 8/12/2015.
+ */
 
-jQuery(window).load(function() {
-    jQuery('body').addClass('td-js-loaded');
+/* global jQuery:false */
+/* global tdInfiniteLoader:false */
+/* global tdAnimationStack:{} */
+/* global tdSmartSidebar:false */
+/* global tdLoadingBox:{} */
+/* global tds_theme_color_site_wide:string */
 
-    window.td_animation_stack.init();
+
+/* global td_ajax_url:false */
+
+/**
+ *   tdAjaxLoop.init() is called from: @see includes/wp_booster/td_page_generator::render_infinite_pagination
+ */
+var tdAjaxLoop = {};
+
+(function () {
+    'use strict';
+
+    tdAjaxLoop = {
+        loopState: {
+            'sidebarPosition': '',
+            'moduleId': 1,
+            'currentPage': 1,
+            'max_num_pages': 0,
+            'atts' : {},
+            'ajax_pagination_infinite_stop' : 0,
+            'server_reply_html_data': ''
+        },
+
+
+        /**
+         *   tdAjaxLoop.init() is called from: @see includes/wp_booster/td_page_generator::render_infinite_pagination
+         *   only when needed
+         */
+        init: function () {
+            jQuery('.td-ajax-loop-infinite').each( function() {
+                // create a new infinite loader item
+                var tdInfiniteLoaderItem = new tdInfiniteLoader.item();
+
+                tdInfiniteLoaderItem.jqueryObj = jQuery(this);
+                tdInfiniteLoaderItem.uid = 'tdAjaxLoop';
+
+
+                /**
+                 * the callback when the bottom of the element is visible on screen and we need to do something - like load another page
+                 * - the callback does not fire again until tdInfiniteLoader.enable_is_visible_callback is called @see tdInfiniteLoader.js:95
+                 */
+                tdInfiniteLoaderItem.isVisibleCallback = function () {      // the is_visible callback is called when we have to pull new content up because the element is visible
+
+                    if (
+                        0 !== tdAjaxLoop.loopState.ajax_pagination_infinite_stop &&
+                        tdAjaxLoop.loopState.currentPage >= tdAjaxLoop.loopState.ajax_pagination_infinite_stop &&
+                        tdAjaxLoop.loopState.currentPage + 1 < tdAjaxLoop.loopState.max_num_pages  // do we have a next page?
+                    ) {
+                        // stop the callback and show the load more button
+                        jQuery('.td-load-more-infinite-wrap')
+                            .css('display', 'block')
+                            .css('visibility', 'visible')
+                        ;
+
+                    } else {
+                        // load up the next page
+                        tdAjaxLoop.infiniteNextPage(false);
+                    }
+                };
+                tdInfiniteLoader.addItem(tdInfiniteLoaderItem);
+            });
+
+
+            // click on load more - the button should not be visible only when the  ajax_pagination_infinite_stop limit is reached
+            jQuery('.td-load-more-infinite-wrap').click(function(event) {
+                event.preventDefault();
+
+
+                jQuery('.td-load-more-infinite-wrap').css('visibility', 'hidden');
+
+                tdAjaxLoop.infiniteNextPage(true);
+            });
+        },
+
+
+        infiniteNextPage: function (isLoadMoreButton) {
+
+            // prepare the request object
+            tdAjaxLoop.loopState.currentPage++ ;
+            tdAjaxLoop.loopState.server_reply_html_data = '';
+
+            // check here to avoid making an unnecessary ajax request when using infinite loading without button
+            if ( tdAjaxLoop.loopState.currentPage > tdAjaxLoop.loopState.max_num_pages ) {
+                //console.log('END' + tdAjaxLoop.loopState.currentPage + ' max: ' + tdAjaxLoop.loopState.max_num_pages);
+                return;
+            }
+
+
+
+            jQuery('.td-ss-main-content').append('<div class="td-loader-gif td-loader-infinite td-loader-animation-start"></div>');
+            tdLoadingBox.init(tds_theme_color_site_wide, 45);  //init the loading box
+            setTimeout(function () {
+                jQuery('.td-loader-gif')
+                    .removeClass('td-loader-animation-start')
+                    .addClass('td-loader-animation-mid');
+            }, 50);
+
+
+            var requestData = {
+                action: 'td_ajax_loop',
+                loopState: tdAjaxLoop.loopState
+            };
+
+            //console.log('request:');
+            //console.log(tdAjaxLoop.loopState);
+            jQuery.ajax({
+                type: 'POST',
+                url: td_ajax_url,
+                cache:true,
+                data: requestData,
+                success: function(data, textStatus, XMLHttpRequest) {
+                    tdAjaxLoop._processAjaxRequest(data, isLoadMoreButton);
+                },
+                error: function(MLHttpRequest, textStatus, errorThrown) {
+                    //console.log(errorThrown);
+                }
+            });
+        },
+
+        _processAjaxRequest: function (data, isLoadMoreButton) {
+            // stop the loader
+            jQuery('.td-loader-gif').remove();
+            tdLoadingBox.stop();
+
+            var dataObj = jQuery.parseJSON(data);
+
+
+
+            // empty reply - stop everything
+            if ( '' === dataObj.server_reply_html_data  ) {
+                jQuery('.td-load-more-infinite-wrap').css('visibility', 'hidden');
+                return;
+            }
+
+
+            /**
+             * @var {tdAjaxLoop.loopState}
+             */
+
+            jQuery('.td-ajax-loop-infinite').before(dataObj.server_reply_html_data);
+
+            //console.log('reply:');
+            //console.log(dataObj);
+
+            if ( parseInt( dataObj.currentPage ) >= parseInt(dataObj.max_num_pages) ) {
+                jQuery('.td-load-more-infinite-wrap').css('visibility', 'hidden');
+            } else {
+                if ( true === isLoadMoreButton ) {
+                    jQuery('.td-load-more-infinite-wrap').css('visibility', 'visible');
+                }
+            }
+
+            setTimeout( function () {
+                tdAnimationStack.check_for_new_items('.td-main-content' + ' .td-animation-stack', tdAnimationStack.SORTED_METHOD.sort_left_to_right, true);
+                //tdSmartSidebar.compute();
+            }, 200);
+
+
+            // on load more button, we don't have to compute the infinite loader event
+            if ( true === isLoadMoreButton ) {
+                return;
+            }
+
+            setTimeout( function() {
+                //refresh waypoints for infinit scroll tdInfiniteLoader
+                tdInfiniteLoader.computeTopDistances();
+                tdInfiniteLoader.enable_is_visible_callback('tdAjaxLoop');
+                //tdSmartSidebar.compute();
+            }, 500);
+
+
+            setTimeout( function() {
+                tdInfiniteLoader.computeTopDistances();
+            }, 1000);
+
+            setTimeout( function() {
+                tdInfiniteLoader.computeTopDistances();
+            }, 1500);
+
+        }
+    };
+
+})();
+/**
+ * Created by ra on 9/30/2015.
+ */
+
+/*
+ tdWeather.js
+ v1.0
+ */
+/* global jQuery:false */
+/* global tdDetect:false */
+/* global tdUtil:false */
+/* global alert:false */
+/* global tdLocalCache:false */
+
+
+
+
+var tdWeather = {};
+
+( function(){
+    "use strict";
+
+    tdWeather = {
+
+        // used to translate the OWM code to icon
+        _icons: {
+            // day
+            '01d' : 'clear-sky-d',
+            '02d' : 'few-clouds-d',
+            '03d' : 'scattered-clouds-d',
+            '04d' : 'broken-clouds-d',
+            '09d' : 'shower-rain-d',   // ploaie hardcore
+            '10d' : 'rain-d',          // ploaie light
+            '11d' : 'thunderstorm-d',
+            '13d' : 'snow-d',
+            '50d' : 'mist-d',
+
+            //night:
+            '01n' : 'clear-sky-n',
+            '02n' : 'few-clouds-n',
+            '03n' : 'scattered-clouds-n',
+            '04n' : 'broken-clouds-n',
+            '09n' : 'shower-rain-n',   // ploaie hardcore
+            '10n' : 'rain-n',          // ploaie light
+            '11n' : 'thunderstorm-n',
+            '13n' : 'snow-n',
+            '50n' : 'mist-n'
+        },
+
+        _currentRequestInProgress: false, // prevent multiple parallel requests
+        _currentItem: '',  // current weather object, it is set on click and after we modify it, it will be displayed
+
+        // latitude and longitude position, used in callback hell
+        _currentLatitude: 0,
+        _currentLongitude: 0,
+        _currentPositionCacheKey: '',
+
+        // all the weather items
+        items: [],  /** an item is json encoded from this in PHP: @see td_weather::$weather_data */
+
+
+
+        /**
+         * Init the class, we hook the click event
+         */
+        init: function () {
+
+            // weather location button click
+            jQuery('.td-icons-location').click(function() {
+                if (tdWeather._currentRequestInProgress === true) {
+                    return;
+                }
+                tdWeather._currentRequestInProgress = true;
+
+                // get the block id
+                tdWeather._currentItem = tdWeather._getItemByBlockID(jQuery(this).data('block-uid'));
+
+                // get the position + callback
+                var timeoutVal = 10 * 1000 * 1000;
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(tdWeather._updateLocationCallback, tdWeather._displayLocationApiError, {enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 600000});
+                }
+
+            });
+
+            jQuery('.td-weather-now').click(function(){
+                if (tdWeather._currentRequestInProgress === true) {
+                    return;
+                }
+                tdWeather._currentRequestInProgress = true;
+
+                // get the block id
+                tdWeather._currentItem = tdWeather._getItemByBlockID(jQuery(this).data('block-uid'));
+
+                if (tdWeather._currentItem.current_unit === 1) {
+                    tdWeather._currentItem.current_unit = 0;
+                } else {
+                    tdWeather._currentItem.current_unit = 1;
+                }
+                tdWeather._renderCurrentItem();
+            });
+        },
+
+
+        /**
+         * 1. LOCATION api - position callback
+         * @param position
+         * @private
+         */
+        _updateLocationCallback: function(position) {
+            tdWeather._currentLatitude = position.coords.latitude;
+            tdWeather._currentLongitude = position.coords.longitude;
+            tdWeather._currentPositionCacheKey = position.coords.latitude + '_' + position.coords.longitude; //  update the cache key for current position
+
+            // check the cache first and avoid doing the same ajax request again
+            if (tdLocalCache.exist(tdWeather._currentPositionCacheKey + '_today')) {
+                tdWeather._owmGetTodayDataCallback(tdLocalCache.get(tdWeather._currentPositionCacheKey + '_today'));
+            } else {
+                var weather = 'http://api.openweathermap.org/data/2.5/weather?lat=' + tdWeather._currentLatitude + '&lon=' + tdWeather._currentLongitude + '&units=metric&lang=' + tdWeather._currentItem.api_language + '&appid=' + tdWeather._currentItem.api_key;
+                jQuery.ajax({
+                    dataType: "jsonp",
+                    url: weather,
+                    success: tdWeather._owmGetTodayDataCallback,
+                    cache: true
+                });
+            }
+
+            //alert(position.coords.latitude + ' ' + position.coords.longitude);
+
+        },
+
+
+        /**
+         * 2. AJAX callback for today forecast, this also makes a call to ajax 5 days forecast
+         * @param data - OWM api response - NOTICE: We don't check anything if it's correct :)
+         * @private
+         */
+        _owmGetTodayDataCallback: function (data) {
+            // save the data to localCache
+            tdLocalCache.set(tdWeather._currentPositionCacheKey + '_today', data);
+
+
+            // prepare the tdWeather._currentItem object, notice that tdWeather._currentItem is a reference to an object stored in tdWeather.items
+            tdWeather._currentItem.api_location = data.name;
+            tdWeather._currentItem.today_clouds = tdUtil.round(data.clouds.all);
+            tdWeather._currentItem.today_humidity = tdUtil.round(data.main.humidity);
+            tdWeather._currentItem.today_icon = tdWeather._icons[data.weather[0].icon];
+            tdWeather._currentItem.today_icon_text = data.weather[0].description;
+            tdWeather._currentItem.today_max[0] = tdUtil.round(data.main.temp_max, 1);                                  //celsius
+            tdWeather._currentItem.today_max[1] = tdWeather._celsiusToFahrenheit(data.main.temp_max);                   //imperial
+            tdWeather._currentItem.today_min[0] = tdUtil.round(data.main.temp_min, 1);                                  //celsius
+            tdWeather._currentItem.today_min[1] = tdWeather._celsiusToFahrenheit(data.main.temp_min);                   //imperial
+            tdWeather._currentItem.today_temp[0] = tdUtil.round(data.main.temp, 1);                                     //celsius
+            tdWeather._currentItem.today_temp[1] = tdWeather._celsiusToFahrenheit(data.main.temp);                      //imperial
+            tdWeather._currentItem.today_wind_speed[0] = tdUtil.round(data.wind.speed, 1);                              //metric
+            tdWeather._currentItem.today_wind_speed[1] = tdWeather._kmphToMph(data.wind.speed);                         //imperial
+
+            //console.log(tdWeather._currentItem);
+            //console.log(data);
+
+            // check the cache first and avoid doing the same ajax request again
+            if (tdLocalCache.exist(tdWeather._currentPositionCacheKey)) {
+                tdWeather._owmGetFiveDaysData(tdLocalCache.get(tdWeather._currentPositionCacheKey));
+            } else {
+                var weather = 'http://api.openweathermap.org/data/2.5/forecast/daily?lat=' + tdWeather._currentLatitude + '&lon=' + tdWeather._currentLongitude + '&units=metric&lang=' + tdWeather._currentItem.api_language + '&appid=' + tdWeather._currentItem.api_key;
+                jQuery.ajax({
+                    dataType: "jsonp",
+                    url: weather,
+                    success: tdWeather._owmGetFiveDaysData,
+                    cache:true
+                });
+            }
+
+        },
+
+
+        /**
+         * 3. AJAX callback for the 5 days forecast
+         * @param data - OWM api response NOTICE: We don't check anything if it's correct :)
+         * @private
+         */
+        _owmGetFiveDaysData: function (data) {
+            // save the data to localCache
+            tdLocalCache.set(tdWeather._currentPositionCacheKey, data);
+
+            // process the data
+            for (var item_index = 0; item_index < tdWeather._currentItem.forecast.length ; item_index++) {
+                var current_forecast = tdWeather._currentItem.forecast[item_index];
+                current_forecast.day_temp[0] = tdUtil.round(data.list[current_forecast.owm_day_index].temp.day);        //celsius
+                current_forecast.day_temp[1] = tdWeather._celsiusToFahrenheit(current_forecast.day_temp[0]);            //imperial
+            }
+            tdWeather._renderCurrentItem();
+        },
+
+
+        /**
+         * 4. Here we render the global tdWeather._currentItem object to the screen. The object already contains all the needed information
+         * about where and what we have to render.
+         * @private
+         */
+        _renderCurrentItem: function () {
+
+            //console.log('.' + tdWeather._currentItem.block_uid + ' .td-weather-city');
+
+            var blockInner = jQuery('#' + tdWeather._currentItem.block_uid);
+
+            // city
+            blockInner.find('.td-weather-city').html(tdWeather._currentItem.api_location);
+
+            // conditions
+            blockInner.find('.td-weather-condition').html(tdWeather._currentItem.today_icon_text);
+
+            // animation
+            // we remove all the classes! including the animation ones
+            var icon_el = blockInner.find('.td-w-today-icon');
+            icon_el.removeClass();
+            icon_el.addClass('td-w-today-icon');
+            icon_el.addClass(tdWeather._currentItem.today_icon);
+
+            var currentTempUnit = tdWeather._currentItem.current_unit;
+            var currentSpeedLabel = 'kmh';
+            var currentTempLabel = 'C';
+
+            // preapare the labels
+            if (currentTempUnit === 1) {
+                currentSpeedLabel = 'mph';
+                currentTempLabel = 'F';
+            }
+
+
+            // main temp
+            blockInner.find('.td-big-degrees').html(tdWeather._currentItem.today_temp[currentTempUnit]);
+
+            // main temp units
+            blockInner.find('.td-weather-unit').html(currentTempLabel);
+
+
+            // high
+            blockInner.find('.td-w-high-temp').html(tdWeather._currentItem.today_max[currentTempUnit]);
+
+            // low
+            blockInner.find('.td-w-low-temp').html(tdWeather._currentItem.today_min[currentTempUnit]);
+
+            // humidity
+            blockInner.find('.td-w-today-humidity').html(tdWeather._currentItem.today_humidity + '%');
+
+            // wind speed
+            blockInner.find('.td-w-today-wind-speed').html(tdWeather._currentItem.today_wind_speed[currentTempUnit] + currentSpeedLabel);
+
+            // clouds
+            blockInner.find('.td-w-today-clouds').html(tdWeather._currentItem.today_clouds + '%');
+
+            // full list of items! - just the temperature
+            for (var item_index = 0; item_index < tdWeather._currentItem.forecast.length ; item_index++) {
+                blockInner.find('.td-degrees-' + item_index).html(tdWeather._currentItem.forecast[item_index].day_temp[currentTempUnit]);
+            }
+
+
+            tdWeather._currentRequestInProgress = false; // allow other requests to take place
+        },
+
+
+        /**
+         * gets a weather item based on block_uid
+         * @param block_uid
+         * @returns {*}
+         * @private
+         */
+        _getItemByBlockID: function (block_uid) {
+            for (var item_index = 0; item_index < tdWeather.items.length; item_index++) {
+                if (tdWeather.items[item_index].block_uid === block_uid) {
+                    return tdWeather.items[item_index];
+                }
+            }
+            return false;
+        },
+
+
+        /**
+         * Displays a friendly error when the location api fails
+         * @param error - a location api error object?
+         * @private
+         */
+        _displayLocationApiError: function (error) {
+
+            if (error.code === 1) {
+                if (tdDetect.isAndroid) {
+                    alert('Please enable your gps and reload the page.');
+                    return;
+                }
+
+                else if (tdDetect.isIos) {
+                    alert("Please enable Location services for Safari Websites and reload the page. \n ---------------------- \nSettings > Privacy > Location Services");
+                    return;
+                }
+
+
+                alert("Permission denied. Enable GPS or Location services and reload the page");
+                return;
+
+            }
+
+            // the rest of the errors
+            var errors = {
+                2: 'Position unavailable',
+                3: 'Request timeout'
+            };
+            alert("Error: " + errors[error.code]);
+        },
+
+
+        /**
+         * C to F converter. It rounds on big F numbers because we don't have space on the UI.
+         * @param celsiusDegrees
+         * @returns {*}
+         * @private
+         */
+        _celsiusToFahrenheit: function (celsiusDegrees) {
+            var f_degrees = celsiusDegrees * 9 / 5 + 32;
+
+            var rounded_val = tdUtil.round(f_degrees, 1);
+            if (rounded_val > 99.9) {  // if the value is bigger than 100, round it
+                return tdUtil.round(f_degrees);
+            }
+
+            return rounded_val;
+        },
+
+        /**
+         * converter for KMH -> MPH  ex: 2.3
+         * @param $kmph
+         * @returns {*}
+         * @private
+         */
+        _kmphToMph: function ($kmph) {
+            return tdUtil.round($kmph * 0.621371192, 1);
+        }
+
+    };  // end tdWeather
+})();
+
+tdWeather.init(); //init the class
+/* global jQuery:{} */
+/* global tdUtil:{} */
+/* global tdTrendingNowObject:{} */
+
+jQuery( window ).load(function() {
+
+    'use strict';
+
+    jQuery( 'body' ).addClass( 'td-js-loaded' );
+
+    window.tdAnimationStack.init();
 });
 
-jQuery(window).ready(function() {
+jQuery( window ).ready(function() {
+
+    'use strict';
+
     /*
      - code used to allow external links from td_smart_list, when the Google Yoast "Track outbound click and downloads" is checked
      - internal links ("#with-hash") are allowed too
      */
 
-    jQuery('.td_smart_list_1 a, .td_smart_list_3 a').click(function(event) {
+    jQuery( '.td_smart_list_1 a, .td_smart_list_3 a' ).click(function( event ) {
 
-        if (event.target == event.currentTarget) {
-            var current_url = jQuery(this).attr('href');
+        if ( event.target === event.currentTarget ) {
+            var currentUrl = jQuery( this ).attr( 'href' );
 
-            if ((window.location.href != current_url) && td_util.is_valid_url(current_url)) {
-                window.location.href = current_url;
+            if ( ( window.location.href !== currentUrl ) && tdUtil.isValidUrl( currentUrl ) ) {
+                window.location.href = currentUrl;
             }
         }
-
     });
+
+    //trending now
+    tdTrendingNowObject.tdTrendingNow();
+
+    //call to trending now function to start auto scroll
+    tdTrendingNowObject.tdTrendingNowAutoStart();
 });
 
+/**
+ * Created by tagdiv on 29.09.2015.
+ */
+
+/* global jQuery:{} */
+
+var tdAnimationSprite = {};
+
+(function(){
+    'use strict';
+
+    tdAnimationSprite = {
+
+        items: [],
+
+        // flag used to not call requestAnimationFrame until the previous requestAnimationFrame callback runs
+        isInRequestAnimation: false,
+
+
+        // The item that needs animation
+        item: function item() {
+
+            // boolean - an item must be initialized only once
+            this._isInitialized = false;
+
+            // boolean - an item can be paused and restarted
+            this.paused = false;
+
+            // boolean - the animation automatically starts at the computing item
+            this.automatStart = true;
+
+            // object - css properties that will be changed (key - value; ex: 'color' : '#00FFCC')
+            this.properties = [];
+
+            // boolean - flag used by the requestAnimationFrame callback to know which items have properties to apply
+            this.readyToAnimate = false;
+
+            // the index of the current frame
+            this.nextFrame = 1;
+
+            // number - the current interval id set for the animation
+            this.interval = undefined;
+
+            // the jquery obj whose background will be animated
+            this.jqueryObj = undefined;
+
+            // the css class selector of the jqueryObj
+            this.animationSpriteClass = undefined;
+
+            // string - default direction for parsing the sprite img
+            this._currentDirection = 'right';
+
+            // number - the executed loops
+            this._executedLoops = 0;
+
+
+            // string - css background position
+            this._prop_background_position = undefined;
+
+
+            // The followings will be set from the class selector
+
+            // int - number of frames (it must be greater than 1 to allow animation)
+            this.frames = undefined;
+
+            // the width(px) of a frame
+            this.frameWidth = undefined;
+
+            // int - the interval time (ms) the animation runs
+            this.velocity = undefined;
+
+            // boolean - to the right and vice versa
+            this.reverse = undefined;
+
+            // number - number of loops to animate
+            this.loops = undefined;
+
+
+            // Function actually compute the params for animation, prepare the params for next animation and calls t
+            // he requestAnimationFrame with a callback function to animate all items ready for animation
+            this.animate = function() {
+
+                this._prop_background_position = ( -1 * this.nextFrame * this.frameWidth ) + 'px 0';
+                this.readyToAnimate = true;
+
+
+                // The nextFrame value is computed for next frame
+                if ( true === this.reverse) {
+
+                    if ( 'right' === this._currentDirection ) {
+
+                        if ( this.nextFrame === this.frames - 1 ) {
+                            this._currentDirection = 'left';
+                            this.nextFrame--;
+                        } else {
+                            this.nextFrame++;
+                        }
+
+                    } else if ( 'left' === this._currentDirection ) {
+                        if ( 0 === this.nextFrame ) {
+
+                            this._currentDirection = 'right';
+                            this.nextFrame++;
+                            this._executedLoops++;
+
+                            if ( ( 0 !== this.loops ) && ( this._executedLoops === this.loops ) ) {
+                                clearInterval( this.interval );
+                            }
+                        } else {
+                            this.nextFrame--;
+                        }
+                    }
+
+                } else {
+
+                    if ( this.nextFrame === this.frames - 1 ) {
+
+                        this._executedLoops++;
+
+                        // complete tour ( once to the right ), so we stop
+                        if ( ( 0 !== this.loops ) && ( this._executedLoops === this.loops ) ) {
+                            clearInterval( this.interval );
+                        }
+
+                        this.nextFrame = 0;
+                    } else {
+                        this.nextFrame++;
+                    }
+                }
+
+
+                //this.jqueryObj.css('background-position', horizontalPosition + 'px 0');
+
+                // Any calls to requestAnimationFrame are stopped. Anyway, the settings of the current item are ready,
+                // so the callback will consider it.
+                if ( false === tdAnimationSprite.isInRequestAnimation ) {
+                    tdAnimationSprite.isInRequestAnimation = true;
+                    window.requestAnimationFrame( tdAnimationSprite.animateAllItems );
+                }
+            };
+        },
+
+        /**
+         * The css class selector must be some like this 'td_animation_sprite-10-50-500-0-1-1'
+         * It must start with 'td_animation_sprite'
+         * Fields order:
+         * - number of frames
+         * - width of a frame
+         * - velocity in ms
+         * - loops (number) : reload the animation cycle at infinity or specify the number of loops
+         * - reverse (0 or 1) : the loop include, or not, the reverse path
+         * - automatstart (0 or 1) : the item animation starts, or not, automatically
+         *
+         * @param item
+         * @private
+         */
+        _initializeItem: function( item ) {
+            if ( ( true === item._isInitialized ) ) {
+                return;
+            }
+
+            // get all strings containing 'td_animation_sprite'
+            var regex = /(td_animation_sprite\S*)/gi;
+
+            // resultMatch is an array of matches, or null if there's no matching
+            var resultMatch = item.jqueryObj.attr( 'class' ).match( regex );
+
+            if ( null !== resultMatch ) {
+
+                item.offsetTop = item.jqueryObj.offset().top;
+                item.offsetBottomToTop = item.offsetTop + item.jqueryObj.height();
+
+                // the last matching is considered, because new css classes that matches, can be added before recomputing an item
+                item.animationSpriteClass = resultMatch[ resultMatch.length - 1 ];
+
+                var sceneParams = item.animationSpriteClass.split( '-' );
+
+                if ( 7 === sceneParams.length ) {
+
+                    item.frames = parseInt( sceneParams[1] );
+                    item.frameWidth = parseInt( sceneParams[2] );
+                    item.velocity = parseInt( sceneParams[3] );
+                    item.loops = parseInt( sceneParams[4] );
+
+                    if ( 1 === parseInt( sceneParams[5] ) ) {
+                        item.reverse = true;
+                    } else {
+                        item.reverse = false;
+                    }
+
+                    if ( 1 === parseInt( sceneParams[6] ) ) {
+                        item.automatStart = true;
+                    } else {
+                        item.automatStart = false;
+                    }
+
+                    item._isInitialized = true;
+                }
+            }
+        },
+
+        addItem: function( item ) {
+
+            if ( item.constructor === tdAnimationSprite.item ) {
+                tdAnimationSprite.items.push( item );
+                tdAnimationSprite._initializeItem( item );
+
+                if ( true === item.automatStart ) {
+                    tdAnimationSprite.computeItem( item );
+                }
+            }
+        },
+
+        computeItem: function( item ) {
+
+            // set interval just for frames greater than 1
+            if ( item.frames > 1 ) {
+
+                // Check the item interval to not be set
+                if ( undefined !== item.interval ) {
+                    return;
+                }
+
+                item.interval = setInterval(function(){
+
+                    if ( false === item.paused ) {
+                        item.animate();
+                    }
+
+                }, item.velocity );
+            }
+        },
+
+        // At recomputing, an item will check again its last css class selector and it is reinitialized. So, if a new
+        // css class selector is added, it will use it. This way the animation can be modified
+        recomputeItem: function( item ) {
+
+            // stop any animation
+            clearInterval( item.interval );
+
+            // reset the item interval
+            item.interval = undefined;
+
+            // reset the _isInitialized flag
+            item._isInitialized = false;
+
+            // reinitialize item
+            tdAnimationSprite._initializeItem( item );
+
+            // compute the item again
+            tdAnimationSprite.computeItem( item );
+        },
+
+        // Clear the interval set for an item.
+        stopItem: function( item ) {
+            if ( ( item.constructor === tdAnimationSprite.item ) && ( true === item._isInitialized ) ) {
+                clearInterval( item.interval );
+
+                // reset the item interval
+                item.interval = undefined;
+            }
+        },
+
+        // Start animation of a paused item
+        startItem: function( item ) {
+            if ( ( item.constructor === tdAnimationSprite.item ) && ( true === item._isInitialized ) ) {
+                item.paused = false;
+            }
+        },
+
+        // Pause animation of an item
+        pauseItem: function( item ) {
+            if ( ( item.constructor === tdAnimationSprite.item ) && ( true === item._isInitialized ) ) {
+                item.paused = true;
+            }
+        },
+
+
+
+
+        computeAllItems: function() {
+            for ( var i = 0; i < tdAnimationSprite.items.length; i++ ) {
+                tdAnimationSprite.computeItem( tdAnimationSprite.items[i] );
+            }
+        },
+
+        recomputeAllItems: function() {
+            for ( var i = 0; i < tdAnimationSprite.items.length; i++ ) {
+                tdAnimationSprite.recomputeItem( tdAnimationSprite.items[i] );
+            }
+        },
+
+        stopAllItems: function() {
+            for ( var i = 0; i < tdAnimationSprite.items.length; i++ ) {
+                tdAnimationSprite.stopItem( tdAnimationSprite.items[i] );
+            }
+        },
+
+        pauseAllItems: function() {
+            for ( var i = 0; i < tdAnimationSprite.items.length; i++ ) {
+                tdAnimationSprite.pauseItem( tdAnimationSprite.items[i] );
+            }
+        },
+
+        startAllItems: function() {
+            for ( var i = 0; i < tdAnimationSprite.items.length; i++ ) {
+                tdAnimationSprite.startItem( tdAnimationSprite.items[i] );
+            }
+        },
+
+
+        // The requestAnimationFrame callback function.
+        // The 'background-position' is set and then the 'readyToAnimate' flag is set to false
+        animateAllItems: function() {
+            var currentItem;
+
+            for ( var i = 0; i < tdAnimationSprite.items.length; i++ ) {
+                currentItem = tdAnimationSprite.items[i];
+                if ( true === currentItem.readyToAnimate ) {
+                    currentItem.jqueryObj.css( 'background-position', currentItem._prop_background_position );
+                    currentItem.readyToAnimate = false;
+                }
+            }
+            tdAnimationSprite.isInRequestAnimation = false;
+        }
+    };
+
+    /*
+     <div class="td_animation_sprite-a-b-c-d-e-f"></div>
+
+     a - number of frames
+     b - width(px) of a frame
+     c - velocity
+     d - loops number (0 for infinity)
+     e - loop include reverse
+     f - animation start automatically
+     */
+
+    var tdAnimationSpriteElements = jQuery( 'span[class^="td_animation_sprite"]' );
+
+    for ( var i = 0; i < tdAnimationSpriteElements.length; i++ ) {
+        var tdAnimationSpriteItem = new tdAnimationSprite.item();
+        tdAnimationSpriteItem.jqueryObj = jQuery( tdAnimationSpriteElements[i] );
+        tdAnimationSprite.addItem( tdAnimationSpriteItem );
+    }
+})();
 

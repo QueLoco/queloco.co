@@ -1568,8 +1568,51 @@ Headers style
 ----------------------------------------------------------------------  */
 .td-header-style-8 {
 
+
+  .td-header-top-menu-full {
+    background-color: white;
+  }
   .td-header-menu-wrap-full {
     position: relative;
+
+    // special case hide/show logo for affix
+    .td-header-sp-logo {
+      display: none;
+    }
+    .td-affix {
+      .td-header-sp-logo {
+        display: block;
+        bottom: 0;
+        top: 0;
+        height: auto;
+
+        /* responsive portrait phone */
+        @media (max-width: @responsive_p_phone_max) {
+            display: none;
+        }
+      }
+
+      .td-header-main-menu {
+        width: 900px;
+        margin-left: 168px;
+
+        /* responsive landscape tablet */
+        @media (min-width: @responsive_l_tablet_min) and (max-width: @responsive_l_tablet_max) {
+          width: 840px;
+          margin-left: 140px;
+        }
+        /* responsive portrait tablet */
+        @media (min-width: @responsive_p_tablet_min) and (max-width: @responsive_p_tablet_max) {
+          margin-left: 140px;
+          width: 600px;
+        }
+        /* responsive portrait phone */
+        @media (max-width: @responsive_p_phone_max) {
+          margin-left: 0;
+          width: 100%;
+        }
+      }
+    }
   }
 
   .td-header-menu-wrap {
@@ -1634,16 +1677,19 @@ Headers style
     position: absolute;
     width: 238px;
     height: 94px;
-    margin-top: -47px;
+    top: 6px;
+    z-index: 10000;
 
     /* responsive landscape tablet */
     @media (min-width: @responsive_l_tablet_min) and (max-width: @responsive_l_tablet_max) {
       width: 190px;
+      top: -6px;
     }
 
     /* responsive portrait tablet */
     @media (min-width: @responsive_p_tablet_min) and (max-width: @responsive_p_tablet_max) {
       width: 140px;
+      top: -5px;
     }
 
     /* responsive portrait phone */
@@ -1776,11 +1822,15 @@ Headers style
   .td-affix {
     .td-header-sp-logo img {
       max-height: 46px;
-      top: auto;
       padding: 2px 0;
     }
   }
 
+}
+
+// fix logo on affix
+.body-td-affix .td-header-style-8 > .td-container .td-header-sp-logo {
+  display: none;
 }
 
 

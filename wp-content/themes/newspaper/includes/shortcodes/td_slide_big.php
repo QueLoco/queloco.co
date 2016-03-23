@@ -110,7 +110,7 @@ class td_slide_big extends td_block {
                     * and we change the td_resize_slide function with this one
                     */
                     function td_resize_big_grid_update_vars_' . $this->block_uid . '(args) {
-                        //if(td_detect.is_android) {
+                        //if(tdDetect.isAndroid) {
                             setTimeout(function(){
                                 jQuery("#iosSlider_' . $this->block_uid . '").iosSlider("update");
                             }, 1000);

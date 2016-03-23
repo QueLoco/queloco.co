@@ -11,6 +11,20 @@ if (td_util::get_option('tds_footer_column_1') != 'no') {
     $td_top_retina_logo = td_util::get_option('tds_logo_upload_r');
     $td_footer_text = td_util::get_option('tds_footer_text');
     $td_footer_email = td_util::get_option('tds_footer_email');
+    $td_logo_alt = td_util::get_option('tds_logo_alt');
+    $td_footer_logo_alt = td_util::get_option('tds_footer_logo_alt');
+    $td_logo_title = td_util::get_option('tds_logo_title');
+    $td_footer_logo_title = td_util::get_option('tds_footer_logo_title');
+
+    // if there's no footer logo alt set use the alt from the header logo
+    if (empty($td_footer_logo_alt)) {
+        $td_footer_logo_alt = $td_logo_alt;
+    }
+
+    // if there's no footer logo title set use the title from the header logo
+    if (empty($td_footer_logo_title)) {
+        $td_footer_logo_title = $td_logo_title;
+    }
 
     $buffy = '';
 
@@ -19,15 +33,15 @@ if (td_util::get_option('tds_footer_column_1') != 'no') {
 
     if (!empty($td_footer_logo)) { // if have footer logo
         if (empty($td_footer_retina_logo)) { // if don't have a retina footer logo load the normal logo
-            $buffy .= '<a href="' . esc_url(home_url( '/' )) . '"><img src="' . $td_footer_logo . '" alt=""/></a>';
+            $buffy .= '<a href="' . esc_url(home_url( '/' )) . '"><img src="' . $td_footer_logo . '" alt="' . $td_footer_logo_alt . '" title="' . $td_footer_logo_title . '"/></a>';
         } else {
-            $buffy .= '<a href="' . esc_url(home_url( '/' )) . '"><img class="td-retina-data" src="' . $td_footer_logo . '" data-retina="' . esc_attr($td_footer_retina_logo) . '" alt=""/></a>';
+            $buffy .= '<a href="' . esc_url(home_url( '/' )) . '"><img class="td-retina-data" src="' . $td_footer_logo . '" data-retina="' . esc_attr($td_footer_retina_logo) . '" alt="' . $td_footer_logo_alt . '" title="' . $td_footer_logo_title . '"/></a>';
         }
     } else { // if you don't have a footer logo load the top logo
         if (empty($td_top_retina_logo)) {
-            $buffy .= '<a href="' . esc_url(home_url( '/' )) . '"><img src="' . $td_top_logo . '" alt=""/></a>';
+            $buffy .= '<a href="' . esc_url(home_url( '/' )) . '"><img src="' . $td_top_logo . '" alt="' . $td_logo_alt . '" title="' . $td_logo_title . '"/></a>';
         } else {
-            $buffy .= '<a href="' . esc_url(home_url( '/' )) . '"><img class="td-retina-data" src="' . $td_top_logo . '" data-retina="' . esc_attr($td_top_retina_logo) . '" alt=""/></a>';
+            $buffy .= '<a href="' . esc_url(home_url( '/' )) . '"><img class="td-retina-data" src="' . $td_top_logo . '" data-retina="' . esc_attr($td_top_retina_logo) . '" alt="' . $td_logo_alt . '" title="' . $td_logo_title . '"/></a>';
         }
     }
 

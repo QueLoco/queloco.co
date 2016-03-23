@@ -290,7 +290,7 @@ msgid "User or email already exists!"
 msgstr "हा ई मेल आधीच नोंद आहे"
 
 #: no reference:
-msgid "Please check you email (index or spam folder), the password was sent there."
+msgid "Please check your email (index or spam folder), the password was sent there."
 msgstr "तुमचा ई मेल तपासा . आम्ही तेथे परवलीचा शब्द पाठविला आहे"
 
 #: no reference:

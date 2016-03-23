@@ -16,11 +16,10 @@ class td_module_trending_now extends td_module {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes(array("td-trending-now-post-$order_no", "td-trending-now-post")); ?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes(array("td-trending-now-post-$order_no", "td-trending-now-post")); ?>">
 
             <?php echo $this->get_title()?>
 
-            <?php echo $this->get_item_scope_meta();?>
         </div>
 
         <?php return ob_get_clean();

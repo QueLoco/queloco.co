@@ -4,7 +4,7 @@
  */
 
 define("TD_THEME_NAME", "Newspaper");
-define("TD_THEME_VERSION", "6.3");
+define("TD_THEME_VERSION", "6.7");
 define("TD_THEME_DOC_URL", "http://forum.tagdiv.com/whats-included/");
 define("TD_THEME_DEMO_URL", "http://demo.tagdiv.com/" . strtolower(TD_THEME_NAME));
 define("TD_THEME_DEMO_DOC_URL", 'http://forum.tagdiv.com/introduction/');  //the url to the demo documentation
@@ -13,8 +13,9 @@ define("TD_FEATURED_CAT", "Featured"); //featured cat name
 define("TD_FEATURED_CAT_SLUG", "featured"); //featured cat slug
 define("TD_THEME_OPTIONS_NAME", "td_011"); //where to store our options
 
+define("TD_AURORA_VERSION", "1.1");
 
-define("TD_THEME_WP_BOOSTER", "3.0"); //prevents multiple instances of the framework
+define("TD_THEME_WP_BOOSTER", "3.0"); // prevents multiple instances of the framework
 
 //if no deploy mode is selected, we use the final deploy built
 if (!defined('TD_DEPLOY_MODE')) {
@@ -56,14 +57,14 @@ switch (TD_DEPLOY_MODE) {
  * is also used by td_deploy - that's why it's a static class
  * Class td_wp_booster_hooks
  */
-class td_wp_booster_config {
+class td_config {
 
 
     /**
      * setup the global theme specific variables
      * @depends td_global
      */
-    static function td_global_after() {
+    static function on_td_global_after_config() {
 
 
 
@@ -73,68 +74,72 @@ class td_wp_booster_config {
         td_global::$js_files = array(
 
 
-	        'td_external' =>            '/includes/wp_booster/js_dev/td_external.js',
-            'td_detect' =>              '/includes/wp_booster/js_dev/td_detect.js',
+	        'tdExternal' =>             '/includes/wp_booster/js_dev/tdExternal.js',
+            'tdDetect' =>               '/includes/wp_booster/js_dev/tdDetect.js',
 
-	        'td_viewport' =>            '/includes/wp_booster/js_dev/td_viewport.js',
+	        'tdViewport' =>             '/includes/wp_booster/js_dev/tdViewport.js',
 
-            'td_menu' =>                '/includes/wp_booster/js_dev/td_menu.js',
-            'td_local_cache' =>         '/includes/wp_booster/js_dev/td_local_cache.js',
-            'td_util' =>                '/includes/wp_booster/js_dev/td_util.js',
-            'td_affix' =>               '/includes/wp_booster/js_dev/td_affix.js',
+            'tdMenu' =>                 '/includes/wp_booster/js_dev/tdMenu.js',
+            //'tdLocalCache' =>         '/includes/wp_booster/js_dev/tdLocalCache.js',
+            'tdUtil' =>                 '/includes/wp_booster/js_dev/tdUtil.js',
+            'tdAffix' =>                '/includes/wp_booster/js_dev/tdAffix.js',
             //'td_scroll_animation' =>  '/includes/wp_booster/js_dev/td_scroll_animation.js',
             'td_site' =>                '/includes/wp_booster/js_dev/td_site.js',
 
-            'td_loading_box' =>         '/includes/wp_booster/js_dev/td_loading_box.js',
-            'td_ajax_search' =>          '/includes/wp_booster/js_dev/td_ajax_search.js',
-            'td_post_images' =>         '/includes/wp_booster/js_dev/td_post_images.js',
-            'td_blocks' =>              '/includes/wp_booster/js_dev/td_blocks.js',
-            'td_login' =>               '/includes/wp_booster/js_dev/td_login.js',
-            'td_style_customizer' =>    '/includes/wp_booster/js_dev/td_style_customizer.js',
-            'td_trending_now' =>        '/includes/wp_booster/js_dev/td_trending_now.js',
+            'tdLoadingBox' =>           '/includes/wp_booster/js_dev/tdLoadingBox.js',
+            'td_ajax_search' =>         '/includes/wp_booster/js_dev/td_ajax_search.js',
+            'tdPostImages' =>           '/includes/wp_booster/js_dev/tdPostImages.js',
+            'tdBlocks' =>               '/includes/wp_booster/js_dev/tdBlocks.js',
+            'tdLogin' =>                '/includes/wp_booster/js_dev/tdLogin.js',
+            'tdStyleCustomizer' =>      '/includes/wp_booster/js_dev/tdStyleCustomizer.js',
+            'tdTrendingNow' =>          '/includes/wp_booster/js_dev/tdTrendingNow.js',
             'td_history' =>             '/includes/wp_booster/js_dev/td_history.js',
-            'td_smart_sidebar' =>       '/includes/wp_booster/js_dev/td_smart_sidebar.js',
-            'td_infinite_loader' =>     '/includes/wp_booster/js_dev/td_infinite_loader.js',
+            'tdSmartSidebar' =>         '/includes/wp_booster/js_dev/tdSmartSidebar.js',
+            'tdInfiniteLoader' =>       '/includes/wp_booster/js_dev/tdInfiniteLoader.js',
 	        'td_smooth_scroll' =>       '/includes/wp_booster/js_dev/td_smooth_scroll.js',
 	        'vimeo_froogaloop' =>       '/includes/wp_booster/js_dev/vimeo_froogaloop.js',
 
-	        'td_custom_events' =>       '/includes/js_files/td_custom_events.js',
-	        'td_events' =>              '/includes/wp_booster/js_dev/td_events.js',
+	        'tdCustomEvents' =>         '/includes/js_files/tdCustomEvents.js',
+	        'tdEvents' =>               '/includes/wp_booster/js_dev/tdEvents.js',
 
-	        'td_ajax_count' =>          '/includes/wp_booster/js_dev/td_ajax_count.js',
-            'td_video_playlist' =>      '/includes/wp_booster/js_dev/td_video_playlist.js',
+	        'tdAjaxCount' =>            '/includes/wp_booster/js_dev/tdAjaxCount.js',
+            'tdVideoPlaylist' =>        '/includes/wp_booster/js_dev/tdVideoPlaylist.js',
 	        'td_slide' =>               '/includes/wp_booster/js_dev/td_slide.js',
-            'td_pulldown' =>            '/includes/wp_booster/js_dev/td_pulldown.js',
+            'tdPullDown' =>             '/includes/wp_booster/js_dev/tdPullDown.js',
 
-            //'td_main' =>                '/includes/js_files/td_main.js',
+            //'td_main' =>              '/includes/js_files/td_main.js',
             'td_fps' =>                 '/includes/js_files/td_fps.js',
-	        'td_animation_scroll' =>    '/includes/wp_booster/js_dev/td_animation_scroll.js',
-	        'td_backstr' =>             '/includes/wp_booster/js_dev/td_backstr.js',
+	        'tdAnimationScroll' =>      '/includes/wp_booster/js_dev/tdAnimationScroll.js',
+	        'tdBackstr' =>              '/includes/wp_booster/js_dev/tdBackstr.js',
 
-            //'td_scroll_effects.js' =>   '/includes/js_files/td_scroll_effects.js',
+            //'td_scroll_effects.js' => '/includes/js_files/td_scroll_effects.js',
 
-	        'td_animation_stack' =>     '/includes/wp_booster/js_dev/td_animation_stack.js',
+	        'tdAnimationStack' =>       '/includes/wp_booster/js_dev/tdAnimationStack.js',
 	        'td_main' =>                '/includes/js_files/td_main.js',
 
-            'td_last_init' =>           '/includes/wp_booster/js_dev/td_last_init.js',
+            'td_loop_ajax' =>           '/includes/wp_booster/js_dev/tdLoopAjax.js',
+
+	        'tdWeather' =>              '/includes/wp_booster/js_dev/tdWeather.js',
+            'tdLastInit' =>             '/includes/wp_booster/js_dev/tdLastInit.js',
+            'tdAnimationSprite' =>      '/includes/wp_booster/js_dev/tdAnimationSprite.js',
         );
 
 
 	    /**
-	     * td_viewport intervals in crescendo order
+	     * tdViewport intervals in crescendo order
 	     */
 	    td_global::$td_viewport_intervals = array(
 		    array(
-			    "limit_bottom" => 767,
-			    "sidebar_width" => 228,
+			    "limitBottom" => 767,
+			    "sidebarWidth" => 228,
 		    ),
 		    array(
-			    "limit_bottom" => 1018,
-			    "sidebar_width" => 300,
+			    "limitBottom" => 1018,
+			    "sidebarWidth" => 300,
 		    ),
 		    array(
-			    "limit_bottom" => 1140,
-			    "sidebar_width" => 324,
+			    "limitBottom" => 1140,
+			    "sidebarWidth" => 324,
 		    ),
 	    );
 
@@ -323,6 +328,28 @@ class td_wp_booster_config {
                 'bg_use_featured_image_as_background' => false   // uses the featured image as a background
             )
         );
+        td_api_single_template::add('single_template_12',
+            array(
+                'file' => td_global::$get_template_directory . '/single_template_12.php',
+                'text' => 'Single template 12',
+                'img' => td_global::$get_template_directory_uri . '/images/panel/single_templates/single_template_12.png',
+                'show_featured_image_on_all_pages' => true, //shows the featured image on all the pages
+                'bg_disable_background' => false,          // disable the featured image
+                'bg_box_layout_config' => 'auto',                // auto | td-boxed-layout | td-full-layout
+                'bg_use_featured_image_as_background' => false   // uses the featured image as a background
+            )
+        );
+        td_api_single_template::add('single_template_13',
+            array(
+                'file' => td_global::$get_template_directory . '/single_template_13.php',
+                'text' => 'Single template 13',
+                'img' => td_global::$get_template_directory_uri . '/images/panel/single_templates/single_template_13.png',
+                'show_featured_image_on_all_pages' => true, //shows the featured image on all the pages
+                'bg_disable_background' => false,          // disable the featured image
+                'bg_box_layout_config' => 'auto',                // auto | td-boxed-layout | td-full-layout
+                'bg_use_featured_image_as_background' => false   // uses the featured image as a background
+            )
+        );
 
 
 
@@ -333,35 +360,72 @@ class td_wp_booster_config {
             array(
                 'file' => td_global::$get_template_directory . '/includes/smart_lists/td_smart_list_1.php',
                 'text' => 'Smart list 1',
-                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_1.png'
+                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_1.png',
+	            'extract_first_image' => true,
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
         td_api_smart_list::add('td_smart_list_2',
             array(
                 'file' => td_global::$get_template_directory . '/includes/smart_lists/td_smart_list_2.php',
                 'text' => 'Smart list 2',
-                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_2.png'
+                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_2.png',
+                'extract_first_image' => true,
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
         td_api_smart_list::add('td_smart_list_3',
             array(
                 'file' => td_global::$get_template_directory . '/includes/smart_lists/td_smart_list_3.php',
                 'text' => 'Smart list 3',
-                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_3.png'
+                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_3.png',
+                'extract_first_image' => true,
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
         td_api_smart_list::add('td_smart_list_4',
             array(
                 'file' => td_global::$get_template_directory . '/includes/smart_lists/td_smart_list_4.php',
                 'text' => 'Smart list 4',
-                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_4.png'
+                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_4.png',
+                'extract_first_image' => true,
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
         td_api_smart_list::add('td_smart_list_5',
             array(
                 'file' => td_global::$get_template_directory . '/includes/smart_lists/td_smart_list_5.php',
                 'text' => 'Smart list 5',
-                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_5.png'
+                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_5.png',
+                'extract_first_image' => true,
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
+            )
+        );
+        td_api_smart_list::add('td_smart_list_6',
+            array(
+                'file' => td_global::$get_template_directory . '/includes/smart_lists/td_smart_list_6.php',
+                'text' => 'Smart list 6',
+                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_6.png',
+                'extract_first_image' => true,
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
+            )
+        );
+        td_api_smart_list::add('td_smart_list_7',
+            array(
+                'file' => td_global::$get_template_directory . '/includes/smart_lists/td_smart_list_7.php',
+                'text' => 'Smart list 7',
+                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_7.png',
+                'extract_first_image' => true,
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
+            )
+        );
+        td_api_smart_list::add('td_smart_list_8',
+            array(
+                'file' => td_global::$get_template_directory . '/includes/smart_lists/td_smart_list_8.php',
+                'text' => 'Smart list 8',
+                'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_8.png',
+                'extract_first_image' => false,
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -382,7 +446,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+	            'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -398,7 +463,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+	            'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -414,7 +480,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -430,7 +497,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -446,7 +514,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -462,7 +531,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -478,7 +548,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -494,7 +565,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap'
+                'class' => 'td_module_wrap',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -510,7 +582,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => true,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap'
+                'class' => 'td_module_wrap',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -526,7 +599,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -542,7 +616,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -558,7 +633,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -574,7 +650,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -590,7 +667,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -606,7 +684,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -622,7 +701,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => true,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -638,7 +718,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -654,7 +735,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -670,7 +752,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -686,7 +769,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -702,7 +786,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -718,7 +803,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -734,7 +820,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -750,7 +837,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td_module_wrap td-animation-stack'
+                'class' => 'td_module_wrap td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -766,7 +854,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -782,7 +871,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -798,7 +888,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -814,7 +905,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -830,7 +922,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -846,7 +939,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -862,7 +956,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => false,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -878,7 +973,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -894,7 +990,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => ''
+                'class' => '',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -910,7 +1007,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => true,
-                'class' => 'td-animation-stack'
+                'class' => 'td-animation-stack',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -926,7 +1024,8 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => false,
-                'class' => ''
+                'class' => '',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
@@ -942,14 +1041,15 @@ class td_wp_booster_config {
                 'enabled_on_loops' => false,
                 'uses_columns' => false,                      // if the module uses columns on the page template + loop
                 'category_label' => false,
-                'class' => ''
+                'class' => '',
+                'group' => '' // '' - main theme, 'mob' - mobile theme, 'woo' - woo theme
             )
         );
 
 
 
         /**
-         * the thumbs used by the theme
+         * the thumbs used by the  theme
          * Thumb id => array parameters. Wp booster only cuts if the option is set from theme panel
          */
 
@@ -1105,7 +1205,7 @@ class td_wp_booster_config {
                 'crop' => array('center', 'top'),
                 'post_format_icon_size' => 'normal',
                 'used_on' => array(
-                    'Default post template, Post template 2, Post template 11', 'Module 12, 13, 15', 'Smart list style 1, 2, 5, 6'
+                    'Default post template, Post template 2, Post template 11', 'Module 12, 13, 15', 'Smart list style 1, 2, 5, 6, 7, 8'
                 )
             )
         );
@@ -1157,7 +1257,7 @@ class td_wp_booster_config {
                 'crop' => array('center', 'top'),
                 'post_format_icon_size' => 'normal',
                 'used_on' => array(
-                    'Post template 3, Post template 4,  Post template 9,  Post template 10', 'Smart list style 1, 2, 5, 6'
+                    'Post template 3, Post template 4,  Post template 9,  Post template 10', 'Smart list style 1, 2, 5, 6, 7, 8'
                 )
             )
         );
@@ -1270,7 +1370,7 @@ class td_wp_booster_config {
          * This has to be before the blocks are added! The grids blocks are made with this
          */
         td_global::$big_grid_styles_list = array(
-            'td-grid-style-1' => array(
+            'td-grid-style-1' => array(  // td-grid-style-1 - THIS HAS TO BE THE DEFAULT
                 'text' => 'Grid style 1'
             ),
             'td-grid-style-2' => array(
@@ -1938,6 +2038,7 @@ class td_wp_booster_config {
                         "param_name" => "spot_id",
                         "type" => "dropdown",
                         "value" => array(
+                            '-- Select an ad spot --' => '',
                             'sidebar' => 'sidebar',
                             'content_inline' => 'content_inline',
                             'content_top' => 'content_top',
@@ -1985,6 +2086,15 @@ class td_wp_booster_config {
                         "value" => 'OUR AUTHORS',
                         "heading" => "Block title",
                         "description" => "",
+                        "holder" => "div",
+                        "class" => ""
+                    ),
+                    array (
+                        "param_name" => "roles",
+                        "type" => "textfield",
+                        "value" => '',
+                        "heading" => "User roles",
+                        "description" => "Optional - Filter by role, add one or more <a target=\"_blank\" href=\"https://codex.wordpress.org/Roles_and_Capabilities\">user roles</a> , separate them with a comma (ex. Administrator, Editor, Author, Contributor, Subscriber)",
                         "holder" => "div",
                         "class" => ""
                     ),
@@ -2189,7 +2299,80 @@ class td_wp_booster_config {
             )
         );
 
-        td_api_block::add('td_block_related_posts',
+
+	    if (!td_global::$feature_locked) {
+		    td_api_block::add('td_block_weather',
+			    array(
+				    'map_in_visual_composer' => true,
+				    "name" => 'Weather',
+				    "base" => "td_block_weather",
+				    "class" => "",
+				    "controls" => "full",
+				    "category" => 'Blocks',
+				    'icon' => 'icon-pagebuilder-td-weather',
+				    'file' => td_global::$get_template_directory . '/includes/shortcodes/td_block_weather.php',
+				    "params" => array(
+
+
+					    array(
+						    "param_name" => "w_location",
+						    "type" => "textfield",
+						    "value" => '',
+						    "heading" => "Location",
+						    "description" => '<a href="http://openweathermap.org/find" target="_blank">Find your location</a> - You can use "city name" or "city name,country code" (ex: London,uk). Note that the widget will autotranslate itself to the language from the theme panel only if a translation is available. <a href="http://bugs.openweathermap.org/projects/api/wiki/Api_2_5_weather" target="_blank">The available languages</a> (section 4.2)',
+						    "holder" => "div",
+						    "class" => "",
+						    'group' => 'Weather'
+					    ),
+
+
+					    array(
+						    "param_name" => "w_units",
+						    "type" => "dropdown",
+						    "value" => array (
+							    '- Celsius -' => '',
+							    'Fahrenheit' => 'imperial' ,
+					        ),
+						    "heading" => 'Units:',
+						    "holder" => "div",
+						    "class" => "",
+						    'group' => 'Weather'
+					    ),
+
+					    array(
+						    "param_name" => "custom_title",
+						    "type" => "textfield",
+						    "value" => '',
+						    "heading" => "Block title",
+						    "description" => "",
+						    "holder" => "div",
+						    "class" => ""
+					    ),
+					    array(
+						    "type" => "colorpicker",
+						    "holder" => "div",
+						    "class" => "",
+						    "heading" => 'Title text color',
+						    "param_name" => "header_text_color",
+						    "value" => '',
+						    "description" => 'Optional - Choose a custom title text color for this block'
+					    ),
+					    array(
+						    "type" => "colorpicker",
+						    "holder" => "div",
+						    "class" => "",
+						    "heading" => 'Title background color',
+						    "param_name" => "header_color",
+						    "value" => '',
+						    "description" => 'Optional - Choose a custom title background color for this block'
+					    )
+
+				    )
+			    )
+		    );
+	    }
+
+	    td_api_block::add('td_block_related_posts',
             array(
                 'map_in_visual_composer' => false,
                 'file' => td_global::$get_template_directory . '/includes/shortcodes/td_block_related_posts.php',
@@ -2822,6 +3005,14 @@ class td_wp_booster_config {
 	                'text' => 'Style 11 template',
 	                'type' => 'default',
                 ),
+                'post_title_style12' =>  array(
+                    'text' => 'Style 12 template',
+                    'type' => 'default',
+                ),
+                'post_title_style13' =>  array(
+                    'text' => 'Style 13 template',
+                    'type' => 'default',
+                ),
             ),
             'Post content' => array (
 	            'post_content' =>  array(
@@ -3075,17 +3266,280 @@ class td_wp_booster_config {
             ),
             '521' => array(
                 'css_style_id' => 'google_font_roboto',
-                'url' => td_global::$http_or_https . '://fonts.googleapis.com/css?family=Roboto:500,400italic,700,500italic,400'
+                'url' => td_global::$http_or_https . '://fonts.googleapis.com/css?family=Roboto:500,400italic,700,500italic,400,300'
             ),
         );
 
 
 
 
+	    /**
+	     * the stacks are stored in /includes/stacks
+	     * stack_filename (without .txt) => stack_name
+	     * @var array
+	     */
+	    td_global::$demo_list = array (
+		    'default' => array(
+			    'text' => 'Default demo',
+			    'folder' => td_global::$get_template_directory . '/includes/demos/default/',
+			    'img' => td_global::$get_template_directory_uri . '/includes/demos/default/screenshot.png',
+			    'demo_url' => 'http://demo.tagdiv.com/newspaper/',
+			    'td_css_generator_demo' => false
+		    ),
+//            'black' => array(
+//                'text' => 'Black Version demo',
+//                'folder' => td_global::$get_template_directory . '/includes/demos/black/',
+//                'img' => td_global::$get_template_directory_uri . '/includes/demos/black/screenshot.png',
+//                'demo_url' => 'http://demo.tagdiv.com/newspaper_black/',
+//                'td_css_generator_demo' => true
+//            ),
+//            'wedding' => array(
+//                'text' => 'Wedding demo',
+//                'folder' => td_global::$get_template_directory . '/includes/demos/wedding/',
+//                'img' => td_global::$get_template_directory_uri . '/includes/demos/wedding/screenshot.png',
+//                'demo_url' => 'http://demo.tagdiv.com/newspaper_wedding/',
+//                'td_css_generator_demo' => true,
+//	            'demo_installed_text' => '<a href="http://forum.tagdiv.com/import-revolution-sliders-on-demos/" target="_blank">Import revolution slider</a>'
+//            ),
+//            'politics' => array(
+//                'text' => 'Politics demo',
+//                'folder' => td_global::$get_template_directory . '/includes/demos/politics/',
+//                'img' => td_global::$get_template_directory_uri . '/includes/demos/politics/screenshot.png',
+//                'demo_url' => 'http://demo.tagdiv.com/newspaper_politics/',
+//                'td_css_generator_demo' => true,
+//                'demo_installed_text' => '<a href="http://forum.tagdiv.com/import-revolution-sliders-on-demos/" target="_blank">Import revolution slider</a>'
+//            ),
+//            'magazine' => array(
+//                'text' => 'Magazine demo',
+//                'folder' => td_global::$get_template_directory . '/includes/demos/magazine/',
+//                'img' => td_global::$get_template_directory_uri . '/includes/demos/magazine/screenshot.png',
+//                'demo_url' => 'http://demo.tagdiv.com/newspaper_magazine/',
+//                'td_css_generator_demo' => true
+//            ),
+//            'college' => array(
+//                'text' => 'College demo',
+//                'folder' => td_global::$get_template_directory . '/includes/demos/college/',
+//                'img' => td_global::$get_template_directory_uri . '/includes/demos/college/screenshot.png',
+//                'demo_url' => 'http://demo.tagdiv.com/newspaper_college/',
+//                'td_css_generator_demo' => false
+//            ),
+//            'local_news' => array(
+//                'text' => 'Local News demo',
+//                'folder' => td_global::$get_template_directory . '/includes/demos/local_news/',
+//                'img' => td_global::$get_template_directory_uri . '/includes/demos/local_news/screenshot.png',
+//                'demo_url' => 'http://demo.tagdiv.com/newspaper_local_news/',
+//                'td_css_generator_demo' => true
+//            ),
+//            'cafe' => array(
+//                'text' => 'Cafe demo',
+//                'folder' => td_global::$get_template_directory . '/includes/demos/cafe/',
+//                'img' => td_global::$get_template_directory_uri . '/includes/demos/cafe/screenshot.png',
+//                'demo_url' => 'http://demo.tagdiv.com/newspaper_cafe/',
+//                'td_css_generator_demo' => true
+//            ),
+            'cars' => array(
+                'text' => 'Cars demo',
+                'folder' => td_global::$get_template_directory . '/includes/demos/cars/',
+                'img' => td_global::$get_template_directory_uri . '/includes/demos/cars/screenshot.png',
+                'demo_url' => 'http://demo.tagdiv.com/newspaper_cars/',
+                'td_css_generator_demo' => true
+            ),
+		    'travel' => array(
+			    'text' => 'Travel demo',
+			    'folder' => td_global::$get_template_directory . '/includes/demos/travel/',
+			    'img' => td_global::$get_template_directory_uri . '/includes/demos/travel/screenshot.png',
+			    'demo_url' => 'http://demo.tagdiv.com/newspaper_travel/',
+			    'td_css_generator_demo' => true
+		    ),
+		    'health' => array(
+			    'text' => 'Health & Fitness demo',
+			    'folder' => td_global::$get_template_directory . '/includes/demos/health/',
+			    'img' => td_global::$get_template_directory_uri . '/includes/demos/health/screenshot.png',
+			    'demo_url' => 'http://demo.tagdiv.com/newspaper_health/',
+			    'td_css_generator_demo' => true
+		    ),
+		    'tech' => array(
+			    'text' => 'Tech demo',
+			    'folder' => td_global::$get_template_directory . '/includes/demos/tech/',
+			    'img' => td_global::$get_template_directory_uri . '/includes/demos/tech/screenshot.png',
+			    'demo_url' => 'http://demo.tagdiv.com/newspaper_tech/',
+			    'td_css_generator_demo' => false
+		    ),
+		    'sport' => array(
+			    'text' => 'Sport demo',
+			    'folder' => td_global::$get_template_directory . '/includes/demos/sport/',
+			    'img' => td_global::$get_template_directory_uri . '/includes/demos/sport/screenshot.png',
+			    'demo_url' => 'http://demo.tagdiv.com/newspaper_sport/',
+			    'td_css_generator_demo' => false
+		    ),
+		    'fashion' => array(
+			    'text' => 'Fashion demo',
+			    'folder' => td_global::$get_template_directory . '/includes/demos/fashion/',
+			    'img' => td_global::$get_template_directory_uri . '/includes/demos/fashion/screenshot.png',
+			    'demo_url' => 'http://demo.tagdiv.com/newspaper_fashion/',
+			    'td_css_generator_demo' => false
+		    ),
+		    'video' => array(
+			    'text' => 'Video demo',
+			    'folder' => td_global::$get_template_directory . '/includes/demos/video/',
+			    'img' => td_global::$get_template_directory_uri . '/includes/demos/video/screenshot.png',
+			    'demo_url' => 'http://demo.tagdiv.com/newspaper_video/',
+			    'td_css_generator_demo' => false
+		    ),
+		    'blog' => array(
+			    'text' => 'Classic Blog demo',
+			    'folder' => td_global::$get_template_directory . '/includes/demos/blog/',
+			    'img' => td_global::$get_template_directory_uri . '/includes/demos/blog/screenshot.png',
+			    'demo_url' => 'http://demo.tagdiv.com/newspaper_classic_blog/',
+			    'td_css_generator_demo' => false
+		    )
+	    );
+
+
+
+
+
+
         if (is_admin()) {
 
+
+            /**
+             * generate the theme panel
+             */
+
+            td_global::$all_theme_panels_list =  array (
+                'theme_panel' => array (
+                    'title' => TD_THEME_NAME . ' - Theme panel',
+                    'subtitle' => 'version: ' . TD_THEME_VERSION,
+                    'panels' => array (
+                        'td-panel-header' => array(
+                            'text' => 'HEADER',
+                            'ico_class' => 'td-ico-header',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_header.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-footer' => array(
+                            'text' => 'FOOTER',
+                            'ico_class' => 'td-ico-footer',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_footer.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-ads' => array(
+                            'text' => 'ADS',
+                            'ico_class' => 'td-ico-ads',
+                            'file' => td_global::$get_template_directory . '/includes/panel/views/td_panel_ads.php',
+                            'type' => 'in_theme'
+                        ),
+
+                        /*  ----------------------------------------------------------------------------
+                            layout settings
+                         */
+                        'td-panel-separator-1' => array(   // LAYOUT SETTINGS Separator
+                            'text' => 'LAYOUT SETTINGS',
+                            'type' => 'separator'
+                        ),
+                        'td-panel-template-settings' => array(
+                            'text' => 'TEMPLATE SETTINGS',
+                            'ico_class' => 'td-ico-template',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_template_settings.php',
+                            'type' => 'in_theme'
+                        ),
+
+                        'td-panel-categories' => array(
+                            'text' => 'CATEGORIES',
+                            'ico_class' => 'td-ico-categories',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_categories.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-post-settings' => array(
+                            'text' => 'POST SETTINGS',
+                            'ico_class' => 'td-ico-post',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_post_settings.php',
+                            'type' => 'in_theme'
+                        ),
+
+
+                        /*  ----------------------------------------------------------------------------
+                            misc
+                         */
+                        'td-panel-separator-2' => array( // MISC Separator
+                            'text' => 'MISC',
+                            'type' => 'separator'
+                        ),
+                        'td-panel-block-style' => array(
+                            'text' => 'BLOCK SETTINGS',
+                            'ico_class' => 'td-ico-block',
+                            'file' => td_global::$get_template_directory . '/includes/panel/views/td_panel_block_settings.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-background' => array(
+                            'text' => 'BACKGROUND',
+                            'ico_class' => 'td-ico-background',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_background.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-excerpts' => array(
+                            'text' => 'EXCERPTS',
+                            'ico_class' => 'td-ico-excerpts',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_excerpts.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-translates' => array(
+                            'text' => 'TRANSLATIONS',
+                            'ico_class' => 'td-ico-translation',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_translations.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-theme-colors' => array(
+                            'text' => 'THEME COLORS',
+                            'ico_class' => 'td-ico-color',
+                            'file' => td_global::$get_template_directory . '/includes/panel/views/td_panel_theme_colors.php',
+                            'type' => 'in_theme'
+                        ),
+
+                        'td-panel-theme-fonts' => array(
+                            'text' => 'THEME FONTS',
+                            'ico_class' => 'td-ico-typography',
+                            'file' => td_global::$get_template_directory . '/includes/panel/views/td_panel_theme_fonts.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-custom-code' => array(
+                            'text' => 'CUSTOM CODE',
+                            'ico_class' => 'td-ico-code',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_custom_code.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-analytics' => array(
+                            'text' => 'ANALYTICS',
+                            'ico_class' => 'td-ico-analytics',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_analytics.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-social-networks' => array(
+                            'text' => 'SOCIAL NETWORKS',
+                            'ico_class' => 'td-ico-social',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_social_networks.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-panel-cpt-taxonomy' => array(
+                            'text' => 'CPT &amp; TAXONOMY',
+                            'ico_class' => 'td-ico-cpt',
+                            'file' => td_global::$get_template_directory . '/includes/wp_booster/wp-admin/panel/views/td_panel_cpt_taxonomy.php',
+                            'type' => 'in_theme'
+                        ),
+                        'td-link-1' => array( // MISC Separator
+                            'text' => 'Import / export',
+                            'url' => '?page=td_theme_panel&td_page=td_view_import_export_settings',
+                            'type' => 'link'
+                        )
+                    )
+                )
+            );
+
+
+
 	        /*
-	         * the list with custom texts of the theme
+	         * the list with custom texts of the theme. admin texts
 	         */
             td_global::$td_wp_admin_text_list = array(
 
@@ -3215,28 +3669,28 @@ class td_wp_booster_config {
 		            ));
 
 
-	        td_api_tinymce_formats::add('td_tinymce_item_2',
-		        array(
-			        'title' => 'Text scroll effects'
-		        ));
-
-		        td_api_tinymce_formats::add('td_tinymce_item_2_1',
-			        array(
-				        'parent_id' => 'td_tinymce_item_2',
-				        'title' => 'Fade in gray background',
-				        'selector' => 'p, h3, blockquote',
-				        'classes' => 'td-scroll-e-text-1 td-scroll-effect',
-				        'icon' => 'td-test-icons'
-			        ));
-
-		        td_api_tinymce_formats::add('td_tinymce_item_2_2',
-			        array(
-				        'parent_id' => 'td_tinymce_item_2',
-				        'title' => 'Fade in text color border',
-				        'selector' => 'p, h3, blockquote',
-				        'classes' => 'td-scroll-e-text-2 td-scroll-effect',
-				        'icon' => 'td-test-icons'
-			        ));
+//	        td_api_tinymce_formats::add('td_tinymce_item_2',
+//		        array(
+//			        'title' => 'Text scroll effects'
+//		        ));
+//
+//		        td_api_tinymce_formats::add('td_tinymce_item_2_1',
+//			        array(
+//				        'parent_id' => 'td_tinymce_item_2',
+//				        'title' => 'Fade in gray background',
+//				        'selector' => 'p, h3, blockquote',
+//				        'classes' => 'td-scroll-e-text-1 td-scroll-effect',
+//				        'icon' => 'td-test-icons'
+//			        ));
+//
+//		        td_api_tinymce_formats::add('td_tinymce_item_2_2',
+//			        array(
+//				        'parent_id' => 'td_tinymce_item_2',
+//				        'title' => 'Fade in text color border',
+//				        'selector' => 'p, h3, blockquote',
+//				        'classes' => 'td-scroll-e-text-2 td-scroll-effect',
+//				        'icon' => 'td-test-icons'
+//			        ));
 
 	        td_api_tinymce_formats::add('td_tinymce_item_3',
 		        array(
@@ -3432,6 +3886,21 @@ class td_wp_booster_config {
 			        )
 		        ));
 
+            //plugin info list
+            td_global::$theme_plugins_info_list = array(
+                array(
+                'name' => 'Revolution slider', // The plugin name
+                'slug' => 'revslider', // The plugin slug (typically the folder name)
+                'required' => false, // If false, the plugin is only 'recommended' instead of required
+                'version' => '', // E.g. 1.0.0. If set, the active plugin must be this version or higher, otherwise a notice is presented
+                'force_activation' => false, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch
+                'force_deactivation' => false, // If true, plugin is deactivated upon theme switch, useful for theme-specific plugins
+                'external_url' => '', // If set, overrides default API URL and points to an external URL
+                'img' => td_global::$get_template_directory_uri . '/includes/wp_booster/wp-admin/images/plugins/rev-slider.png',
+                'text' => '<a href="http://forum.tagdiv.com/how-to-install-revolution-slider-v5/" target="_blank">How to install v5</a>',
+                'required_label' => 'optional' //the text for required/recommended label - used also as a class for label bg color
+                )
+            );
 
 
             td_global::$theme_plugins_list = array(
@@ -3458,69 +3927,40 @@ class td_wp_booster_config {
                     'force_deactivation' => false, // If true, plugin is deactivated upon theme switch, useful for theme-specific plugins
                     'external_url' => '', // If set, overrides default API URL and points to an external URL
                     'img' => td_global::$get_template_directory_uri . '/includes/wp_booster/wp-admin/images/plugins/social.png',
-                    'text' => '',
+                    'text' => '<a href="http://forum.tagdiv.com/tagdiv-social-counter-tutorial/" target="_blank">Read more</a>',
                     'required_label' => 'optional' //the text for required/recommended label - used also as a class for label bg color
                 ),
-                array(
-                    'name' => 'Revolution slider', // The plugin name
-                    'slug' => 'revslider', // The plugin slug (typically the folder name)
-                    'source' => td_global::$get_template_directory_uri . '/includes/plugins/revslider.zip', // The plugin source
-                    'required' => false, // If false, the plugin is only 'recommended' instead of required
-                    'version' => '', // E.g. 1.0.0. If set, the active plugin must be this version or higher, otherwise a notice is presented
-                    'force_activation' => false, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch
-                    'force_deactivation' => false, // If true, plugin is deactivated upon theme switch, useful for theme-specific plugins
-                    'external_url' => '', // If set, overrides default API URL and points to an external URL
-                    'img' => td_global::$get_template_directory_uri . '/includes/wp_booster/wp-admin/images/plugins/rev-slider.png',
-                    'text' => '',
-                    'required_label' => 'optional' //the text for required/recommended label - used also as a class for label bg color
-                )
+	            array(
+		            'name' => 'tagDiv Woo Invoice', // The plugin name
+		            'slug' => 'td-woo-invoice', // The plugin slug (typically the folder name)
+		            'source' => td_global::$get_template_directory_uri . '/includes/plugins/td-woo-invoice.zip', // The plugin source
+		            'required' => false, // If false, the plugin is only 'recommended' instead of required
+		            'version' => '', // E.g. 1.0.0. If set, the active plugin must be this version or higher, otherwise a notice is presented
+		            'force_activation' => false, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch
+		            'force_deactivation' => false, // If true, plugin is deactivated upon theme switch, useful for theme-specific plugins
+		            'external_url' => '', // If set, overrides default API URL and points to an external URL
+                    'img' => td_global::$get_template_directory_uri . '/includes/wp_booster/wp-admin/images/plugins/invoice.png',
+                    'text' => '<a href="http://forum.tagdiv.com/tagdiv-woo-invoice-plugin/" target="_blank">Read more</a>',
+		            'required_label' => 'optional' //the text for required/recommended label - used also as a class for label bg color
+	            ),
+	            array(
+		            'name' => 'tagDiv Woo Label', // The plugin name
+		            'slug' => 'td-woo-label', // The plugin slug (typically the folder name)
+		            'source' => td_global::$get_template_directory_uri . '/includes/plugins/td-woo-label.zip', // The plugin source
+		            'required' => false, // If false, the plugin is only 'recommended' instead of required
+		            'version' => '', // E.g. 1.0.0. If set, the active plugin must be this version or higher, otherwise a notice is presented
+		            'force_activation' => false, // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch
+		            'force_deactivation' => false, // If true, plugin is deactivated upon theme switch, useful for theme-specific plugins
+		            'external_url' => '', // If set, overrides default API URL and points to an external URL
+		            'img' => td_global::$get_template_directory_uri . '/includes/wp_booster/wp-admin/images/plugins/label.png',
+                    'text' => '<a href="http://forum.tagdiv.com/tagdiv-woo-label-plugin/" target="_blank">Read more</a>',
+		            'required_label' => 'optional' //the text for required/recommended label - used also as a class for label bg color
+	            )
             );
 
 
 
-            /**
-             * the stacks are stored in /includes/stacks
-             * stack_filename (without .txt) => stack_name
-             * @var array
-             */
-            td_global::$demo_list = array (
-                'default' => array(
-                    'text' => 'Default demo',
-                    'folder' => td_global::$get_template_directory . '/includes/demos/default/',
-                    'img' => td_global::$get_template_directory_uri . '/includes/demos/default/screenshot.png',
-                    'demo_url' => 'http://demo.tagdiv.com/newspaper/'
-                ),
-                'tech' => array(
-                    'text' => 'Tech demo',
-                    'folder' => td_global::$get_template_directory . '/includes/demos/tech/',
-                    'img' => td_global::$get_template_directory_uri . '/includes/demos/tech/screenshot.png',
-                    'demo_url' => 'http://demo.tagdiv.com/newspaper_tech/'
-                ),
-                'sport' => array(
-	                'text' => 'Sport demo',
-	                'folder' => td_global::$get_template_directory . '/includes/demos/sport/',
-	                'img' => td_global::$get_template_directory_uri . '/includes/demos/sport/screenshot.png',
-                    'demo_url' => 'http://demo.tagdiv.com/newspaper_sport/'
-                ),
-                'fashion' => array(
-                    'text' => 'Fashion demo',
-                    'folder' => td_global::$get_template_directory . '/includes/demos/fashion/',
-                    'img' => td_global::$get_template_directory_uri . '/includes/demos/fashion/screenshot.png',
-                    'demo_url' => 'http://demo.tagdiv.com/newspaper_fashion/'
-                ),
-                'video' => array(
-                    'text' => 'Video demo',
-                    'folder' => td_global::$get_template_directory . '/includes/demos/video/',
-                    'img' => td_global::$get_template_directory_uri . '/includes/demos/video/screenshot.png',
-                    'demo_url' => 'http://demo.tagdiv.com/newspaper_video/'
-                ),
-                'blog' => array(
-                    'text' => 'Classic Blog demo',
-                    'folder' => td_global::$get_template_directory . '/includes/demos/blog/',
-                    'img' => td_global::$get_template_directory_uri . '/includes/demos/blog/screenshot.png',
-                    'demo_url' => 'http://demo.tagdiv.com/newspaper_classic_blog/'
-                )
-            );
+
         }
     }
 
@@ -3532,6 +3972,16 @@ class td_wp_booster_config {
 	 */
 	static function get_map_filter_array ($group = 'Filter') {
 		return array(
+            array(
+                "param_name" => "post_ids",
+                "type" => "textfield",
+                "value" => '',
+                "heading" => 'Post ID filter:',
+                "description" => "Filter multiple posts by ID. Enter here the post IDs separated by commas (ex: 10,27,233). To exclude posts from this block add them with '-' (ex: -7, -16)",
+                "holder" => "div",
+                "class" => "",
+                'group' => $group
+            ),
 			array(
 				"param_name" => "category_id",
 				"type" => "dropdown",
@@ -3575,7 +4025,7 @@ class td_wp_booster_config {
             array(
                 "param_name" => "installed_post_types",
                 "type" => "textfield",
-                "value" =>  '',//td_util::create_array_installed_post_types(),
+                "value" =>  '',//tdUtil::create_array_installed_post_types(),
                 "heading" => 'Post Type:',
                 "description" => "Filter by post types. Usage: post, page, event - Write 1 or more post types delimited by commas",
                 "holder" => "div",
@@ -3585,9 +4035,21 @@ class td_wp_booster_config {
 			array(
 				"param_name" => "sort",
 				"type" => "dropdown",
-				"value" => array('- Latest -' => '', 'Random posts Today' => 'random_today' , 'Random posts from last 7 Day' => 'random_7_day' , 'Alphabetical A -> Z' => 'alphabetical_order', 'Popular (all time)' => 'popular', 'Popular (last 7 days; enable first from ' . TD_THEME_NAME . ' Panel -> Block settings -> 7 days post sorting)' => 'popular7' , 'Featured' => 'featured', 'Highest rated (reviews)' => 'review_high', 'Random Posts' => 'random_posts', 'Most Commented' => 'comment_count'),
+				"value" => array (
+					'- Latest -' => '',
+					'Random posts Today' => 'random_today' ,
+					'Random posts from last 7 Day' => 'random_7_day' ,
+					'Alphabetical A -> Z' => 'alphabetical_order',
+					'Popular (all time)' => 'popular',
+					'Popular (jetpack + stats module requiered) Does not work with other settings/pagination' => 'jetpack_popular_2',
+					'Popular (last 7 days) - theme counter (enable from panel)' => 'popular7',
+					'Featured' => 'featured',
+					'Highest rated (reviews)' => 'review_high',
+					'Random Posts' => 'random_posts',
+					'Most Commented' => 'comment_count'
+				),
 				"heading" => 'Sort order:',
-				"description" => "How to sort the posts.",
+				"description" => "How to sort the posts. Notice that Popular (last 7 days) option is affected by caching plugins and CDNs. For popular posts we recommend the jetpack (24-48hrs) method",
 				"holder" => "div",
 				"class" => "",
                 'group' => $group
@@ -3678,6 +4140,18 @@ class td_wp_booster_config {
                 "class" => "",
                 "group" => "Ajax filter"
             ),
+
+            array(
+                "param_name" => "td_ajax_preloading",  //preloader settings
+                "type" => "dropdown",
+                "value" => array('- No preloading -' => '', 'Optimized preloading' => 'preload', 'Preload all' => 'preload_all'),
+                "heading" => 'Ajax dropdown - content preloading:',
+                "description" => "The content that is displayed when a user clicks on an ajax filter from the dropdown is preloaded on each pageview. WARNING: This feature consumes more resources on the server.",
+                "holder" => "div",
+                "class" => "",
+                "group" => "Ajax filter"
+            ),
+
         );
     }
 
@@ -3923,13 +4397,4 @@ class td_wp_booster_config {
 	}
 
 
-
-    /**
-     * hook up, is called at EOF
-     */
-    static function hook() {
-        add_action('td_global_after', array('td_wp_booster_config', 'td_global_after'), 9); //we run on 9 priority to allow plugins to updage_key our apis while using the default priority of 10
-    }
 }
-
-td_wp_booster_config::hook();

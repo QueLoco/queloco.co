@@ -1,7 +1,19 @@
 
 <div class="td-header-sp-top-menu">
 
-    <?php
+
+	<?php
+	// show the weather if needed
+	if (td_util::get_option('tds_weather_top_menu') == 'show') {
+		$atts['w_location'] = td_util::get_option('tds_weather_location_top_menu');
+		$atts['w_units'] = td_util::get_option('tds_weather_units_top_menu');
+		// render the weather
+		echo td_weather::render_generic($atts, 'td_top_weather_uid', 'top_bar_template');
+	}
+
+
+
+	// show the date and time if needed
     if (td_util::get_option('tds_data_top_menu') == 'show') {
         $tds_data_time = td_util::get_option('tds_data_time_format');
         if ($tds_data_time == '') {
@@ -11,6 +23,9 @@
         echo date_i18n(stripslashes($tds_data_time));
         echo '</div>';
     }
+
+
+
 
     //show login widget
     if (td_util::get_option('tds_login_sign_in_widget') == 'show') {
@@ -22,7 +37,7 @@
             //<span class="td-sp-ico-logout"></span>
             echo '<ul class="top-header-menu td_ul_logout">
                         <li class="menu-item">' .
-                            get_avatar($current_user->ID, 20) . '<a href="#" class="td_user_logd_in">' . $current_user->display_name . '</a><i class="td-icon-logout"></i>' .
+                            get_avatar($current_user->ID, 20) . '<a href="' . get_author_posts_url($current_user->ID) . '" class="td_user_logd_in">' . $current_user->display_name . '</a><i class="td-icon-logout"></i>' .
                         '</li>
                         <li class="menu-item">
                             <a href="' . wp_logout_url(home_url( '/' )) . '">' . __td('Logout', TD_THEME_NAME) . '</a>

@@ -13,6 +13,28 @@ CONTENT;
 
 $td_vc_templates[] = $data;
 
+/** Homepage - travel template */
+$data               = array();
+$data['name']       = 'Homepage - Travel';
+$data['image_path'] = get_template_directory_uri() . '/images/pagebuilder/homepage-travel.png';
+$data['custom_class'] = ''; // default is ''
+$data['content']    = <<<CONTENT
+[vc_row full_width="stretch_row" parallax="content-moving-fade" parallax_image="iii_td_pic_homepage_iii" el_class="td-travel-header"][vc_column][/vc_column][/vc_row][vc_row el_class="td-travel-features"][vc_column][td_block_5 custom_title="" sort="featured" limit="3"][/vc_column][/vc_row][vc_row][vc_column][td_block_ad_box spot_id="custom_ad_1" spot_title="- Advertisement -"][/vc_column][/vc_row][vc_row][vc_column][td_block_4 custom_title="Trip ideas" category_id="" limit="3" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" td_ajax_preloading="preload" sort="random_posts"][vc_separator style="dashed" border_width="4"][vc_empty_space height="2px"][/vc_column][/vc_row][vc_row][vc_column][td_block_4 custom_title="Travel guides" category_id="" limit="3" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" td_ajax_preloading="preload" sort="random_posts"][vc_separator style="dashed" border_width="4"][vc_empty_space height="2px"][/vc_column][/vc_row][vc_row][vc_column][td_block_5 custom_title="Latest from blog" limit="3" ajax_pagination="load_more"][/vc_column][/vc_row]
+CONTENT;
+
+$td_vc_templates[] = $data;
+
+/** Homepage - health template */
+$data               = array();
+$data['name']       = 'Homepage - Health';
+$data['image_path'] = get_template_directory_uri() . '/images/pagebuilder/homepage-health.png';
+$data['custom_class'] = ''; // default is ''
+$data['content']    = <<<CONTENT
+[vc_row][vc_column][td_block_big_grid_3 td_grid_style="td-grid-style-4" category_id="" sort="featured"][/vc_column][/vc_row][vc_row el_class="td-ss-row"][vc_column width="2/3"][td_block_4 custom_title="POPULAR" category_id="" limit="2" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" ajax_pagination="next_prev" sort="random_posts"][td_block_18 custom_title="MUST READ" category_id="" limit="4" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" ajax_pagination="next_prev" sort="random_posts"][/vc_column][vc_column width="1/3"][td_block_ad_box spot_id="sidebar" spot_title="- Advertisement - "][td_block_social_counter facebook="tagdiv" twitter="envato" youtube="envato"][td_block_21 custom_title="FOOD" category_id="" limit="3" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" ajax_pagination="next_prev" sort="random_posts"][/vc_column][/vc_row][vc_row][vc_column][td_block_ad_box spot_id="custom_ad_1" spot_title="- Advertisement - "][/vc_column][/vc_row][vc_row][vc_column][td_block_16 custom_title="FITNESS" category_id="" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" ajax_pagination="next_prev" sort="random_posts"][/vc_column][/vc_row][vc_row el_class="td-ss-row"][vc_column width="2/3"][td_block_1 custom_title="HEALTH" category_id="" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" ajax_pagination="next_prev" sort="random_posts"][/vc_column][vc_column width="1/3"][td_block_4 custom_title="SCIENCE" category_id="" limit="1" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" ajax_pagination="next_prev" sort="random_posts"][/vc_column][/vc_row][vc_row][vc_column][td_block_ad_box spot_id="custom_ad_1" spot_title="- Advertisement - "][/vc_column][/vc_row][vc_row][vc_column][td_block_4 custom_title="LATEST POSTS" category_id="" category_ids="" sort="random_posts" limit="3" td_ajax_filter_type="td_category_ids_filter" td_ajax_filter_ids="" ajax_pagination="load_more" sort="random_posts"][/vc_column][/vc_row]
+CONTENT;
+
+$td_vc_templates[] = $data;
+
 /** Homepage - fashion template */
 $data               = array();
 $data['name']       = 'Homepage - Fashion';

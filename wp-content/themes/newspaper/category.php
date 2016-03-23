@@ -45,7 +45,7 @@ if($loop_sidebar_position == 'sidebar_left') {
 }
 
 // make the category pulldown filter list to be equal
-td_js_buffer::add_to_footer(
+td_js_buffer::add_to_footer (
     'jQuery().ready(function() {' . "\r\n" .
     'var pulldown_size = jQuery(".td-category-pulldown-filter:first").width();' . "\r\n" .
     'if (pulldown_size > 113) { jQuery(".td-category-pulldown-filter .td-pulldown-filter-list").css({"min-width": pulldown_size, "border-top": "1px solid #444"}); }' . "\r\n" .
@@ -72,7 +72,7 @@ td_js_buffer::add_to_footer(
                             <div class="td-pb-span8 td-main-content">
                                 <div class="td-ss-main-content">
                                     <?php locate_template('loop.php', true);?>
-                                    <?php echo td_page_generator::get_pagination(); ?>
+                                    <?php td_page_generator::get_pagination(); ?>
                                 </div>
                             </div>
 
@@ -90,7 +90,7 @@ td_js_buffer::add_to_footer(
                         <div class="td-pb-span8 td-main-content <?php echo $td_sidebar_position; ?>-content">
                             <div class="td-ss-main-content">
                                 <?php locate_template('loop.php', true);?>
-                                <?php echo td_page_generator::get_pagination(); ?>
+                                <?php td_page_generator::get_pagination(); ?>
                             </div>
                         </div>
 	                    <div class="td-pb-span4 td-main-sidebar">
@@ -108,7 +108,7 @@ td_js_buffer::add_to_footer(
                         <div class="td-pb-span12 td-main-content">
                             <div class="td-ss-main-content">
                                 <?php locate_template('loop.php', true);?>
-                                <?php echo td_page_generator::get_pagination(); ?>
+                                <?php td_page_generator::get_pagination(); ?>
                             </div>
                         </div>
                         <?php

@@ -35,12 +35,20 @@
   }
 
   .comment-content,
-  .comment-meta {
+  .comment-meta,
+  .comment-respond {
     margin-left: 70px;
   }
 
   .comment-content {
     margin-top: 7px;
+    p {
+      margin-bottom: 21px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
   }
 
   p {
@@ -87,7 +95,8 @@
       }
 
       .comment-content,
-      .comment-meta {
+      .comment-meta,
+      .comment-respond {
         margin-left: 56px;
       }
     }
@@ -109,6 +118,14 @@
 
 .comment-meta {
   margin-top: 3px;
+}
+.comment-respond {
+  margin-bottom: 21px;
+
+  /* responsive portrait phone */
+  @media (max-width: @responsive_p_phone_max) {
+    margin-left: 0 !important;
+  }
 }
 
 .comment-reply-link {
@@ -134,6 +151,7 @@
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 7px;
+  margin-top: 10px;
 }
 
 .logged-in-as {
@@ -165,4 +183,15 @@
 .comment .comment-form-input-wrap {
   margin-top: 0;
   margin-bottom: 21px;
+}
+
+.comment-subscription-form {
+  margin-bottom: 3px;
+  font-size: 13px;
+
+  .subscribe-label {
+    margin-left: 3px;
+    position: relative;
+    top: -1px;
+  }
 }

@@ -461,13 +461,28 @@ class td_page_generator {
 
 
 
+
+    /**
+     * WARNING: this function also runs in the page-pagebuilder-latest.php in a FAKE LOOP - this means that wordpress functions
+     * like is_category DO NOT WORK AS EXPECTED when you use for example a category filter for the loop, is_category returns true
+     */
     static function get_pagination() {
         global $wp_query;
 
-        if (td_global::$current_template == '404') {
+        if ( td_global::$current_template == '404' ) {
             return;
         }
 
+
+        // if we have infinite pagination, we will render it there
+        if ( self::render_infinite_pagination() === true ) {
+            return;
+        }
+
+
+        /**
+         * use normal pagination
+         */
         $pagenavi_options = self::pagenavi_init();
 
         $request = $wp_query->request;
@@ -478,9 +493,13 @@ class td_page_generator {
 
 
 
-        //hack for category pages - pagination
-        if(!is_admin() and is_category()) {
-            $numposts = $wp_query->found_posts - td_api_category_top_posts_style::_helper_get_posts_shown_in_the_loop(); // fix the pagination, we have x less posts because the rest are in the top posts loop
+        // hack for category pages - pagination
+        // we also have to check for page-pagebuilder-latest.php template because we are running there in a FAKE loop and if the category
+        // filter is active for that loop, WordPress believes that we are on a category
+        if(!is_admin() and td_global::$current_template != 'page-homepage-loop' and is_category()) {
+	        $posts_shown_in_loop = td_api_category_top_posts_style::_helper_get_posts_shown_in_the_loop();
+
+            $numposts = $wp_query->found_posts - $posts_shown_in_loop; // fix the pagination, we have x less posts because the rest are in the top posts loop
             $max_page = ceil($numposts / $posts_per_page);
         }
 
@@ -588,6 +607,94 @@ class td_page_generator {
 
     }
 
+
+    /**
+     * renders the infinite pagination and also the load more. It returns true if it changes the pagination so that the
+     * calling function knows to not render the 'normal' pagination
+     * @return bool - override the pagination or not
+     */
+    static private function render_infinite_pagination() {
+        global
+            $wp_query,
+            $loop_module_id,            // it's set by the template (category.php)
+            $loop_sidebar_position;     // it's set by the template  -- || --
+
+        /**
+         * infinite loading pagination ONLY FOR CATEGORIES FOR NOW (19 aug 2015)
+         */
+        if(!is_admin() and td_global::$current_template != 'page-homepage-loop' and is_category() and !empty($wp_query)) {
+
+            // the filter_by parameter is used on categories to filter them. The theme uses normal pagination when the filter is used for now.
+            // if we want to use the filter + loop ajax, we have to send the atts for each filter. It can be done, but not now (19 aug 2015)
+            if (isset($_GET['filter_by'])) {
+                return false;
+            }
+
+            $pagination_style = '';
+
+            // read the global settings
+            $global_category_pagination_style = td_util::get_option('tds_category_pagination_style');
+            if (!empty($global_category_pagination_style)) {
+                $pagination_style = $global_category_pagination_style;
+            }
+
+            // read the per category settings
+            $category_pagination_style = td_util::get_category_option(td_global::$current_category_obj->cat_ID, 'tdc_category_pagination_style');
+            if (!empty($category_pagination_style)) {
+                // overwrite the global pagination. For normal pagination we need to clean up the variable
+                if ($category_pagination_style == 'normal') {
+                    $pagination_style = '';
+                } else {
+                    $pagination_style = $category_pagination_style;
+                }
+            }
+
+            // check to see if we need infinite loading pagination
+            if ($pagination_style != '') {
+
+                if ($wp_query->query_vars['paged'] >= $wp_query->max_num_pages) {
+                    return true; // do not show any pagination because we do not have more pages
+                }
+
+                $ajax_pagination_infinite_stop = 0;
+                if ($pagination_style == 'infinite_load_more') {
+                    $ajax_pagination_infinite_stop = 3; // after how many pages do we show a load more button. set to 0 to use only load more
+                }
+                ?>
+                <script>
+                    jQuery(window).ready(function() {
+                        tdAjaxLoop.loopState.sidebarPosition = '<?php echo $loop_sidebar_position ?>';
+                        tdAjaxLoop.loopState.moduleId = '<?php echo $loop_module_id ?>';
+                        tdAjaxLoop.loopState.currentPage = 1;
+                        tdAjaxLoop.loopState.max_num_pages = <?php echo $wp_query->max_num_pages ?>;
+                        tdAjaxLoop.loopState.atts = {
+                            'category_id':<?php echo $wp_query->query_vars['cat'] ?>
+
+	                        <?php
+
+								if (!empty($wp_query->query_vars['offset'])) {
+									echo ',offset:' . intval($wp_query->query_vars['offset']);
+								}
+
+                            ?>
+                        };
+                        tdAjaxLoop.loopState.ajax_pagination_infinite_stop = <?php echo $ajax_pagination_infinite_stop ?>;
+                        tdAjaxLoop.init();
+                    });
+                </script>
+                <div class="td-ajax-loop-infinite"></div>
+                <div class="td-load-more-wrap td-load-more-infinite-wrap">
+                    <a href="#" class="td_ajax_load_more" data-td_block_id=""> <?php echo __td('Load more', TD_THEME_NAME) ?>
+                        <i class="td-icon-font td-icon-menu-down"></i>
+                    </a>
+                </div>
+                <?php
+                return true; // notice the calling function that we modified the pagination
+            }
+        }
+
+        return false; // by default return false if we don't want to change the pagination
+    }
 
     static function td_round_number($num, $tonearest) {
         return floor($num/$tonearest)*$tonearest;

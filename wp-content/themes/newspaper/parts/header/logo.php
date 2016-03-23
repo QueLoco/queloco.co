@@ -20,17 +20,15 @@ if (!empty($td_logo_title)) {
 if (!empty($td_customLogoR)) {
     //if retina
     ?>
-    <a itemprop="url" href="<?php echo esc_url(home_url( '/' )); ?>">
+    <a href="<?php echo esc_url(home_url( '/' )); ?>">
         <img class="td-retina-data" data-retina="<?php echo esc_attr($td_customLogoR) ?>" src="<?php echo $td_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/>
     </a>
-    <meta itemprop="name" content="<?php bloginfo('name')?>">
 <?php
 } else {
     //not retina
     if (!empty($td_customLogo)) {
         ?>
-        <a itemprop="url" href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
-        <meta itemprop="name" content="<?php bloginfo('name')?>">
+        <a href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
     <?php
     }
 }

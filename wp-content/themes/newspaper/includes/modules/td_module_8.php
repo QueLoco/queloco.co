@@ -11,7 +11,7 @@ class td_module_8 extends td_module {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes();?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes();?>">
 
             <div class="item-details">
                 <?php echo $this->get_title();?>
@@ -26,7 +26,6 @@ class td_module_8 extends td_module {
 
             <?php echo $this->get_quotes_on_blocks();?>
 
-            <?php echo $this->get_item_scope_meta();?>
         </div>
 
         <?php return ob_get_clean();

@@ -115,6 +115,7 @@ $td_translation_map = array(
     'Page %CURRENT_PAGE% of %TOTAL_PAGES%' => __('Page %CURRENT_PAGE% of %TOTAL_PAGES%', TD_THEME_NAME),
     'Next' => __('Next', TD_THEME_NAME),
     'Prev' => __('Prev', TD_THEME_NAME),
+    'Back' => __('Back', TD_THEME_NAME),
 
 
     'No results for your search' => __('No results for your search', TD_THEME_NAME),
@@ -123,8 +124,14 @@ $td_translation_map = array(
     //modal window
     'LOG IN'  => __('LOG IN', TD_THEME_NAME),
     'Sign in / Join'  => __('Sign in / Join', TD_THEME_NAME),
+    'Sign in' => __('Sign in', TD_THEME_NAME),
+    'Sign up' => __('Sign up', TD_THEME_NAME),
+    'Join' => __('Join', TD_THEME_NAME),
     'Log In'  => __('Log In', TD_THEME_NAME),
     'REGISTER'  => __('REGISTER', TD_THEME_NAME),
+    'Welcome!' => __('Welcome!', TD_THEME_NAME),
+    'Log into your account' => __('Log into your account', TD_THEME_NAME),
+    'Password recovery' => __('Password recovery', TD_THEME_NAME),
     'Send My Pass'  => __('Send My Pass', TD_THEME_NAME),
     'Forgot your password?'  => __('Forgot your password?', TD_THEME_NAME),
     'Please wait...'  => __('Please wait...', TD_THEME_NAME),
@@ -132,7 +139,7 @@ $td_translation_map = array(
     'Email or username incorrect!'  => __('Email or username incorrect!', TD_THEME_NAME),
     'Email incorrect!'  => __('Email incorrect!', TD_THEME_NAME),
     'User or email already exists!'  => __('User or email already exists!', TD_THEME_NAME),
-    'Please check you email (index or spam folder), the password was sent there.'  => __('Please check you email (index or spam folder), the password was sent there.', TD_THEME_NAME),
+    'Please check your email (index or spam folder), the password was sent there.'  => __('Please check your email (index or spam folder), the password was sent there.', TD_THEME_NAME),
     'Email address not found!'  => __('Email address not found!', TD_THEME_NAME),
     'Your password is reset, check your email.'  => __('Your password is reset, check your email.', TD_THEME_NAME),
     'Welcome! Log into your account' => __('Welcome! Log into your account', TD_THEME_NAME),
@@ -143,7 +150,6 @@ $td_translation_map = array(
     'your email' => __('your email', TD_THEME_NAME),
     'A password will be e-mailed to you.' => __('A password will be e-mailed to you.', TD_THEME_NAME),
     'Logout' => __('Logout', TD_THEME_NAME),
-
 
     //social counters
     'Like' => __('Like', TD_THEME_NAME),

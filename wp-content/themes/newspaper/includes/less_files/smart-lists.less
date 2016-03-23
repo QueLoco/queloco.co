@@ -1,3 +1,208 @@
+/*  ----------------------------------------------------------------------------
+    General smart list style
+*/
+
+// pagination
+.td-smart-list-pagination {
+  text-align: center;
+  margin-bottom: 26px;
+
+}
+
+.td-smart-list-button {
+  font-family: @font3;
+  line-height: 40px;
+  background-color: #222;
+  color: #fff;
+  padding: 11px 24px;
+  font-size: 16px;
+  font-style: normal;
+  text-align: center;
+  .transition(background-color 0.2s ease 0s);
+  cursor: pointer;
+  margin: 0 10px;
+
+  &:hover {
+    text-decoration: none !important;
+    background-color: @td_theme_color;
+  }
+
+  .td-icon-left {
+    font-size: 14px;
+    position: relative;
+    top: 1px;
+    padding-right: 11px;
+  }
+  .td-icon-right {
+    font-size: 14px;
+    position: relative;
+    top: 1px;
+    padding-left: 11px;
+  }
+}
+
+.td-smart-disable {
+  opacity: 0.5;
+  cursor: default;
+  -webkit-user-select: none; /* Chrome/Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
+  -o-user-select: none;
+  user-select: none;
+
+
+  &:hover {
+    background-color: #222 !important;
+  }
+}
+
+
+
+// dropdown pagination
+.td-smart-list-dropdown-wrap {
+  text-align: center;
+  border: 1px solid #ededed;
+  margin-bottom: 26px;
+  clear: both;
+
+  .td-smart-list-dropdown {
+    height: 30px;
+    padding: 0 35px 0 10px;
+    margin: 10px 0;
+    overflow: hidden;
+    background-color: #fff;
+    border: none;
+    box-shadow: none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    -o-appearance:none;
+    appearance:none;
+    outline: none;
+    font-family: @font3;
+    max-width: 40%;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    -ms-text-overflow: ellipsis;
+    cursor: pointer;
+
+
+    /* responsive portrait tablet */
+    @media (min-width: @responsive_p_tablet_min) and (max-width: @responsive_p_tablet_max) {
+      max-width: 50%;
+    }
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      text-align: center;
+      max-width: 70%;
+    }
+
+    option {
+      /* responsive portrait phone */
+      @media (max-width: @responsive_p_phone_max) {
+        text-align: left;
+      }
+    }
+
+    &::-ms-expand {
+      display: none;
+    }
+  }
+
+  .td-smart-list-container {
+    display: inline;
+    position: relative;
+
+    &:before {
+      content: '';
+      width: 0;
+      height: 0;
+      position: absolute;
+      top: 7px;
+      right: 16px;
+      z-index: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid black;
+      pointer-events: none;
+    }
+  }
+
+  .td-smart-list-button {
+    padding: 2px 18px;
+    margin: 0;
+    background-color: transparent !important;
+    color: inherit;
+
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      padding: 2px 6px;
+    }
+
+    i {
+      display: none;
+
+      /* responsive portrait phone */
+      @media (max-width: @responsive_p_phone_max) {
+        display: inline;
+        font-size: 12px;
+        top: 0;
+      }
+    }
+
+    .td-icon-left:before {
+      /* responsive portrait phone */
+      @media (max-width: @responsive_p_phone_max) {
+        content: '\e80c';
+      }
+    }
+    .td-icon-right:before {
+      /* responsive portrait phone */
+      @media (max-width: @responsive_p_phone_max) {
+        content: '\e80d';
+      }
+    }
+
+    &:hover {
+      background-color: transparent !important;
+      color: @td_theme_color;
+    }
+
+    span {
+      /* responsive portrait phone */
+      @media (max-width: @responsive_p_phone_max) {
+        display: none;
+      }
+    }
+  }
+
+  .td-smart-disable {
+    &:hover {
+      color: #222;
+    }
+  }
+
+  .td-smart-next {
+    border-left: 1px solid #ededed;
+    margin-left: 3px;
+  }
+
+  .td-smart-back {
+    border-right: 1px solid #ededed;
+    margin-right: 3px;
+  }
+}
+
+@-moz-document url-prefix() {
+  .td-smart-list-dropdown-wrap {
+    .td-smart-list-container:before {
+      top: 9px;
+    }
+  }
+}
+
+
+
+
 
 /*  ----------------------------------------------------------------------------
     Smart list 1
@@ -296,6 +501,7 @@
 .td_smart_list_4 {
 
   .td-item {
+    width: 100%;
     min-height: 181px;
     border-bottom: 1px solid @td_grid_border_color;
     position: relative;
@@ -439,8 +645,8 @@
   .td-number-and-title {
     text-align: left;
     padding: 0;
-    margin-bottom: 21px;
-    margin-top: 12px;
+    margin-bottom: 6px;
+    margin-top: 17px;
   }
 
   h2 {
@@ -482,10 +688,213 @@
 /*  ----------------------------------------------------------------------------
     Smart list 6
 */
-
 .td_smart_list_6 {
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
   margin-top: 38px;
+  position: relative;
+  z-index: 1;
+  clear: both;
+
+  /* responsive portrait phone */
+  @media (max-width: @responsive_p_phone_max) {
+    margin-top: 20px;
+  }
+
+  .td-number-and-title {
+    text-align: left;
+    padding: 0;
+    margin-bottom: 21px;
+    position: relative;
+
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      margin-bottom: 10px;
+    }
+  }
+
+  // image
+  .td-slide-smart-list-figure img {
+    width: 100%;
+  }
+
+  .td-sml-description {
+    margin-top: 0;
+  }
+
+  .td-slide-smart-list-figure {
+    text-align: center;
+    display: table;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .td-sml-caption {
+    text-align: left;
+  }
+
+  h2 {
+    margin: 2px 0 0;
+    line-height: 32px;
+
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+        text-align: center;
+      margin: 0;
+    }
+  }
+
+  .td-sml-current-item-nr {
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+        position: relative;
+    }
+  }
+
+  .td-sml-current-item-title {
+    margin-top: 5px;
+    width: 100%;
+    padding-left: 56px;
+
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      margin-top: 10px;
+      padding-left: 0;
+    }
+  }
+}
+
+
+/*  ----------------------------------------------------------------------------
+    Smart list 7
+*/
+.td_smart_list_7 {
+  margin-top: 38px;
+  position: relative;
+  z-index: 1;
+  clear: both;
+
+  /* responsive portrait phone */
+  @media (max-width: @responsive_p_phone_max) {
+    margin-top: 20px;
+  }
+
+  // image
+  .td-slide-smart-list-figure img {
+    width: 100%;
+  }
+
+  .td-sml-description {
+    margin-top: 0;
+  }
+
+  .td-slide-smart-list-figure {
+    text-align: center;
+    display: table;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .td-sml-caption {
+    text-align: left;
+  }
+
+  h2 {
+    margin: 0;
+    line-height: 1;
+    padding: 0 120px;
+    min-height: 60px;
+
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      padding: 0;
+      min-height: 0;
+    }
+  }
+
+  .td-sml-current-item-title {
+    margin-top: 7px;
+    margin-bottom: 8px;
+    text-align: center;
+    width: 100%;
+    line-height: 28px;
+
+    /* responsive portrait tablet */
+    @media (min-width: @responsive_p_tablet_min) and (max-width: @responsive_p_tablet_max) {
+      margin-top: 10px;
+      line-height: 24px;
+      font-size: 19px;
+    }
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      margin-top: 10px;
+      text-align: left;
+      line-height: 30px;
+      font-weight: 500;
+      font-size: 26px;
+    }
+  }
+
+  .td-item {
+    .td-smart-list-pagination {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 26px;
+
+      /* responsive portrait phone */
+      @media (max-width: @responsive_p_phone_max) {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  // pagination
+  .td-smart-list-pagination {
+    display: inline-block;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    margin-bottom: 0;
+
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      position: relative;
+    }
+
+    .td-smart-list-button {
+      margin: 0;
+      line-height: 20px;
+    }
+
+    .td-smart-back {
+      float: left;
+    }
+    .td-smart-next {
+      float: right;
+    }
+  }
+}
+
+
+/*  ----------------------------------------------------------------------------
+    Smart list 8
+*/
+.td_smart_list_8 {
+  position: relative;
+  z-index: 1;
+  clear: both;
+
+  .td-number-and-title {
+    text-align: left;
+    padding: 0;
+    margin-bottom: 16px;
+    position: relative;
+
+    h2 {
+      margin: 6px 0 0;
+      line-height: 32px;
+    }
+  }
+
+  .td-sml-description {
+    margin-top: 0;
+  }
 }

@@ -29,7 +29,7 @@ if (td_util::get_option('tds_footer') != 'no') {
 
                 <div class="td-pb-span5 td-sub-footer-copy">
                     <?php
-                    $tds_footer_copyright = td_util::get_option('tds_footer_copyright');
+                    $tds_footer_copyright = stripslashes(td_util::get_option('tds_footer_copyright'));
                     $tds_footer_copy_symbol = td_util::get_option('tds_footer_copy_symbol');
 
                     //show copyright symbol
@@ -50,5 +50,4 @@ if (td_util::get_option('tds_footer') != 'no') {
 <?php wp_footer(); ?>
 
 </body>
-
 </html>

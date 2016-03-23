@@ -735,7 +735,7 @@ ul.sf-js-enabled > li > a > i.td-icon-menu-down:before {
   }
 
   /* hack to show the link on all the module */
-  .td_module_mx2 {
+  .td_module_mx2 .entry-title {
     a:after {
       position: absolute;
       left: 0;
@@ -745,7 +745,11 @@ ul.sf-js-enabled > li > a > i.td-icon-menu-down:before {
       content: '';
       z-index: 1; // is needed
     }
+  }
 
+  .td-post-category {
+    z-index: 2;
+    position: relative;
   }
 
   /* this class is added by the js to open the menu - will be used for animation */

@@ -14,7 +14,7 @@ class td_module_9 extends td_module {
 
         ?>
 
-        <div class="<?php echo $this->get_module_classes();?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes();?>">
 
             <div class="item-details">
                 <?php echo $this->get_comments();?>
@@ -31,7 +31,6 @@ class td_module_9 extends td_module {
 
 	        <?php echo $this->get_quotes_on_blocks();?>
 
-            <?php echo $this->get_item_scope_meta();?>
         </div>
 
         <?php return ob_get_clean();

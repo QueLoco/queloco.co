@@ -611,7 +611,6 @@ class td_util {
     static function vc_get_column_number() {
         global $td_row_count, $td_column_count, $post;
 
-
         //echo 'xxxxx col: ' . $td_column_count . ' row: ' . $td_row_count;
         $columns = 1;//number of column
 
@@ -802,36 +801,6 @@ class td_util {
     }
 
 
-    /**
-     * converts module classes to module id's for loop settings
-     * @deprecated - it should be deprecated and we should store the class of the module in the database instead of the ID.
-     * It's used only for backwards compatibility with Newsmag settings
-     * @param $module_class
-     * @return mixed id of the module td_module_2 returns 2
-     */
-    static function get_module_loop_id ($module_class){
-        return filter_var($module_class, FILTER_SANITIZE_NUMBER_INT);
-    }
-
-
-    /**
-     * @deprecated - it will be removed when we store in the database the class instead of the module id
-     * @param $module_id
-     * @return string
-     */
-    static function get_module_class_from_loop_id ($module_id) {
-        return 'td_module_' . $module_id;
-    }
-
-
-    /**
-     * @deprecated - it should be remove somehow
-     * @param $module_class
-     * @return string
-     */
-    static function get_module_name_from_class($module_class) {
-        return str_replace('td_', '', $module_class);
-    }
 
 
 
@@ -957,4 +926,26 @@ if (!function_exists('mb_substr')) {
     function mb_substr($string,$start,$length, $encoding = '') {
         return substr($string,$start,$length);
     }
+}
+
+
+if (!function_exists('td_is_td_mobile_plugin_active')) {
+	function td_is_td_mobile_plugin_active() {
+		include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+		if (is_plugin_active('td-mobile-plugin/td-mobile-plugin.php')) {
+			return true;
+		}
+		return false;
+	}
+}
+
+if (!function_exists('td_is_mobile_theme')) {
+	function td_is_mobile_theme() {
+		$current_theme_name = get_template();
+
+		if (empty($current_theme_name) and class_exists('td_mobile_theme')) {
+			return true;
+		}
+		return false;
+	}
 }

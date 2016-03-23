@@ -3,7 +3,11 @@ Header style 8
 -->
 
 <div class="td-header-wrap td-header-style-8">
-
+    <div class="td-container">
+        <div class="td-header-sp-logo">
+            <?php locate_template('parts/header/logo.php', true, false);?>
+        </div>
+    </div>
     <div class="td-header-top-menu-full">
         <div class="td-container">
             <div class="td-header-row td-header-top-menu">
@@ -13,14 +17,14 @@ Header style 8
     </div>
     <div class="td-header-menu-wrap-full">
         <div class="td-header-menu-wrap td-header-gradient">
-           <div class="td-container">
+            <div class="td-container">
                 <div class="td-header-sp-logo">
-                    <?php locate_template('parts/header/logo.php', true);?>
+                    <?php locate_template('parts/header/logo.php', true, false);?>
                 </div>
                 <div class="td-header-row td-header-main-menu">
                     <?php locate_template('parts/header/header-menu.php', true);?>
                 </div>
-           </div>
+            </div>
         </div>
     </div>
 

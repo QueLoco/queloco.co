@@ -17,12 +17,12 @@ if (!empty($td_post_featured_image)) {
 	td_js_buffer::add_to_footer(
 		'jQuery(window).ready(function() {' . "\r\n" .
 			'(function(){' . "\r\n" .
-				'var td_backstr_item = new td_backstr.item();' . "\r\n" .
+				'var td_backstr_item = new tdBackstr.item();' . "\r\n" .
 
-				'td_backstr_item.wrapper_image_jquery_obj = jQuery("#td-full-screen-header-image");' . "\r\n" .
-				'td_backstr_item.image_jquery_obj = td_backstr_item.wrapper_image_jquery_obj.find(\'img:first\');' . "\r\n" .
+				'td_backstr_item.wrapper_image_jquery_obj = jQuery( "#td-full-screen-header-image" );' . "\r\n" .
+				'td_backstr_item.image_jquery_obj = td_backstr_item.wrapper_image_jquery_obj.find( \'img:first\' );' . "\r\n" .
 
-	            'td_backstr.add_item(td_backstr_item);' . "\r\n" .
+	            'tdBackstr.add_item( td_backstr_item );' . "\r\n" .
 			'})();' . "\r\n" .
 		'});'
 	);

@@ -477,3 +477,15 @@
     }
   }
 }
+
+
+// fix slider will appear only when js is loaded
+.td_block_slide .td_module_slide {
+  visibility: hidden !important;
+}
+.td_block_slide .td_module_slide:first-child {
+  visibility: visible !important;
+}
+.td-js-loaded .td_block_slide .td_module_slide {
+  visibility: visible !important;
+}

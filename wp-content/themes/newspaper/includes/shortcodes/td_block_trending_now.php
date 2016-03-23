@@ -36,13 +36,13 @@ class td_block_trending_now extends td_block {
         return $buffy;
     }
 
-    function inner($posts, $atts) {
+    function inner($posts, $td_column_number = '') {
 
         $buffy = '';
         $navigation = '';
 
-        if (!empty($atts['navigation'])) {
-            $navigation = $atts['navigation'];
+        if (!empty($this->atts['navigation'])) {
+            $navigation = $this->atts['navigation'];
         }
 
         $td_block_layout = new td_block_layout();

@@ -16,7 +16,7 @@ class td_module_mx9 extends td_module {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes(array("td-big-grid-post-0", "td-big-grid-post", "td-big-thumb")); ?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes(array("td-big-grid-post-0", "td-big-grid-post", "td-big-thumb")); ?>">
             <?php
                 echo $this->get_image('td_741x486');
             ?>
@@ -33,7 +33,6 @@ class td_module_mx9 extends td_module {
                 </div>
             </div>
 
-            <?php echo $this->get_item_scope_meta();?>
         </div>
 
         <?php return ob_get_clean();

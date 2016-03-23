@@ -7,7 +7,7 @@
  */
 
 
-require_once(get_template_directory() . '/includes/wp_booster/td_video_playlist_render.php');
+require_once(td_global::$get_template_directory . '/includes/wp_booster/td_video_playlist_render.php');
 
 
 //class for youtube playlist shortcode

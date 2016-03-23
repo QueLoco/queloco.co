@@ -89,6 +89,7 @@ if(!empty($post->post_content)) { //show this only when we have content
         <?php }
     }
 }
+
 ?>
 
 
@@ -111,7 +112,7 @@ if(!empty($post->post_content)) { //show this only when we have content
                             //query_posts(td_data_source::metabox_to_args($td_homepage_loop_filter, $paged));
                             query_posts(td_data_source::metabox_to_args($td_homepage_loop, $paged));
                             locate_template('loop.php', true);
-                            echo td_page_generator::get_pagination();
+                            td_page_generator::get_pagination();
                             wp_reset_query();
                             ?>
                         </div>
@@ -135,7 +136,7 @@ if(!empty($post->post_content)) { //show this only when we have content
                         //query_posts(td_data_source::metabox_to_args($td_homepage_loop_filter, $paged));
                         query_posts(td_data_source::metabox_to_args($td_homepage_loop, $paged));
                         locate_template('loop.php', true);
-                        echo td_page_generator::get_pagination();
+                        td_page_generator::get_pagination();
                         wp_reset_query();
                         ?>
                     </div>
@@ -161,7 +162,7 @@ if(!empty($post->post_content)) { //show this only when we have content
                         //query_posts(td_data_source::metabox_to_args($td_homepage_loop_filter, $paged));
                         query_posts(td_data_source::metabox_to_args($td_homepage_loop, $paged));
                         locate_template('loop.php', true);
-                        echo td_page_generator::get_pagination();
+                        td_page_generator::get_pagination();
                         wp_reset_query();
                         ?>
                     </div>

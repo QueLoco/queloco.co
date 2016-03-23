@@ -38,12 +38,12 @@ if($loop_sidebar_position == 'sidebar_left') {
                         <div class="td-ss-main-content">
                             <?php
                             if (is_single()) {?>
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                 <span><?php the_title(); ?></span>
                                 </h1><?php
                             } else {?>
-                                <h1 itemprop="name" class="entry-title td-page-title">
-                                <a itemprop="url" href="<?php ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
+                                <h1 class="entry-title td-page-title">
+                                <a href="<?php ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
                                 </h1><?php
                             }
 
@@ -67,12 +67,12 @@ if($loop_sidebar_position == 'sidebar_left') {
                         <div class="td-ss-main-content">
                             <?php
                             if (is_single()) {?>
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                     <span><?php the_title(); ?></span>
                                 </h1><?php
                             } else {?>
-                                <h1 itemprop="name" class="entry-title td-page-title">
-                                    <a itemprop="url" href="<?php ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
+                                <h1 class="entry-title td-page-title">
+                                    <a href="<?php ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
                                 </h1><?php
                             }
 
@@ -96,12 +96,12 @@ if($loop_sidebar_position == 'sidebar_left') {
                         <div class="td-ss-main-content">
                             <?php
                             if (is_single()) {?>
-                                <h1 itemprop="name" class="entry-title td-page-title">
+                                <h1 class="entry-title td-page-title">
                                     <span><?php the_title(); ?></span>
                                 </h1><?php
                             } else {?>
-                                <h1 itemprop="name" class="entry-title td-page-title">
-                                    <a itemprop="url" href="<?php ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
+                                <h1 class="entry-title td-page-title">
+                                    <a href="<?php ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
                                 </h1><?php
                             }
 

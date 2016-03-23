@@ -61,7 +61,7 @@
   a {
     display: block;
     width: 100%;
-    padding: 15px 0 17px 0;
+    padding: 16px 0 17px 0;
     text-align: center;
     background-color: @td_theme_color;
     color:white;
@@ -175,6 +175,14 @@
     }
   }
 
+  // mobile menu active
+  li > a:hover,
+  .sfHover > a,
+  .current-menu-item > a,
+  .current-menu-ancestor > a,
+  .current-category-ancestor > a {
+    color: @td_theme_color;
+  }
 
 
   /* hide the icons */

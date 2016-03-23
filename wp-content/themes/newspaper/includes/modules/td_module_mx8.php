@@ -11,7 +11,7 @@ class td_module_mx8 extends td_module {
         ob_start();
         ?>
 
-        <div class="<?php echo $this->get_module_classes();?>" <?php echo $this->get_item_scope();?>>
+        <div class="<?php echo $this->get_module_classes();?>">
             <div class="meta-info-container">
                 <?php echo $this->get_image('td_696x385');?>
 
@@ -26,7 +26,6 @@ class td_module_mx8 extends td_module {
                 </div>
             </div>
 
-            <?php echo $this->get_item_scope_meta();?>
         </div>
 
         <?php return ob_get_clean();

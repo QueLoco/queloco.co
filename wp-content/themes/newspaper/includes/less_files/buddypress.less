@@ -26,7 +26,7 @@
     Buttons
 */
 
-#buddypress button,
+//#buddypress button,
 #buddypress input[type=submit],
 #buddypress input[type=button],
 #buddypress input[type=reset],
@@ -37,11 +37,11 @@
   color: #fff;
   background-color: #222;
   font-size: 11px;
-  padding: 10px 10px 9px 10px;
+  padding: 8px 14px;
   text-shadow: none;
   line-height: 12px;
-  margin-bottom: 10px;
-  vertical-align: top;
+  margin-bottom: 3px;
+  vertical-align: middle;
 
   &:hover,
   &:active,
@@ -50,6 +50,28 @@
     color: #fff;
     border: none;
   }
+}
+
+#buddypress {
+  input[type="checkbox"],
+  input[type="radio"] {
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+}
+
+#buddypress .mce-toolbar .mce-ico {
+  line-height: 30px;
+  height: 28px;
+}
+#buddypress .standard-form .wp-editor-container textarea {
+  border: none;
+  font-size: 13px;
+  background-color: transparent;
+}
+#buddypress .field-visibility-settings-toggle {
+  margin: 5px 0 0;
+  line-height: 1;
 }
 
 #buddypress div.generic-button.friendship-button a,
@@ -90,10 +112,30 @@
   }
 }
 
+#buddypress #item-header-avatar {
+  /* responsive portrait tablet */
+  @media (min-width: @responsive_p_tablet_min) and (max-width: @responsive_p_tablet_max) {
+    width: 100px !important;
+    margin-right: 10px;
+    margin-top: 165px !important;
+  }
+
+  a {
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+        width: 100px;
+    }
+  }
+}
+
 #buddypress a.button,
 a.bp-title-button,
 #buddypress ul.button-nav li a {
   font-size: 11px;
+  padding: 6px 8px !important;
+  display: inline-block;
+  margin-bottom: 5px;
+  line-height: 1;
 
   &:hover,
   &:focus,
@@ -114,10 +156,6 @@ a.bp-title-button,
   border-color: #222;
 }
 
-#buddypress a.button {
-  padding: 4px 10px 5px 10px;
-}
-
 a.bp-title-button {
   padding: 2px 9px 3px 9px;
   position: relative;
@@ -135,6 +173,20 @@ a.bp-title-button {
   display: inline-block;
   position: relative;
   top: -2px;
+}
+
+#buddypress div.generic-button {
+  /* responsive portrait phone */
+  @media (max-width: @responsive_p_phone_max) {
+      margin: 0 !important;
+  }
+}
+
+#buddypress #item-header-cover-image #item-actions {
+  /* responsive portrait phone */
+  @media (max-width: @responsive_p_phone_max) {
+    padding-top: 0 !important;
+  }
 }
 
 #buddypress .standard-form #submit:focus,
@@ -372,42 +424,18 @@ a.bp-title-button {
 #buddypress .activity-list {
 
   .activity-content {
-    margin-left: 0;
-    padding-bottom: 31px;
-
-    .activity-inner {
-      margin: 6px 0 0 60px;
-    }
-
     .activity-header {
-      margin-left: 60px;
-
       a {
         display: inline-block;
         vertical-align: top;
       }
+
+      .avatar {
+        width: 20px;
+        vertical-align: top;
+      }
     }
   }
-
-  li.new_forum_topic .activity-content .activity-inner {
-    margin-left: 60px;
-    border-left: 0;
-    padding-left: 0;
-  }
-
-  .mini .activity-content {
-
-    .activity-header {
-      margin-left: 30px;
-    }
-  }
-}
-
-body.activity-permalink #buddypress .activity-content .activity-inner {
-  margin: 12px 0 0 60px;
-}
-body.activity-permalink #buddypress .activity-list li .activity-header > p {
-  padding: 0;
 }
 
 #buddypress form#whats-new-form {
@@ -426,54 +454,10 @@ body.activity-permalink #buddypress .activity-list li .activity-header > p {
   outline: 0;
 }
 
-#buddypress div.activity-meta {
-  margin-top: 21px;
-  width: 100%;
-  text-align: right;
-
-  a {
-    padding: 3px 8px 4px 8px;
-
-    &.acomment-reply {
-      padding-top: 2px;
-    }
-  }
-}
-
-#buddypress {
-
-  a.activity-time-since {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    font-weight: 400;
-  }
-
-  .acomment-meta a.activity-time-since {
-    bottom: 13px;
-  }
-}
-
 /* Content */
 #buddypress #activity-stream p {
   margin: 0;
 }
-
-#buddypress .activity-list li.mini .activity-avatar img.avatar,
-#buddypress .activity-list li.mini .activity-avatar img.FB_profile_pic {
-  margin-left: 0;
-}
-
-
-
-#buddypress .activity-list .activity-content .activity-header img.avatar {
-  margin: 0 10px 0 10px !important;
-}
-
-.activity-time-since {
-  font-size: 11px;
-}
-
 
 /* Create Groups Page */
 #group-create-tabs li {
@@ -493,29 +477,12 @@ body.activity-permalink #buddypress .activity-list li .activity-header > p {
   margin-top: 10px;
 }
 
-#buddypress a.bp-secondary-action,
-#buddypress span.highlight {
-  font-size: 13px;
-  font-weight: 700;
-}
-
-#buddypress a.bp-secondary-action.delete-activity {
-  margin-right: 0;
-}
-
 #buddypress span.activity {
   font-size: 12px;
-  line-height: 30px;
-  word-wrap: break-word;
 
   @media (max-width: @responsive_p_phone_max) {
     font-size: 10px;
   }
-}
-
-
-#buddypress div#item-header div.generic-button {
-  margin-bottom: 10px;
 }
 
 .bp-widget,
@@ -589,7 +556,7 @@ legend.screen-reader-text {
   #members_search,
   #forums_search,
   #groups_search {
-    height: 31px;
+    height: 28px;
     background-color: transparent;
     padding-left: 5px;
   }
@@ -622,10 +589,6 @@ legend.screen-reader-text {
   }
 }
 
-#buddypress #item-nav {
-  margin-bottom: 45px;
-}
-
 #buddypress div#item-header ul {
   display: inline-block;
 }
@@ -641,6 +604,16 @@ legend.screen-reader-text {
 
   .forum td {
     border: none;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  select {
+    font-size: 13px;
+    padding: 3px 9px;
+    vertical-align: top;
   }
 
   table.forum tr td.td-title a.topic-title {
@@ -797,11 +770,6 @@ legend.screen-reader-text {
   }
 }
 
-body.activity-permalink #buddypress .activity-list li .activity-content,
-body.activity-permalink #buddypress div.activity-comments {
-  margin-left: 0;
-}
-
 
 #buddypress table.notifications {
   margin-bottom: 20px;
@@ -822,8 +790,6 @@ body.activity-permalink #buddypress div.activity-comments > ul {
 }
 
 #buddypress div.activity-comments {
-  margin-left: 15px;
-
   div.acomment-content {
     margin: 5px 0 0 35px;
   }
@@ -958,6 +924,29 @@ body.activity-permalink #buddypress div.activity-comments ul li {
     }
   }
 }
+#buddypress ul.item-list li div.item-desc {
+  width: auto;
+}
+#buddypress div#item-header div#item-meta {
+  margin: 5px 0 0;
+}
+
+#buddypress div#item-header #item-header-cover-image #item-header-content {
+  /* responsive portrait tablet */
+  @media (min-width: @responsive_p_tablet_min) and (max-width: @responsive_p_tablet_max) {
+    margin-left: 110px;
+    margin-top: -105px;
+  }
+}
+
+#buddypress div#item-header-cover-image h2 a,
+#buddypress div#item-header-cover-image h2 {
+  /* responsive portrait phone */
+  @media (max-width: @responsive_p_phone_max) {
+    margin: 0;
+  }
+}
+
 
 /* responsive portrait tablet */
 @media (max-width: @responsive_p_tablet_max) {
@@ -986,7 +975,6 @@ body.activity-permalink #buddypress div.activity-comments ul li {
   }
 
   #buddypress ul.item-list li div.item-desc {
-    width: auto;
 
     p {
       margin-bottom: 5px;
@@ -1033,44 +1021,24 @@ body.activity-permalink #buddypress div.activity-comments ul li {
 /*  ----------------------------------------------------------------------------
     Forums Page
 */
-
-#buddypress div#item-header h2.user-nicename {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-#item-header-avatar {
-  max-width: 122px;
-  position: absolute;
-}
-
 #buddypress div#item-header {
   position: relative;
 
   div#item-actions {
-    position: absolute;
-    top: 30px;
-    left: 142px;
-    width: auto;
-    margin: 0;
+    /* responsive portrait phone */
+    @media (max-width: @responsive_p_phone_max) {
+      width: 100%;
+      text-align: center;
+    }
 
     h3 {
       font-size: 13px;
       font-weight: 700;
-      display: inline-block;
+      line-height: 1;
       margin: 0;
       vertical-align: top;
+      margin-bottom: 3px;
     }
-  }
-
-  div#item-meta p {
-    margin-top: 35px;
-  }
-
-  div#item-header-content {
-    width: 100%;
-    padding-left: 142px;
-    min-height: 142px;
   }
 }
 
@@ -1114,53 +1082,11 @@ body.activity-permalink #buddypress div.activity-comments ul li {
   padding: 15px 0;
 }
 
-.group-forum #item-header-avatar {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
 /* responsive portrait tablet */
 @media (max-width: @responsive_p_tablet_max) {
-
-  #item-header-avatar {
-    width: 90px;
-  }
-
-  #buddypress div#item-header {
-
-    div#item-actions {
-      left: 106px;
-    }
-
-    div#item-header-content {
-      padding-left: 106px;
-      min-height: 100px;
-    }
-  }
-
   #buddypress div.item-list-tabs ul li#forums-order-select {
     width: 100%;
     margin-top: 10px !important;
-  }
-}
-
-
-/* responsive portrait phone */
-@media (max-width: @responsive_p_phone_max) {
-  #item-header-avatar {
-    width: 35px;
-  }
-
-  #buddypress div#item-header {
-
-    div#item-actions {
-      left: 45px;
-    }
-
-    div#item-header-content {
-      padding-left: 45px;
-    }
   }
 }
 

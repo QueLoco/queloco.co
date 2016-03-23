@@ -5,18 +5,26 @@
     tagDiv - 2015
 */
 
+
 /**
  * Load the speed booster framework + theme specific files
  */
-if (!defined('TD_THEME_WP_BOOSTER')) {
-    require_once('td_deploy_mode.php');
-    require_once('includes/td_config.php');
-    require_once('includes/wp_booster/td_wp_booster_functions.php');
-}
+
+// load the deploy mode
+require_once('td_deploy_mode.php');
+
+// load the config
+require_once('includes/td_config.php');
+add_action('td_global_after', array('td_config', 'on_td_global_after_config'), 9); //we run on 9 priority to allow plugins to updage_key our apis while using the default priority of 10
+
+// load the wp booster
+require_once('includes/wp_booster/td_wp_booster_functions.php');
+
 
 require_once('includes/td_css_generator.php');
 require_once('includes/shortcodes/td_misc_shortcodes.php');
 require_once('includes/widgets/td_page_builder_widgets.php'); // widgets
+
 
 
 
@@ -102,7 +110,7 @@ function test_td () {
 
 
 /**
- * td_style_customizer.js is required
+ * tdStyleCustomizer.js is required
  */
 if (TD_DEBUG_LIVE_THEME_STYLE) {
     add_action('wp_footer', 'td_theme_style_footer');
@@ -117,6 +125,9 @@ if (TD_DEBUG_LIVE_THEME_STYLE) {
                 <div class="td-set-theme-style"><a href="http://demo.tagdiv.com/newspaper_video/" class="td-set-theme-style-link">VIDEO</a></div>
                 <div class="td-set-theme-style"><a href="http://demo.tagdiv.com/newspaper_sport/" class="td-set-theme-style-link">SPORT</a></div>
                 <div class="td-set-theme-style"><a href="http://demo.tagdiv.com/newspaper_classic_blog/" class="td-set-theme-style-link">CLASSIC BLOG</a></div>
+	            <div class="td-set-theme-style"><a href="http://demo.tagdiv.com/newspaper_travel/" class="td-set-theme-style-link">TRAVEL<span>New</span></a></div>
+	            <div class="td-set-theme-style"><a href="http://demo.tagdiv.com/newspaper_health/" class="td-set-theme-style-link">HEALTH<span>New</span></a></div>
+	            <div class="td-set-theme-style"><a href="http://demo.tagdiv.com/newspaper_cars/" class="td-set-theme-style-link">CARS<span>New</span></a></div>
             </div>
             <div class="clearfix"></div>
             <div class="td-set-hide-show"><a href="#" id="td-theme-set-hide">HIDE</a></div>
@@ -125,3 +136,16 @@ if (TD_DEBUG_LIVE_THEME_STYLE) {
     }
 }
 
+//td_util::update_option('tdx_remote_http', '');
+//die;
+//if (!is_admin()) {
+//	$result = tdx_remote_http::get_page('http://reddit.com');
+//	echo $result;
+//	die;
+//}
+
+
+//print_r(td_remote_video::youtube_api_get_videos_info(array('JgI8DyDCESw', 'f5qepzrQm9U', 'UGdRyPN3IRk')));
+//
+//print_r(td_remote_video::vimeo_api_get_videos_info(array('141710401', '135900733', '135911266')));
+//die;

@@ -72,35 +72,29 @@
         </div>
     </div>
 
-    <?php
-    // show the $big_grid_styles_list only if we have big grids
-    // Newsmag as of 10 march is not using $big_grid_styles_list
-    if (!empty(td_global::$big_grid_styles_list)) {
-        ?>
-        <div class="td-box-row">
-            <div class="td-box-description">
-                <span class="td-box-title">Category top posts GRID STYLE</span>
-                <p>Each category grid supports multiple styles</p>
-            </div>
-            <div class="td-box-control-full">
-                <?php
-
-                $td_grid_style_values = array();
-                foreach (td_global::$big_grid_styles_list as $big_grid_id => $params) {
-                    $td_grid_style_values []= array(
-                        'text' => $params['text'],
-                        'val' => $big_grid_id
-                    );
-                }
-                echo td_panel_generator::dropdown(array(
-                    'ds' => 'td_option',
-                    'option_id' => 'tds_category_td_grid_style',
-                    'values' => $td_grid_style_values
-                ));
-                ?>
-            </div>
+    <div class="td-box-row">
+        <div class="td-box-description">
+            <span class="td-box-title">Category top posts GRID STYLE</span>
+            <p>Each category grid supports multiple styles</p>
         </div>
-    <?php } ?>
+        <div class="td-box-control-full">
+            <?php
+
+            $td_grid_style_values = array();
+            foreach (td_global::$big_grid_styles_list as $big_grid_id => $params) {
+                $td_grid_style_values []= array(
+                    'text' => $params['text'],
+                    'val' => $big_grid_id
+                );
+            }
+            echo td_panel_generator::dropdown(array(
+                'ds' => 'td_option',
+                'option_id' => 'tds_category_td_grid_style',
+                'values' => $td_grid_style_values
+            ));
+            ?>
+        </div>
+    </div>
 
 <div class="td-box-section-separator"></div>
 
@@ -122,6 +116,40 @@
         </div>
     </div>
 
+
+<div class="td-box-section-separator"></div>
+
+<div class="td-box-row">
+    <div class="td-box-description">
+        <span class="td-box-title">Pagination style</span>
+        <p>Set a pagination style for all categories</p>
+    </div>
+    <div class="td-box-control-full">
+        <?php
+        echo td_panel_generator::dropdown(array(
+            'ds' => 'td_option',
+            'option_id' => 'tds_category_pagination_style',
+            'values' => array(
+                array (
+                    'val' => '',
+                    'text' => 'Normal pagination'
+                ),
+                array (
+                    'val' => 'infinite',
+                    'text' => 'Infinite loading'
+                ),
+                array (
+                    'val' => 'infinite_load_more',
+                    'text' => 'Infinite loading + Load more'
+                )
+            )
+        ));
+        ?>
+    </div>
+</div>
+
+
+<div class="td-box-section-separator"></div>
 
 
     <!-- Custom Sidebar + position -->
@@ -194,8 +222,23 @@ class td_category_walker_panel extends Walker {
 
     var $td_category_hierarchy = array();  // we store them like so [0] Category 1 - [1] Category 2 - [2] Category 3
 
-
     var $td_category_buffer = array();
+
+    /**
+     * $td_last_depth - int.
+     * store the last depth, used to reset $td_category_hierarchy on multiple branches
+     * Ex:
+     *      - main category[depth 0]:
+     *                    - subcategory a [depth 1]
+     *                         - subcategory a1 [depth 2]
+     *                              - subcategory a12 [depth 3]
+     *                    - subcategory b [depth 1]
+     *                         - subcategory b1 [depth 2]
+     *                              - subcategory b12 [depth 3]
+     * they are processed in the same sequence
+     * when you pass from depth 3 to 1 you have to remove the previous items present on depth 2 and 3 inside the $td_category_hierarchy array
+     */
+    var $td_last_depth = 0;
 
     function start_lvl( &$output, $depth = 0, $args = array() ) {
 
@@ -208,9 +251,20 @@ class td_category_walker_panel extends Walker {
 
     function start_el( &$output, $category, $depth = 0, $args = array(), $id = 0 ) {
 
-        if (!isset($td_last_category_objects[$depth])) {
-            $this->td_category_hierarchy[$depth] = $category;
+        // reset the $td_category_hierarchy array
+        if ($this->td_last_depth > $depth && $depth > 0) {
+            $buffy = array();
+            //keep only the array elements which have a depth lower than the current depth
+            //the current element is added after this sequence, in the "build the category hierarchy" line
+            for ($i = 0; $i < $depth; $i++){
+                $buffy[] = $this->td_category_hierarchy[$i];
+            }
+            $this->td_category_hierarchy = $buffy;
         }
+        $this->td_last_depth = $depth;
+
+        //build the category hierarchy - [0] Category 1 - [1] Category 2 - [2] Category 3
+        $this->td_category_hierarchy[$depth] = $category;
 
 
         if ($depth == 0) {

@@ -17,22 +17,20 @@ if (!empty($td_logo_title)) {
 
 if (!empty($td_customLogoR)) {
 	?>
-	<a itemprop="url" href="<?php echo esc_url(home_url( '/' )); ?>">
+	<a href="<?php echo esc_url(home_url( '/' )); ?>">
 		<img class="td-retina-data td-logo"  data-retina="<?php echo esc_attr($td_customLogoR) ?>" src="<?php echo $td_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/>
 	</a>
-	<meta itemprop="name" content="<?php bloginfo('name')?>">
 <?php
 
 } else {
 	if (!empty($td_customLogo)) {
 		?>
-		<a class="td-logo" itemprop="url" href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
-		<meta itemprop="name" content="<?php bloginfo('name')?>">
+		<a class="td-logo" href="<?php echo esc_url(home_url( '/' )); ?>"><img src="<?php echo $td_customLogo?>" alt="<?php echo $td_logo_alt ?>"<?php echo $td_logo_title ?>/></a>
 
 	<?php
 	} else { ?>
     <span class="logo-text-container">
-		<a itemprop="url" class="td-logo-wrap" href="<?php echo esc_url(home_url( '/' )); ?>">
+		<a class="td-logo-wrap" href="<?php echo esc_url(home_url( '/' )); ?>">
 			<span class="td-logo-text"><?php if(!$td_logo_text) { echo "NEWSPAPER"; } else { echo $td_logo_text; } ?></span>
 			<span class="td-tagline-text"><?php if(!$td_tagline_text) { echo "DISCOVER THE ART OF PUBLISHING"; } else { echo $td_tagline_text; } ?></span>
 		</a>

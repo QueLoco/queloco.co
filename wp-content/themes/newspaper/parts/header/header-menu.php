@@ -1,4 +1,4 @@
-<div id="td-header-menu" role="navigation" itemscope="itemscope" itemtype="<?php echo td_global::$http_or_https?>://schema.org/SiteNavigationElement">
+<div id="td-header-menu">
     <div id="td-top-mobile-toggle"><a href="#"><i class="td-icon-font td-icon-mobile"></i></a></div>
     <div class="td-main-menu-logo">
         <?php

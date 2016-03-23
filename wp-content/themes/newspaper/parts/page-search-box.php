@@ -14,7 +14,7 @@
  */
 ?>
 
-<h1 itemprop="name" class="entry-title td-page-title">
+<h1 class="entry-title td-page-title">
     <span class="td-search-query"><?php echo get_search_query(); ?></span> - <span> <?php  echo __td('search results', TD_THEME_NAME);?></span>
 </h1>
 

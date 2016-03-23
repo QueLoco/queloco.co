@@ -7,9 +7,21 @@ abstract class td_module {
     var $href;
 
 
-    var $td_review; //review meta
+    /**
+     * @var mixed the review metadata - we get it for each $post
+     */
+    protected $td_review;
 
-    var $post_has_thumb = false;
+	/**
+	 * @var bool is true if we have a review for this $post
+	 */
+	protected $is_review = false;
+
+    /**
+     * @var int|null Contains the id of the current $post thumbnail. If no thumbnail is found, the value is NULL
+     */
+    protected $post_thumb_id = NULL;
+
 
     /**
      * @param $post WP_Post
@@ -17,7 +29,7 @@ abstract class td_module {
      */
     function __construct($post) {
         if (gettype($post) != 'object' or get_class($post) != 'WP_Post') {
-            throw new ErrorException('td_module: ' . get_Class($this) . '($post): $post is not WP_Post');
+            td_util::error(__FILE__, 'td_module: ' . get_Class($this) . '($post): $post is not WP_Post');
         }
 
 
@@ -32,31 +44,41 @@ abstract class td_module {
         $this->href = esc_url(get_permalink($post->ID));
 
         if (has_post_thumbnail($this->post->ID)) {
-            $this->post_has_thumb = true;
+            $tmp_get_post_thumbnail_id = get_post_thumbnail_id($this->post->ID);
+            if (!empty($tmp_get_post_thumbnail_id)) {
+                // if we have a wrong id, leave the post_thumb_id NULL
+                $this->post_thumb_id = $tmp_get_post_thumbnail_id;
+            }
         }
 
         //get the review metadata
         //$this->td_review = get_post_meta($this->post->ID, 'td_review', true); @todo $this->td_review variable name must be replaced and the 'get_quotes_on_blocks', 'get_category' methods also
-        $this->td_review = get_post_meta($this->post->ID, 'td_post_theme_settings', true);
+	    $this->td_review = get_post_meta($this->post->ID, 'td_post_theme_settings', true);
+
+	    if (!empty($this->td_review['has_review']) and (
+			    !empty($this->td_review['p_review_stars']) or
+			    !empty($this->td_review['p_review_percents']) or
+			    !empty($this->td_review['p_review_points'])
+		    )
+	    ) {
+		    $this->is_review = true;
+	    }
     }
 
 
-
+    /**
+     * @deprecated - google changed the structured data requirements and we no longer use them on modules
+     */
     function get_item_scope() {
-        //used on modules - all the links are articles - google doesn't like multiple reviews on one page
-        return 'itemscope itemtype="' . td_global::$http_or_https . '://schema.org/Article"';
+        return '';
     }
 
 
-    //used only on single post, we have it empty for future improvements
+    /**
+     * @deprecated - google changed the structured data requirements and we no longer use them on modules
+     */
     function get_item_scope_meta() {
-        $buffy = ''; //the vampire slayer
-
-        $author_id = $this->post->post_author;
-
-        $buffy .= '<meta itemprop="author" content = "' . get_the_author_meta('display_name', $author_id) . '">';
-        $buffy .= '<meta itemprop="interactionCount" content="UserComments:' . get_comments_number($this->post->ID) . '"/>';
-        return $buffy;
+        return '';
     }
 
 
@@ -65,25 +87,25 @@ abstract class td_module {
         $buffy = get_class($this);
 
 
-        // each module setting has a 'class' key to customize css
-        $module_class = td_api_module::get_key(get_class($this), 'class');
+	    // each module setting has a 'class' key to customize css
+	    $module_class = td_api_module::get_key(get_class($this), 'class');
 
-        if ($module_class != '') {
-            $buffy .= ' ' . $module_class;
-        }
+	    if ($module_class != '') {
+		    $buffy .= ' ' . $module_class;
+	    }
 
 
-        //show no thumb only if image placeholders are disabled
-        if ($this->post_has_thumb === false and td_util::get_option('tds_hide_featured_image_placeholder') == 'hide_placeholder') {
+        //show no thumb only if no thumb is detected and image placeholders are disabled
+        if (is_null($this->post_thumb_id) and td_util::get_option('tds_hide_featured_image_placeholder') == 'hide_placeholder') {
             $buffy .= ' td_module_no_thumb';
         }
 
-        if ($additional_classes_array != '' && is_array($additional_classes_array)) {
-            $buffy .= ' ' . implode(' ', $additional_classes_array);
-        }
+	    if ($additional_classes_array != '' && is_array($additional_classes_array)) {
+		    $buffy .= ' ' . implode(' ', $additional_classes_array);
+	    }
 
-        // the following case could not be checked
-        // $buffy = implode(' ', array_unique(explode(' ', $buffy)));
+	    // the following case could not be checked
+	    // $buffy = implode(' ', array_unique(explode(' ', $buffy)));
 
         return $buffy;
     }
@@ -92,10 +114,10 @@ abstract class td_module {
     function get_author() {
         $buffy = '';
 
-        if (td_review::has_review($this->td_review) === false) {
+        if ($this->is_review === false) {
             if (td_util::get_option('tds_p_show_author_name') != 'hide') {
                 $buffy .= '<div class="td-post-author-name">';
-                $buffy .= '<a itemprop="author" href="' . get_author_posts_url($this->post->post_author) . '">' . get_the_author_meta('display_name', $this->post->post_author) . '</a>' ;
+                $buffy .= '<a href="' . get_author_posts_url($this->post->post_author) . '">' . get_the_author_meta('display_name', $this->post->post_author) . '</a>' ;
                 if (td_util::get_option('tds_p_show_author_name') != 'hide' and td_util::get_option('tds_p_show_date') != 'hide') {
                     $buffy .= ' <span>-</span> ';
                 }
@@ -115,7 +137,7 @@ abstract class td_module {
         }
 
         $buffy = '';
-        if (td_review::has_review($this->td_review) and $show_stars_on_review === true) {
+        if ($this->is_review and $show_stars_on_review === true) {
             //if review show stars
             $buffy .= '<div class="entry-review-stars">';
             $buffy .=  td_review::render_stars($this->td_review);
@@ -125,8 +147,7 @@ abstract class td_module {
             if (td_util::get_option('tds_p_show_date') != 'hide') {
                 $td_article_date_unix = get_the_time('U', $this->post->ID);
                 $buffy .= '<div class="td-post-date">';
-                    $buffy .= '<time  itemprop="dateCreated" class="entry-date updated td-module-date' . $visibility_class . '" datetime="' . date(DATE_W3C, $td_article_date_unix) . '" >' . get_the_time(get_option('date_format'), $this->post->ID) . '</time>';
-                    $buffy .= '<meta itemprop="interactionCount" content="UserComments:' . get_comments_number($this->post->ID) . '"/>';
+                    $buffy .= '<time class="entry-date updated td-module-date' . $visibility_class . '" datetime="' . date(DATE_W3C, $td_article_date_unix) . '" >' . get_the_time(get_option('date_format'), $this->post->ID) . '</time>';
                 $buffy .= '</div>';
             }
         }
@@ -138,12 +159,9 @@ abstract class td_module {
         $buffy = '';
         if (td_util::get_option('tds_p_show_comments') != 'hide') {
             $buffy .= '<div class="td-module-comments">';
-            $buffy .= '<a href="' . get_comments_link($this->post->ID) . '">';
-            if (is_plugin_active('facebook-comments-plugin/facebook-comments.php'))
-                $buffy .= '<fb:comments-count href="'.get_permalink($this->post->ID).'"></fb:comments-count>';
-            else
-                $buffy .= get_comments_number($this->post->ID);
-            $buffy .= '</a>';
+                $buffy .= '<a href="' . get_comments_link($this->post->ID) . '">';
+                    $buffy .= get_comments_number($this->post->ID);
+                $buffy .= '</a>';
             $buffy .= '</div>';
         }
 
@@ -161,20 +179,15 @@ abstract class td_module {
         $buffy = ''; //the output buffer
         $tds_hide_featured_image_placeholder = td_util::get_option('tds_hide_featured_image_placeholder');
 
-        /*
-        *  - if we have a post thumb - show that
-        *  - if we don't have a post thumb, check the image placeholder option and if we're also not a single page show the image placeholder.
-        */
+        // do we have a post thumb or a placeholder?
+        if (!is_null($this->post_thumb_id) or ($tds_hide_featured_image_placeholder != 'hide_placeholder')) {
 
-
-        if ($this->post_has_thumb or ($tds_hide_featured_image_placeholder != 'hide_placeholder')) {
-            if ($this->post_has_thumb) {
+            if (!is_null($this->post_thumb_id)) {
                 //if we have a thumb
-
-
-                // check to see if the thumb size is enabled in the panel, we don't have to check for the default wordpress thumbs (the default ones are already cut and we don't have  a panel setting for them)
+                // check to see if the thumb size is enabled in the panel, we don't have to check for the default wordpress
+                // thumbs (the default ones are already cut and we don't have  a panel setting for them)
                 if (td_util::get_option('tds_thumb_' . $thumbType) != 'yes' and $thumbType != 'thumbnail') {
-                    //the thumb is disabled, show a thumb from the theme with the thumb disabled message
+                    //the thumb is disabled, show a placeholder thumb from the theme with the "thumb disabled" message
                     global $_wp_additional_image_sizes;
 
                     if (empty($_wp_additional_image_sizes[$thumbType]['width'])) {
@@ -190,23 +203,16 @@ abstract class td_module {
                     }
 
 
-                    $td_temp_image_url[0] = get_template_directory_uri() . '/images/thumb-disabled/' . $thumbType . '.png';
-                    $attachment_alt = '';
+                    $td_temp_image_url[0] = td_global::$get_template_directory_uri . '/images/thumb-disabled/' . $thumbType . '.png';
+                    $attachment_alt = 'alt=""';
                     $attachment_title = '';
 
                 } else {
-                    $attachment_id = get_post_thumbnail_id($this->post->ID);
-                    $td_temp_image_url = wp_get_attachment_image_src($attachment_id, $thumbType);
-
-
-                    $attachment_alt = get_post_meta($attachment_id, '_wp_attachment_image_alt', true );
+                    // the thumb is enabled from the panel, it's time to show the real thumb
+                    $td_temp_image_url = wp_get_attachment_image_src($this->post_thumb_id, $thumbType);
+                    $attachment_alt = get_post_meta($this->post_thumb_id, '_wp_attachment_image_alt', true );
                     $attachment_alt = 'alt="' . esc_attr(strip_tags($attachment_alt)) . '"';
-
-
-
                     $attachment_title = ' title="' . esc_attr(strip_tags($this->title)) . '"';
-
-
 
                     if (empty($td_temp_image_url[0])) {
                         $td_temp_image_url[0] = '';
@@ -239,8 +245,19 @@ abstract class td_module {
                     $td_temp_image_url[2] = $_wp_additional_image_sizes[$thumbType]['height'];
                 }
 
-                $td_temp_image_url[0] = get_template_directory_uri() . '/images/no-thumb/' . $thumbType . '.png';
-                $attachment_alt = '';
+                /**
+                 * get thumb height and width via api
+                 * first we check the global in case a custom thumb is used
+                 */
+                if (($td_temp_image_url[1] == '') and ($td_temp_image_url[2] == '')) {
+                    $td_thumb_parameters = td_api_thumb::get_by_id($thumbType);
+                    $td_temp_image_url[1] = $td_thumb_parameters['width'];
+                    $td_temp_image_url[2] = $td_thumb_parameters['height'];
+                }
+
+
+                $td_temp_image_url[0] = td_global::$get_template_directory_uri . '/images/no-thumb/' . $thumbType . '.png';
+                $attachment_alt = 'alt=""';
                 $attachment_title = '';
             } //end    if ($this->post_has_thumb) {
 
@@ -252,7 +269,7 @@ abstract class td_module {
                 }
 
                 $buffy .='<a href="' . $this->href . '" rel="bookmark" title="' . $this->title_attribute . '">';
-                    $buffy .= '<img width="' . $td_temp_image_url[1] . '" height="' . $td_temp_image_url[2] . '" itemprop="image" class="entry-thumb" src="' . $td_temp_image_url[0] . '" ' . $attachment_alt . $attachment_title . '/>';
+                    $buffy .= '<img width="' . $td_temp_image_url[1] . '" height="' . $td_temp_image_url[2] . '" class="entry-thumb" src="' . $td_temp_image_url[0] . '" ' . $attachment_alt . $attachment_title . '/>';
 
                         // on videos add the play icon
                         if (get_post_format($this->post->ID) == 'video') {
@@ -268,9 +285,9 @@ abstract class td_module {
 
                             // load the small or medium play icon
                             if ($use_small_post_format_icon_size === true) {
-                                $buffy .= '<span class="td-video-play-ico td-video-small"><img width="20" class="td-retina" src="' . get_template_directory_uri() . '/images/icons/video-small.png' . '" alt="video"/></span>';
+                                $buffy .= '<span class="td-video-play-ico td-video-small"><img width="20" class="td-retina" src="' . td_global::$get_template_directory_uri . '/images/icons/video-small.png' . '" alt="video"/></span>';
                             } else {
-                                $buffy .= '<span class="td-video-play-ico"><img width="40" class="td-retina" src="' . get_template_directory_uri() . '/images/icons/ico-video-large.png' . '" alt="video"/></span>';
+                                $buffy .= '<span class="td-video-play-ico"><img width="40" class="td-retina" src="' . td_global::$get_template_directory_uri . '/images/icons/ico-video-large.png' . '" alt="video"/></span>';
                             }
                         } // end on video if
 
@@ -292,8 +309,8 @@ abstract class td_module {
 
     function get_title($cut_at = '') {
         $buffy = '';
-        $buffy .= '<h3 itemprop="name" class="entry-title td-module-title">';
-        $buffy .='<a itemprop="url" href="' . $this->href . '" rel="bookmark" title="' . $this->title_attribute . '">';
+        $buffy .= '<h3 class="entry-title td-module-title">';
+        $buffy .='<a href="' . $this->href . '" rel="bookmark" title="' . $this->title_attribute . '">';
 
         //see if we have to cut the title and if we have the title lenght in the panel for ex: td_module_6__title_excerpt
         if ($cut_at != '') {
@@ -304,7 +321,7 @@ abstract class td_module {
             $current_module_class = get_class($this);
 
             //see if we have a default setting for this module, and if so only apply it if we don't get other things form theme panel.
-            if (td_api_module::_check_excerpt_title($current_module_class)) {
+            if (td_api_module::_helper_check_excerpt_title($current_module_class)) {
                 $db_title_excerpt = td_util::get_option($current_module_class . '_title_excerpt');
                 if ($db_title_excerpt != '') {
                     //cut from the database settings
@@ -350,7 +367,7 @@ abstract class td_module {
             $current_module_class = get_class($this);
 
             //see if we have a default setting for this module, and if so only apply it if we don't get other things form theme panel.
-            if (td_api_module::_check_excerpt_content($current_module_class)) {
+            if (td_api_module::_helper_check_excerpt_content($current_module_class)) {
                 $db_content_excerpt = td_util::get_option($current_module_class . '_content_excerpt');
                 if ($db_content_excerpt != '') {
                     //cut from the database settings

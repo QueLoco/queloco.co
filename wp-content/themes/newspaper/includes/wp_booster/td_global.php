@@ -11,6 +11,9 @@
 class td_global {
 
 
+	static $feature_locked = true; // lock features that are not ready
+
+
     static $td_options; //here we store all the options of the theme will be used in td_first_install.php
 
     static $current_template = ''; //used by page-homepage-loop, 404
@@ -30,7 +33,13 @@ class td_global {
 
     static $is_woocommerce_installed = false; // at the end of this file we check if woo commerce is installed
 
-    static $current_category_obj; /**  used on category pages, it's set on pre_get_posts hook @see td_modify_main_query_for_category_page */
+
+    /**
+     * @var stdClass holds the category object
+     *      - it's set on pre_get_posts hook @see td_modify_main_query_for_category_page
+     *      - WARNING: it can be null on category pages that request a category ID that dosn't exists
+     */
+    static $current_category_obj;
 
     //this is used to check for if we are in loop
     //also used for quotes in blocks - check isf the module is displayed on blocks or not
@@ -56,8 +65,9 @@ class td_global {
     static $get_template_directory_uri = ''; // here we store the value from get_template_directory_uri(); - it looks like the wp function does a lot of stuff each time is called
 
 
-	static $td_viewport_intervals = array(); // the td_viewport intervals are stored
+	static $td_viewport_intervals = array(); // the tdViewport intervals are stored
 
+	const TD_MOB_KEY_PAD = '_mob'; // str padding added to the mobile keys settings
 
 
     /**
@@ -68,6 +78,7 @@ class td_global {
     static $js_files = array ();
 
     static $theme_plugins_list = array();
+    static $theme_plugins_info_list = array();
 
 
 	static $td_animation_stack_effects = array();
@@ -77,14 +88,45 @@ class td_global {
      * the js files that are used in wp-admin
      * @var array
      */
-    static $js_files_for_wp_admin = array(
-        'td_wp_admin' => '/includes/wp_booster/wp-admin/js/td_wp_admin.js',
-        'td_wp_admin_color_picker' => '/includes/wp_booster/wp-admin/js/td_wp_admin_color_picker.js',
-        'td_wp_admin_panel' => '/includes/wp_booster/wp-admin/js/td_wp_admin_panel.js',
-        'td_edit_page' => '/includes/wp_booster/wp-admin/js/td_edit_page.js',
-        'td_wp_admin_demos' => '/includes/wp_booster/wp-admin/js/td_wp_admin_demos.js',
-        'td_page_options' => '/includes/wp_booster/wp-admin/js/td_page_options.js',
-        'td_tooltip' => '/includes/wp_booster/wp-admin/js/tooltip.js'
+    static $js_files_for_wp_admin = array (
+        'td_wp_admin' => array(
+	        'url' => '/includes/wp_booster/wp-admin/js/td_wp_admin.js',
+	        'show_only_on_page_slugs' => ''
+        ),
+        'td_wp_admin_color_picker' => array (
+	        'url' => '/includes/wp_booster/wp-admin/js/td_wp_admin_color_picker.js',
+	        'show_only_on_page_slugs' => ''
+        ),
+        'td_wp_admin_panel' => array (
+	        'url' => '/includes/wp_booster/wp-admin/js/td_wp_admin_panel.js',
+	        'show_only_on_page_slugs' => ''
+        ),
+        'td_edit_page' => array (
+	        'url' => '/includes/wp_booster/wp-admin/js/td_edit_page.js',
+	        'show_only_on_page_slugs' => ''
+        ),
+        'td_wp_admin_demos' => array (
+	        'url' => '/includes/wp_booster/wp-admin/js/td_wp_admin_demos.js',
+	        'show_only_on_page_slugs' => ''
+        ),
+        'td_page_options' => array (
+	        'url' => '/includes/wp_booster/wp-admin/js/td_page_options.js',
+	        'show_only_on_page_slugs' => ''
+        ),
+        'td_tooltip' => array (
+	        'url' => '/includes/wp_booster/wp-admin/js/tooltip.js',
+	        'show_only_on_page_slugs' => ''
+        ),
+
+		// ace code editor
+	    'td_ace' => array (
+		    'url' => '/includes/wp_booster/wp-admin/external/ace/ace.js',
+		    'show_only_on_page_slugs' => array('td_theme_panel')
+	    ),
+        'td_ace_ext_language_tools' => array (
+	        'url' => '/includes/wp_booster/wp-admin/external/ace/ext-language_tools.js',
+	        'show_only_on_page_slugs' => array('td_theme_panel')
+        )
 
     );
 
@@ -120,108 +162,10 @@ class td_global {
     static $big_grid_styles_list = array();
 
 
-      /**
-     * the list of panels - NOTE that the system will not load from other paths outside of theme as of now (ex. cannot be used in plugins YET)
-     * 1. try to locate the template in 'includes/panel/views/' (also checks in the child theme)
-     * 2. include the default panel from wp_booster if none is found
+    /**
      * @var array
      */
-    static $theme_panels_list = array (
-        'td-panel-header' => array(
-            'text' => 'HEADER',
-            'ico_class' => 'td-ico-header',
-            'file_id' => 'td_panel_header'
-        ),
-        'td-panel-footer' => array(
-            'text' => 'FOOTER',
-            'ico_class' => 'td-ico-footer',
-            'file_id' => 'td_panel_footer'
-        ),
-        'td-panel-ads' => array(
-            'text' => 'ADS',
-            'ico_class' => 'td-ico-ads',
-            'file_id' => 'td_panel_ads'
-        ),
-
-
-        'td-panel-separator-1' => 'LAYOUT SETTINGS',   //separator
-        'td-panel-template-settings' => array(
-            'text' => 'TEMPLATE SETTINGS',
-            'ico_class' => 'td-ico-template',
-            'file_id' => 'td_panel_template_settings'
-        ),
-
-        'td-panel-categories' => array(
-            'text' => 'CATEGORIES',
-            'ico_class' => 'td-ico-categories',
-            'file_id' => 'td_panel_categories'
-        ),
-        'td-panel-post-settings' => array(
-            'text' => 'POST SETTINGS',
-            'ico_class' => 'td-ico-post',
-            'file_id' => 'td_panel_post_settings'
-        ),
-
-
-        'td-panel-separator-2' => 'MISC',   //separator
-        'td-panel-block-style' => array(
-            'text' => 'BLOCK SETTINGS',
-            'ico_class' => 'td-ico-block',
-            'file_id' => 'td_panel_block_settings',
-        ),
-        'td-panel-background' => array(
-            'text' => 'BACKGROUND',
-            'ico_class' => 'td-ico-background',
-            'file_id' => 'td_panel_background'
-        ),
-        'td-panel-excerpts' => array(
-            'text' => 'EXCERPTS',
-            'ico_class' => 'td-ico-excerpts',
-            'file_id' => 'td_panel_excerpts'
-        ),
-        'td-panel-translates' => array(
-            'text' => 'TRANSLATIONS',
-            'ico_class' => 'td-ico-translation',
-            'file_id' => 'td_panel_translations'
-        ),
-        'td-panel-theme-colors' => array(
-            'text' => 'THEME COLORS',
-            'ico_class' => 'td-ico-color',
-            'file_id' => 'td_panel_theme_colors'
-        ),
-
-        'td-panel-theme-fonts' => array(
-            'text' => 'THEME FONTS',
-            'ico_class' => 'td-ico-typography',
-            'file_id' => 'td_panel_theme_fonts'
-        ),
-        'td-panel-custom-css' => array(
-            'text' => 'CUSTOM CSS',
-            'ico_class' => 'td-ico-css',
-            'file_id' => 'td_panel_custom_css'
-        ),
-        'td-panel-custom-javascript' => array(
-            'text' => 'CUSTOM JAVASCRIPT',
-            'ico_class' => 'td-ico-js',
-            'file_id' => 'td_panel_custom_javascript'
-        ),
-        'td-panel-analytics' => array(
-            'text' => 'ANALYTICS',
-            'ico_class' => 'td-ico-analytics',
-            'file_id' => 'td_panel_analytics'
-        ),
-        'td-panel-social-networks' => array(
-            'text' => 'SOCIAL NETWORKS',
-            'ico_class' => 'td-ico-social',
-            'file_id' => 'td_panel_social_networks'
-        ),
-        'td-panel-cpt-taxonomy' => array(
-            'text' => 'CPT &amp; TAXONOMY',
-            'ico_class' => 'td-ico-cpt',
-            'file_id' => 'td_panel_cpt_taxonomy'
-        )
-
-    );
+    static $all_theme_panels_list = array();
 
 
 
@@ -402,14 +346,34 @@ if (is_ssl()) {
     td_global::$http_or_https = 'https';
 }
 
-if (is_admin()) {
-    require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-    if (is_plugin_active('woocommerce/woocommerce.php')) {
-        td_global::$is_woocommerce_installed = true;
-    }
+
+require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+if (is_plugin_active('woocommerce/woocommerce.php')) {
+    td_global::$is_woocommerce_installed = true;
 }
 
 
-td_global::$get_template_directory = get_template_directory();
+/**
+ * td_global::$get_template_directory must be used instead of get_template_directory()
+ * td_global::$get_template_directory_uri must be used instead of get_template_directory_uri()
+ *
+ * They supplies the get_template_directory() and get_template_directory_uri() if the mobile theme is not activated (actually, the mobile plugin is not activated).
+ *
+ * If the mobile plugin is activated, they will return the same values, but for doing this it needs to consider the td_mobile_theme class who saves these values. In this case,
+ * the get_template_directory() and get_template_directory_uri() returns values corresponding to the mobile theme, and not to the main theme.
+ */
 
-td_global::$get_template_directory_uri = get_template_directory_uri();
+$current_theme_name = get_template();
+
+if (empty($current_theme_name) and class_exists('td_mobile_theme')) {
+	td_global::$get_template_directory = td_mobile_theme::$main_dir_path;
+} else {
+	td_global::$get_template_directory = get_template_directory();
+}
+
+if (empty($current_theme_name) and class_exists('td_mobile_theme')) {
+	td_global::$get_template_directory_uri = td_mobile_theme::$main_uri_path;
+} else {
+	td_global::$get_template_directory_uri = get_template_directory_uri();
+}
+

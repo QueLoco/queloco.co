@@ -1,1462 +1,46 @@
 <?php
 /**
- * WordPress booster V 3.0 by tagDiv
+ * WordPress booster V 3.1 by tagDiv
  */
 
-do_action('td_wp_booster_before');
+do_action('td_wp_booster_before');  //@todo is probably not used by anyone
 
 
 if (TD_DEPLOY_MODE == 'dev') {
     require_once('external/kint/Kint.class.php');
 }
 
-
-// theme specific config values
+// theme utility files
 require_once('td_global.php');
 require_once('td_util.php');
 
-// load the api
+// load the wp_booster_api
+require_once('td_api.php');
 
-
-class td_api_base {
-
-
-    // flag marked by get_by_id and get_key function. It's used just for debugging
-    const USED_ON_PAGE = 'used_on_page';
-
-    const CLASS_AUTOLOADED = 'class_autoloaded'; // flag for marking autoloaded classes
-
-    const TYPE = 'type';
-
-    // the main array settings
-    private static $components_list = array();
-
-
-
-    /**
-     * This method adds settings in the main settings array (self::$component_list)
-     * An array of settings is set for the ($class_name, $id) key.
-     * If there already exists the ($class_name, $id) key in the main settings array, an error exception is thrown. The update
-     * method must be used instead, which ensures the settings are not previously loaded using self::get_by_id or self::get_key
-     * method.
-     *
-     * @param $class_name string The array key in the self::$component_list
-     * @param $id string string The array key in the self::$component_list[$class_name]
-     * @param $params_array array The value set for the self::$component_list[$class_name][$id]
-     * @throws ErrorException The exception thrown if the self::$component_list[$class_name][$id] is already set
-     */
-    protected static function add_component($class_name, $id, $params_array) {
-        if (!isset(self::$components_list[$id])) {
-
-            $params_array[self::TYPE] = $class_name;
-	        self::$components_list[$id] = $params_array;
-
-        } else {
-            td_util::error(__FILE__, "td_api_base: A component with the ID: $id it's already registered in td_api_base", self::$components_list[$id]);
-        }
-    }
-
-
-
-    /**
-     * This method gets the value set for ($class_name) in the main settings array (self::$component_list)
-     * This method does not set the self::USED_ON_PAGE flag, as self::get_by_id or self::get_key method does
-     *
-     * Important! As the flag self::USED_ON_PAGE is not marked, the 'file' parameter is removed to ensure that nobody can use (require) the component
-     *
-     * @param $class_name string The array key in the self::$component_list
-     * @return mixed The value of the self::$component_list[$class_name]
-     */
-    static function get_all_components_metadata($class_name) {
-        $final_array = array();
-
-        foreach (self::$components_list as $component_key => $component_value) {
-            if (isset($component_value[self::TYPE])
-                and $component_value[self::TYPE] == $class_name) {
-
-	            if (isset($component_value['file'])) {
-		            unset($component_value['file']);
-	            }
-
-                $final_array[$component_key] = $component_value;
-            }
-        }
-        return $final_array;
-    }
-
-
-
-    /**
-     * returns the default component key value for a particular class. As of now, the default component is the first one that was added
-     * we usually use this value when there is no setting in the database
-     * Note: it marks the component as used on page
-     *
-     * @param $class_name
-     * @param $key
-     * @return mixed
-     * @throws ErrorException
-     */
-    protected static function get_default_component_key($class_name, $key) {
-	    foreach (self::$components_list as $component_id => $component_value) {
-
-		    if (isset($component_value[self::TYPE])
-		        and $component_value[self::TYPE] == $class_name) {
-
-			    self::mark_used_on_page($component_id);
-
-			    if ($key == 'file') {
-				    self::locate_the_file($component_id);
-			    }
-			    return $component_value[$key];
-		    }
-	    }
-	    td_util::error(__FILE__, "td_api_base::get_default_component_key : no component of type $class_name . Wp booster tried to get
-        the default component (the first registered component) but there are no components registered.");
-    }
-
-
-
-	/**
-	 * - returns the id of the default component for a particular class.
-	 *
-	 * @param $class_name - the class name of the component @see self::$components_list
-	 *
-	 * @return int|string - the id of the component @see self::$components_list
-	 */
-    protected static function get_default_component_id($class_name) {
-        foreach (self::$components_list as $component_id => $component_value) {
-
-            if (isset($component_value[self::TYPE])
-                and $component_value[self::TYPE] == $class_name) {
-
-                self::mark_used_on_page($component_id);
-                return $component_id;
-            }
-        }
-        td_util::error(__FILE__, "td_api_base::get_default_component_id  : no component of type $class_name . Wp booster tried to get
-        the default component (the first registered component) but there are no components registered.");
-    }
-
-
-
-    /**
-     * This method gets the value set for ($class_name, $id) in the main settings array (self::$component_list)
-     * The self::USED_ON_PAGE flag is set accordingly, as updating and deleting operations using the same ($class_name, $id, $key) key
-     * know about it and do not fulfill operations.
-     * Updating or deleting must be done prior of this method or self::get_key method usage.
-     *
-     * @param $class_name string The array key in the self::$component_list
-     * @param $id string string The array key in the self::$component_list[$class_name]
-     * @return mixed The value of the self::$component_list[$class_name][$id]
-     */
-    static function get_by_id($id) {
-        self::mark_used_on_page($id);
-	    self::locate_the_file($id);
-        return self::$components_list[$id];
-    }
-
-
-
-    /**
-     * This method gets the value set for the ($class_name, $id, $key) key in the main array settings (self::$component_list)
-     * The self::USED_ON_PAGE flag is set accordingly, as updating and deleting operations using the same ($class_name, $id, $key) key
-     * know about it and do not fulfill operations.
-     * Updating or deleting must be done prior of this method or self::get_key method usage.
-     *
-     * @param $class_name string The array key in the self::$component_list
-     * @param $id string The array key in the self::$component_list[$class_name]
-     * @param $key string The array key in the self::$component_list[$class_name][$id]
-     * @return mixed mixed The value of the self::$component_list[$class_name][$id][$key]
-     * @throws ErrorException The error exception thrown by check_used_on_page method call
-     */
-    static function get_key($id, $key) {
-        self::mark_used_on_page($id);
-
-	    if ($key == 'file') {
-		    self::locate_the_file($id);
-	    }
-
-	    return self::$components_list[$id][$key];
-    }
-
-
-
-    /**
-     * This method update the value for ($class_name, $id) in the main array settings (self::$component_list)
-     * Updating and deleting a key value in the main settings array ensures that the value of the key is not already loaded by the theme.
-     * Loaded by the theme means that is's used to set or to build some components.
-     * So, the $id and the $key parameter must no be used previously by self::get_by_id or by self::get_key
-     * method, otherwise it means that the settings are already loaded to build a component, and an error exception is thrown
-     * informing the end user about it.
-     *
-     * @param $class_name string The array key in the self::$component_list
-     * @param $id string The array key in the self::$component_list[$class_name]
-     * @param $params_array array The array value set for the self::$component_list[$class_name][$id]
-     * @throws ErrorException The error exception thrown by check_used_on_page method call
-     */
-    static function update_component($class_name, $id, $params_array) {
-        self::check_used_on_page($id, 'update');
-	    $params_array[self::TYPE] = $class_name;
-        self::$components_list[$id] = $params_array;
-    }
-
-
-
-    /**
-     * This method updates the value for the ($class_name, $id, $key) key in the main settings array (self::$component_list).
-     * Updating and deleting a key value in the main settings array ensures that the value of the key is not already loaded by the theme.
-     * Loaded by the theme means that is's used to set or to build some components.
-     * So, the $id and the $key parameter must no be used previously by self::get_by_id or by self::get_key
-     * method, otherwise it means that the settings are already loaded to build a component, and an error exception is thrown
-     * informing the end user about it.
-     *
-     * @param $class_name string The array key in self::$component_list
-     * @param $id string The array key in the self::$component_list[$class_name]
-     * @param $key string The array key in the self::$component_list[$class_name][$id]
-     * @param $value mixed The value set for the specified $key
-     * @throws ErrorException The error exception thrown by check_used_on_page method call
-     */
-    static function update_key($id, $key, $value) {
-        self::check_used_on_page($id, 'update_key');
-        self::$components_list[$id][$key] = $value;
-    }
-
-
-
-    /**
-     * This method unset value for the ($class_name, $id) key in the main settings array (self::$component_list).
-     * Updating and deleting a key value in the main settings array ensures that the value of the key is not already loaded by the theme.
-     * Loaded by the theme means that is's used to set or to build some components.
-     * So, the $id and the $key parameter must no be used previously by self::get_by_id or by self::get_key
-     * method, otherwise it means that the settings are already loaded to build a component, and an error exception is thrown
-     * informing the end user about it.
-     *
-     * @param $class_name string The array key in self::$component_list
-     * @param $id string The array key in the self::$component_list[$class_name]
-     * @throws ErrorException The error exception thrown by check_used_on_page method call
-     */
-    static function delete($id) {
-        self::check_used_on_page($id, 'delete');
-        unset(self::$components_list[$id]);
-    }
-
-
-
-    /**
-     * This is an internal function used just for debugging
-     * @internal
-     * @return array with all theme settings
-     */
-    static function _debug_get_components_list() {
-        return self::$components_list;
-    }
-
-
-
-
-    /**
-     * returns only the used on page component - useful for debug
-     * @return array
-     */
-    static function _debug_show_autoloaded_components() {
-        $buffy_array = array();
-        foreach (self::$components_list as $component_id => $component) {
-
-            if (isset($component[self::CLASS_AUTOLOADED]) and $component[self::CLASS_AUTOLOADED] === true) {
-                $buffy_array [$component_id]= $component;
-            }
-        }
-
-
-        ob_start();
-        ?>
-
-        <div style="pointer-events:none; z-index: 9999; width: 300px; position: absolute; left:0; top:50px; background-color: rgba(232, 232, 232, 0.35); font-size:12px; font-family: 'Lucida Sans Typewriter', 'Lucida Console', monaco, 'Bitstream Vera Sans Mono', monospace;; padding: 10px;">
-            <?php
-            foreach ($buffy_array as $component_id => $component) {
-                echo str_pad($component_id, 20) . '<br>';
-            }
-            ?>
-        </div>
-
-        <?php
-        echo ob_get_clean();
-
-
-
-        return $buffy_array;
-    }
-
-
-
-    /**
-     * sets the component's td_api_base::CLASS_AUTOLOADED key to true at runtime.
-     * @param $component_id
-     */
-    static function _debug_set_class_is_autoloaded($component_id) {
-        self::$components_list[$component_id][td_api_base::CLASS_AUTOLOADED] = true;
-    }
-
-
-
-
-
-    /**
-     * This method sets the self::USED_ON_PAGE flag for the ($class_name, $id) key.
-     * It's used by the get_by_id and get_key methods to mark settings as being loaded on page.
-     * The main purpose of using this flag is for debugging the loaded components.
-     *
-     * @param $class_name string The array key in self::$component_list
-     * @param $id string The array key in the self::$component_list[$class_name]
-     * @throws ErrorException The error thrown when the ($class_name, id) key is not already set
-     */
-    private static function mark_used_on_page($id) {
-        if (!isset(self::$components_list[$id])) {
-
-
-            /**
-             * @deprecated @todo should be removed in v2  compatiblity for social counter old old
-             */
-
-            if (($id == 'td_social_counter' or $id == 'td_block_social_counter')) {
-                if (is_user_logged_in()) {
-                    td_util::error('', "Please update your [tagDiv social counter] Plugin!");
-                }
-                return;
-            }
-
-            /**
-             * show a soft error if
-             * - the user is logged in
-             * - the user is on the login page / register
-             * - the user tries to log in via wp-admin (that is why is_admin() is required)
-             */
-            td_util::error(__FILE__, "td_api_base::mark_used_on_page : a component with the ID: $id is not set.");
-        }
-        self::$components_list[$id][self::USED_ON_PAGE] = true;
-    }
-
-
-	/**
-	 * - it replaces the theme path with the child path, if the file api registered exists in the child theme
-	 * - it tries to find the file in the child theme and if it's found, the 'located_in_child' is set
-	 * - the check is done only when the child theme is activated and the 'located_in_child' hasn't set yet
-	 * - the check is done only for the theme registered paths (those having TEMPLATEPATH), letting the plugins to register themselves paths
-	 *
-	 * @param string $id - the id of the component
-	 * @param string $component - the component value
-	 */
-	private static function locate_the_file($id = '') {
-		if (!is_child_theme()) {
-			return;
-		}
-
-		$the_component = null;
-
-		if (!empty($id)) {
-			$the_component = &self::$components_list[$id];
-		}
-
-		if (($the_component != null)
-		    and (stripos($the_component['file'], TEMPLATEPATH) == 0)
-		    and !empty($the_component['file'])
-            and !isset($the_component['located_in_child'])) {
-
-			$child_path = STYLESHEETPATH . str_replace(TEMPLATEPATH, '', $the_component['file']);
-
-			if (file_exists($child_path)) {
-				$the_component['file'] = $child_path;
-			}
-			$the_component['located_in_child'] = true;
-		}
-	}
-
-
-
-
-    /**
-     * This method check the self::USED_ON_PAGE flag for the ($class_name, $id) key and it throws an exception
-     * if it's already set, that means the settings are already used to build a component in the user interface.
-     *
-     * @param $id string The array key in the self::$component_list[$class_name]
-     * @param $requested_operation string (delete|update|update_key)
-     * @internal param string $class_name The array key in self::$component_list
-     */
-    private static function check_used_on_page($id, $requested_operation) {
-        if (array_key_exists(self::USED_ON_PAGE, self::$components_list[$id])) {
-            td_util::error(__FILE__, "td_api_base::check_used_on_page: You requested a $requested_operation for ID: $id BUT it's already used on page. This usually means that you are using a wrong hook - you are trying to modify the component after it already rendered / was used.", self::$components_list[$id]);
-        }
-    }
-
-}
-/**
- * Created by ra on 2/13/2015.
- */
-
-
-
-/**
- * The theme's block api, usable via the td_global_after hook
- * Class td_api_block static block api
- */
-class td_api_block extends td_api_base {
-
-    /**
-     * This method to register a new block
-     *
-     * @param $id string The block id. It must be unique
-     * @param $params_array array The block_parameter array
-     *
-     *      $params_array = array( - A wp_map array @link https://wpbakery.atlassian.net/wiki/pages/viewpage.action?pageId=524332
-     *          'map_in_visual_composer' => ,
-     *          'file' => '',                   - Where we can find the shortcode class
-     *          'name' => '',                   - string Name of your shortcode for human reading inside element list
-     *          'base' => '',                   - string Shortcode tag. For [my_shortcode] shortcode base is my_shortcode
-     *          'class' => '',                  - string CSS class which will be added to the shortcode's content element in the page edit screen in Visual Composer backend edit mode
-     *          'controls' => '',               - string ?? no used?
-     *          'category' => '',               - string Category which best suites to describe functionality of this shortcode. Default categories: Content, Social, Structure. You can add your own category, simply enter new category title here
-     *          'icon' => '',                   - URL or CSS class with icon image
-     *          'params' => array ()            - array List of shortcode attributes. Array which holds your shortcode params, these params will be editable in shortcode settings page
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($block_id, $params_array = '') {
-        parent::add_component(__CLASS__, $block_id, $params_array);
-    }
-
-
-	static function update($block_id, $params_array = '') {
-		parent::update_component(__CLASS__, $block_id, $params_array);
-	}
-
-
-    /**
-     * This method gets the value for the ('td_api_block') key in the main settings array of the theme.
-     *
-     * @return mixed array The value set for the 'td_api_block' in the main settings array of the theme
-     */
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-}
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-
-/**
- * The theme's block template api, usable via the td_global_after hook
- * Class td_api_block static block api
- */
-class td_api_block_template extends td_api_base{
-
-    /**
-     * This method to register a new block
-     *
-     * @param $id string The block template id. It must be unique
-     * @param $params_array array The block template array
-     *
-     *      $params_array = array(
-     *          'file' => '',           - Where we can find the shortcode class
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($id, $params_array) {
-        parent::add_component(__CLASS__, $id, $params_array);
-    }
-
-
-	static function update($id, $params_array) {
-		parent::update_component(__CLASS__, $id, $params_array);
-	}
-
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-}
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-
-/**
- * The theme's category template api, usable via the td_global_after hook
- * Class td_api_category_template
- */
-class td_api_category_template extends td_api_base {
-
-    /**
-     * This method to register a new category template
-     *
-     * @param $id string The category template id. It must be unique
-     * @param $params_array array The category template array
-     *
-     *      $params_array = array(
-     *          'file' => '',           - Where we can find the file
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($id, $params_array) {
-        parent::add_component(__CLASS__, $id, $params_array);
-    }
-
-
-	static function update($id, $params_array) {
-		parent::update_component(__CLASS__, $id, $params_array);
-	}
-
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-
-
-    static function _helper_get_active_id() {
-
-        $template_id = td_util::get_category_option(td_global::$current_category_obj->cat_ID, 'tdc_category_template');  // read the category setting
-
-        if (empty($template_id)) { // if no category setting, read the global template setting
-            $template_id = td_util::get_option('tds_category_template');
-        }
-
-        if (empty($template_id)) { // nothing is set, check the default value
-            $template_id = parent::get_default_component_id(__CLASS__);
-        }
-
-        return $template_id;
-    }
-
-
-
-    static function render_category_template_by_id($template_id) {
-        if (class_exists($template_id)) {
-            /** @var $td_category_template td_category_template */
-            $td_category_template = new $template_id();
-            $td_category_template->render();
-        } else {
-            td_util::error(__FILE__, "The category template $template_id doesn't exist. Did you disable a tagDiv plugin?");
-        }
-    }
-
-    /**
-     * get the category template, this function has to look at the global theme setting and at the category setting
-     */
-    static function _helper_show_category_template() {
-        $template_id = self::_helper_get_active_id();
-        self::render_category_template_by_id($template_id);
-    }
-
-
-
-
-
-
-    static function _helper_to_panel_values($view_name = 'get_all') {
-        $buffy_array = array();
-
-
-        switch ($view_name) {
-            case 'default+get_all':
-
-                //add default style
-                $buffy_array[] = array(
-                    'text' => 'Default',
-                    'title' => '',
-                    'val' => '',
-                    'img' => get_template_directory_uri() . '/includes/wp_booster/wp-admin/images/panel/module-default.png'
-                );
-
-                // add the rest
-                foreach (self::get_all() as $id => $config) {
-                    $buffy_array[] = array(
-                        'text' => $config['text'],
-                        'title' => '',
-                        'val' => $id,
-                        'img' => $config['img']
-                    );
-                }
-                break;
-
-            case 'get_all':
-
-                //get all the top post styles, the first one is with an empty value
-                foreach (self::get_all() as $id => $config) {
-                    $buffy_array[] = array(
-                        'text' => $config['text'],
-                        'title' => '',
-                        'val' => $id,
-                        'img' => $config['img']
-                    );
-                }
-
-                // the first template is the default one, ex: it has no value in the database
-                $buffy_array[0]['val'] = '';
-                break;
-        }
-
-
-
-        return $buffy_array;
-    }
-}
-
-
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-
-
-/**
- * The theme's category toop loop style api, usable via the td_global_after hook
- * Class td_api_category_top_posts_style
- */
-class td_api_category_top_posts_style extends td_api_base {
-
-    /**
-     * This method to register a new category template
-     *
-     * @param $id string The category template id. It must be unique
-     * @param $params_array array The category template array
-     *
-     *      $params_array = array(
-     *          'file' => '',           - Where we can find the file
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($id, $params_array) {
-        parent::add_component(__CLASS__, $id, $params_array);
-    }
-
-
-	static function update($id, $params_array) {
-		parent::update_component(__CLASS__, $id, $params_array);
-	}
-
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-
-
-    static function _helper_get_active_id() {
-        $template_id = td_util::get_category_option(td_global::$current_category_obj->cat_ID, 'tdc_category_top_posts_style'); // first check the category setting
-
-        if (empty($template_id)) { // now check the global setting - we have "default" selected on the category, the theme now looks for the global setting
-            $template_id = td_util::get_option('tds_category_top_posts_style');
-        }
-
-        if (empty($template_id)) { // nothing is set, check the default value
-            $template_id = parent::get_default_component_id(__CLASS__);
-        }
-
-        return $template_id;
-    }
-
-
-    /**
-     * get the category template, this function has to look at the global theme setting and at the category setting
-     */
-    static function _helper_show_category_top_posts_style() {
-        $template_id = self::_helper_get_active_id();
-
-        if (class_exists($template_id)) {
-
-            /** @var $td_category_template td_category_top_posts_style */
-            $td_category_template = new $template_id();
-            $td_category_template->show_top_posts();
-        } else {
-            td_util::error(__FILE__, "The category template $template_id doesn't exist. Did you disable a tagDiv plugin?");
-        }
-
-    }
-
-
-    static function _helper_get_posts_shown_in_the_loop() {
-        $template_id = self::_helper_get_active_id(); //@todo we may need a 'better' error checking here
-        return parent::get_key($template_id, 'posts_shown_in_the_loop');
-    }
-
-
-
-    static function _helper_to_panel_values($view_name = 'get_all') {
-        $buffy_array = array();
-
-        switch ($view_name) {
-            case 'default+get_all':
-
-                //add default style
-                $buffy_array[] = array(
-                    'text' => 'Default',
-                    'title' => '',
-                    'val' => '',
-                    'img' => get_template_directory_uri() . '/includes/wp_booster/wp-admin/images/panel/module-default.png'
-                );
-
-                // add the rest
-                foreach (self::get_all() as $id => $config) {
-                    $buffy_array[] = array(
-                        'text' => $config['text'],
-                        'title' => '',
-                        'val' => $id,
-                        'img' => $config['img']
-                    );
-                }
-                break;
-
-            case 'get_all':
-
-                //get all the top post styles, the first one is with an empty value
-                foreach (self::get_all() as $id => $config) {
-                    $buffy_array[] = array(
-                        'text' => $config['text'],
-                        'title' => '',
-                        'val' => $id,
-                        'img' => $config['img']
-                    );
-                }
-
-                // the first template is the default one, ex: it has no value in the database
-                $buffy_array[0]['val'] = '';
-                break;
-        }
-
-        return $buffy_array;
-    }
-}
-
-
-
-
-
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-
-class td_api_footer_template extends td_api_base {
-    static function add($template_id, $params_array = '') {
-        parent::add_component(__CLASS__, $template_id, $params_array);
-    }
-
-	static function update($template_id, $params_array = '') {
-		parent::update_component(__CLASS__, $template_id, $params_array);
-	}
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-    static function _helper_show_footer() {
-
-        $template_path = '';
-
-        // find the current active template's id
-        $template_id = self::_helper_get_active_id();
-        try {
-            $template_path = self::get_key($template_id, 'file');
-        } catch (ErrorException $ex) {
-            td_util::error(__FILE__, "td_api_footer_template::_helper_show_footer : $template_id isn't set. Did you disable a tagDiv plugin?");  //does not stop execution
-        }
-
-        // load the template
-        if (!empty($template_path) and file_exists($template_path)) {
-            load_template($template_path);
-        } else {
-            td_util::error(__FILE__, "The path $template_path of the template id: $template_id not found.");   //shoud be fatal?
-        }
-
-    }
-
-    static function _helper_to_panel_values() {
-        // add the rest
-        foreach (self::get_all() as $id => $config) {
-            $buffy_array[] = array(
-                'text' => $config['text'],
-                'title' => '',
-                'val' => $id,
-                'img' => $config['img']
-            );
-        }
-
-        // the first template is the default one, ex: it has no value in the database
-        $buffy_array[0]['val'] = '';
-
-        return $buffy_array;
-    }
-
-
-
-
-    private static function _helper_get_active_id() {
-        $template_id = td_util::get_option('tds_footer_template');
-        if (empty($template_id)) { // nothing is set, check the default value
-            $template_id = parent::get_default_component_id(__CLASS__);
-        }
-
-        return $template_id;
-    }
-
-}
-/**
- * Created by ra on 2/13/2015.
- */
-
-class td_api_header_style extends td_api_base {
-
-    /**
-     * This method to register a new header style
-     *
-     * @param $id string The header style id. It must be unique
-     * @param $params_array array The heade style parameter array
-     *
-     *      $params_array = array (
-     *          'text' => '',   - [string] the text used inside
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($thumb_id, $params_array = '') {
-        parent::add_component(__CLASS__, $thumb_id, $params_array);
-    }
-
-	static function update($thumb_id, $params_array = '') {
-		parent::update_component(__CLASS__, $thumb_id, $params_array);
-	}
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-
-    /**
-     * get all the header styles as a array for the panel ui controll. It also adds the default value
-     *
-     * @internal
-     * @return array
-     */
-    static function _helper_generate_tds_header_style() {
-        $buffy_array = array();
-
-
-        //add each value
-        foreach (self::get_all() as $id => $config) {
-            $buffy_array[] = array(
-                'text' => $config['text'],
-                'val' => $id,
-            );
-        }
-
-        // the first template is the default one, ex: it has no value in the database
-        $buffy_array[0]['val'] = '';
-        return $buffy_array;
-    }
-
-
-    /**
-     * helper function to show the header of the theme.
-     *
-     * @internal
-     */
-    static function _helper_show_header() {
-        $tds_header_style = self::_helper_get_active_id();
-        $template_path = '';
-
-        // look for the user selected template
-        try {
-            $template_path = self::get_key($tds_header_style, 'file');
-        } catch (ErrorException $ex) {
-            td_util::error(__FILE__, "The header style: $tds_header_style isn't set. Did you disable a tagDiv plugin?");  //does not stop execution
-        }
-
-
-        // load the template
-        if (!empty($template_path) and file_exists($template_path)) {
-            load_template($template_path);
-        } else {
-            td_util::error(__FILE__, "The path $template_path of the $tds_header_style header style not found. Did you disable a tagDiv plugin?");
-        }
-    }
-
-
-    private static function _helper_get_active_id() {
-        $tds_header_style = td_util::get_option('tds_header_style');
-
-        if (empty($tds_header_style)) { // nothing is set, check the default value
-            $tds_header_style = parent::get_default_component_id(__CLASS__);
-        }
-
-        return $tds_header_style;
-    }
-}
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-
-
-/**
- * The theme's module api, usable via the td_global_after hook
- * Class td_api_module static module api
- */
-class td_api_module extends td_api_base {
-
-    /**
-     * This method to register a new module
-     *
-     * @param $id string The module id. It must be unique
-     * @param $params_array array The module_parameter array
-     *
-     *      $params_array = array (
-     *          'file' => '',                               - [string] the path to the module class
-     *          'text' => '',                               - [string] module name text used in the theme panel
-     *          'img' => '',                                - [string] the path to the image icon
-     *          'used_on_blocks' => array(),                - [array of strings] block names where this module is used or leave blank if it's used internally (ex. it's not used on any category)
-     *          'excerpt_title' => '',                      - [int] leave empty '' if you don't want a setting in the panel -> excerpts for this module
-     *          'excerpt_content' => '',                    - [int] leave empty ''  ----||----
-     *          'enabled_on_more_articles_box' => ,         - [boolean] show the module in the more articles box in panel -> post settings -> more articles box
-     *          'enabled_on_loops' => ,                     - [boolean] show the module in panel on loops
-     *          'uses_columns' => ,                         - [boolean] if the module uses columns on the page template + loop (if the modules has columns, enable this)
-     *          'category_label' =>                         - [boolean] show the module in panel -> block_settings -> category label ?
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($module_id, $params_array = '') {
-        parent::add_component(__CLASS__, $module_id, $params_array);
-    }
-
-	static function update($module_id, $params_array = '') {
-		parent::update_component(__CLASS__, $module_id, $params_array);
-	}
-
-
-    /**
-     * This method gets the value for the ('td_api_module') key in the main settings array of the theme.
-     *
-     * @return mixed array The value set for the 'td_api_module' in the main settings array of the theme
-     */
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-
-    /**
-     * This method is an internal helper function used to check 'excerpt_title' property of a module
-     *
-     * @internal
-     * @param $module_id string Unique module id
-     * @return bool True if the 'excerpt_title' property is set, false otherwise
-     */
-    static function _check_excerpt_title($module_id) {
-        $module_settings = self::get_by_id($module_id);
-
-        if (isset($module_settings) and !empty($module_settings['excerpt_title'])) {
-            return true;
-        }
-        return false;
-    }
-
-
-
-    /**
-     * This method is an internal helper function used to check 'excerpt_content' property of a module
-     *
-     * @internal
-     * @param $module_id string Unique module id
-     * @return bool True if the 'excerpt_content' property is set, false otherwise
-     */
-
-    static function _check_excerpt_content($module_id) {
-        $module_settings = self::get_by_id($module_id);
-
-        if (isset($module_settings) and !empty($module_settings['excerpt_content'])) {
-            return true;
-        }
-        return false;
-    }
-}
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-
-class td_api_single_template extends td_api_base {
-
-    /**
-     * This method to register a new single template
-     *
-     * @param $id string The single template id. It must be unique
-     * @param $params_array array The single_template_parameter array
-     *
-     *      $params_array = array (
-     *          'file' => '',                               - [string] the path to the template file
-     *          'text' => '',                               - [string] name text used in the theme panel
-     *          'img' => '',                                - [string] the path to the image icon
-     *          'show_featured_image_on_all_pages' => ''    - [boolean]
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($single_template_id, $params_array = '') {
-        parent::add_component(__CLASS__, $single_template_id, $params_array);
-    }
-
-	static function update($single_template_id, $params_array = '') {
-		parent::update_component(__CLASS__, $single_template_id, $params_array);
-	}
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-    /**
-     * checks the show_featured_image_on_all_pages for a template
-     *
-     * @internal
-     * @param $single_template_id
-     * @return bool true if we have to show the featured image on all pages
-     */
-    static function _check_show_featured_image_on_all_pages($single_template_id) {
-        // on the default template, hide the featured image on page 2
-        if (empty($single_template_id)) {  //$single_template_id is empty if we're on the default template
-            return false;
-        }
-
-        // check the show_featured_image_on_all_pages key of each template
-        if (self::get_key($single_template_id, 'show_featured_image_on_all_pages') === false) {
-            return false;
-        }
-
-        return true;
-    }
-
-
-    /**
-     *  returns all the single post templates in a format that is usable for the panel
-     *
-     *  @internal
-     *  @return array
-     *
-     *      array(
-     *          array('text' => '', 'title' => '', 'val' => 'single_template_6', 'img' => get_template_directory_uri() . '/includes/wp_booster/wp-admin/images/post-templates/post-templates-icons-6.png'),
-     *      )
-     */
-    static function _helper_td_global_list_to_panel_values() {
-        $buffy_array = array();
-
-        foreach (self::get_all() as $template_value => $template_config) {
-	        if ($template_value == 'single_template') {
-		        $buffy_array[] = array(
-			        'text' => '',
-			        'title' => '',
-			        'val' => '',
-			        'img' => $template_config['img']
-		        );
-		        continue;
-	        }
-            $buffy_array[] = array(
-                'text' => '',
-                'title' => '',
-                'val' => $template_value,
-                'img' => $template_config['img']
-            );
-        }
-
-//        // add the default template at the beginning
-//        array_unshift (
-//            $buffy_array,
-//            array(
-//                'text' => '',
-//                'title' => '',
-//                'val' => '',
-//                'img' => td_global::$get_template_directory_uri . '/images/panel/single_templates/single_template_default.png'
-//            )
-//        );
-        return $buffy_array;
-    }
-
-
-	static function _helper_td_global_list_to_metaboxes() {
-		$buffy_array = array();
-
-		foreach (self::get_all() as $template_value => $template_config) {
-			$buffy_array[] = array(
-				'text' => '',
-				'title' => '',
-				'val' => $template_value,
-				'img' => $template_config['img']
-			);
-		}
-
-        // add the default template at the beginning
-        array_unshift (
-            $buffy_array,
-            array(
-                'text' => '',
-                'title' => '',
-                'val' => '',
-                'img' => td_global::$get_template_directory_uri . '/images/panel/single_templates/single_template_default.png'
-            )
-        );
-		return $buffy_array;
-	}
-
-
-    /**
-     * @deprecated Important! Its functionality was replaced by the booster 'template_include' wordpress hook. It's susceptible to be removed in the next api versions.
-     *
-     * shows a single template (echos it). NOTE: it also loads the WordPress globals in that template!
-     *
-     * @internal
-     * @param $template_id
-     */
-    static function _helper_show_single_template($template_id) {
-        $template_path = '';
-
-        // try to get the key from the api
-        try {
-            $template_path = self::get_key($template_id, 'file');
-        } catch (ErrorException $ex) {
-            td_util::error(__FILE__, "The template $template_id isn't set. Did you disable a tagDiv plugin?"); // this does not stop execution
-        }
-
-
-        // load the template
-        if (!empty($template_path) and file_exists($template_path)) {
-            load_template($template_path);
-        } else {
-            td_util::error(__FILE__, "The path $template_path of the $template_id template not found. Did you disable a tagDiv plugin?");  // this does not stop execution
-        }
-
-
-    }
-}
-
-
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-/**
- * Note: the smart lists are loaded via autoload
- * Class td_api_smart_list
- */
-class td_api_smart_list extends td_api_base {
-
-    /**
-     * This method to register a new smart list
-     *
-     * @param $id string The smart list id. It must be unique
-     * @param $params_array array The smart_list_parameter array
-     *
-     *      $params_array = array (
-     *          'file' => '',                               - [string] the path to the smart list file
-     *          'text' => '',                               - [string] name text used in the theme panel
-     *          'img' => '',                                - [string] the path to the image icon
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($smart_list_id, $params_array = '') {
-        parent::add_component(__CLASS__, $smart_list_id, $params_array);
-    }
-
-	static function update($smart_list_id, $params_array = '') {
-		parent::update_component(__CLASS__, $smart_list_id, $params_array);
-	}
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-    /**
-     *  returns all the single post templates in a format that is usable for the panel
-     *
-     *  @internal
-     *  @return array
-     *
-     *      array(
-     *          array('text' => '', 'title' => '', 'val' => 'single_template_6', 'img' => get_template_directory_uri() . '/includes/wp_booster/wp-admin/images/post-templates/post-templates-icons-6.png'),
-     *      )
-     */
-    static function _helper_td_smart_list_api_to_panel_values() {
-        $buffy_array = array();
-
-        // add the default smart list
-        $buffy_array[] =  array(
-            'text' => '',
-            'title' => '',
-            'val' => '',
-            'img' => td_global::$get_template_directory_uri . '/images/panel/smart_lists/td_smart_list_default.png'
-        );
-
-        foreach (self::get_all() as $template_value => $template_config) {
-            $buffy_array[] = array(
-                'text' => '',
-                'title' => '',
-                'val' => $template_value,
-                'img' => $template_config['img']
-            );
-        }
-
-
-
-        return $buffy_array;
-    }
-}
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-class td_api_thumb extends td_api_base {
-
-    /**
-     * This method to register a new thumb
-     *
-     * @param $id string The single template id. It must be unique
-     * @param $params_array array The single_template_parameter array
-     *
-     *      $params_array = array (
-     *          'name' => 'td_0x420',                       - [string] the thumb name
-     *          'width' => ,                                - [int] the thumb width
-     *          'height' => ,                               - [int] the thumb height
-     *          'crop' => array('center', 'top'),           - [array of string] what crop to use (center, top, etc)
-     *          'post_format_icon_size' => '',              - [string] what play icon to load (small or normal)
-     *          'used_on' => array('')                      - [array of string] description where the thumb is used
-     *      )
-     *
-     * @throws ErrorException new exception, fatal error if the $id already exists
-     */
-    static function add($thumb_id, $params_array = '') {
-        parent::add_component(__CLASS__, $thumb_id, $params_array);
-    }
-
-	static function update($thumb_id, $params_array = '') {
-		parent::update_component(__CLASS__, $thumb_id, $params_array);
-	}
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-}
-
-
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-class td_api_top_bar_template extends td_api_base {
-    static function add($template_id, $params_array = '') {
-        parent::add_component(__CLASS__, $template_id, $params_array);
-    }
-
-	static function update($template_id, $params_array = '') {
-		parent::update_component(__CLASS__, $template_id, $params_array);
-	}
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-    static function _helper_show_top_bar() {
-
-        // find the current active template's id
-        $template_id = self::_helper_get_active_id();
-        try {
-            $template_path = self::get_key($template_id, 'file');
-        } catch (ErrorException $ex) {
-            td_util::error(__FILE__, "td_api_top_bar_template::_helper_show_top_bar : $template_id isn't set. Did you disable a tagDiv plugin?");  //does not stop execution
-        }
-
-        // load the template
-        if (!empty($template_path) and file_exists($template_path)) {
-            load_template($template_path);
-        } else {
-            td_util::error(__FILE__, "The path $template_path of the template id: $template_id not found.");   //shoud be fatal?
-        }
-
-    }
-
-    static function _helper_to_panel_values() {
-        // add the rest
-        foreach (self::get_all() as $id => $config) {
-            $buffy_array[] = array(
-                'text' => '',
-                'title' => '',
-                'val' => $id,
-                'img' => $config['img']
-            );
-        }
-
-        // the first template is the default one, ex: it has no value in the database
-        $buffy_array[0]['val'] = '';
-
-        return $buffy_array;
-    }
-
-
-
-
-
-
-    private static function _helper_get_active_id() {
-        $template_id = td_util::get_option('tds_top_bar_template');
-
-        if (empty($template_id)) { // nothing is set, check the default value
-            $template_id = parent::get_default_component_id(__CLASS__);
-        }
-
-        return $template_id;
-    }
-
-}
-
-
-/**
- * Created by ra on 2/13/2015.
- */
-
-
-
-class td_api_tinymce_formats extends td_api_base {
-
-    private static $tiny_mce_format_list = array ();
-
-
-    static function add($tinymce_format_id, $params_array = '') {
-        parent::add_component(__CLASS__, $tinymce_format_id, $params_array);
-        /*
-        if (empty($params_array['parent_id'])) {
-            // root level
-            self::$tiny_mce_format_list[$tinymce_format_id] = $params_array;
-        } else {
-
-            // first level
-            if (isset(self::$tiny_mce_format_list[$params_array['parent_id']])) {
-                self::$tiny_mce_format_list[$params_array['parent_id']]['items'][] = $params_array;
-            } else {
-                echo 'errrrrr';
-            }
-        }
-        */
-    }
-
-    static function update($tinymce_format_id, $params_array = '') {
-        parent::update_component(__CLASS__, $tinymce_format_id, $params_array);
-    }
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-
-    static function _helper_get_tinymce_format() {
-	    self::$tiny_mce_format_list = self::get_all();
-
-        array_walk(self::$tiny_mce_format_list, array('td_api_tinymce_formats', '_connect_to_parent'));
-
-	    td_global::$tiny_mce_style_formats = array_filter(self::$tiny_mce_format_list, array('td_api_tinymce_formats', '_get_root_elements'));
-    }
-
-
-	static function _connect_to_parent($value, $key) {
-
-		if (!empty($value['parent_id'])
-		    && isset(self::$tiny_mce_format_list[$value['parent_id']])
-		    && isset(self::$tiny_mce_format_list[$key])) {
-
-			self::$tiny_mce_format_list[$value['parent_id']]['items'][] = &self::$tiny_mce_format_list[$key];
-		}
-	}
-
-
-	static function _get_root_elements($value) {
-		return empty($value['parent_id']);
-	}
-
-}
-
-
-
-
-
-class td_api_autoload extends td_api_base {
-    static function add($class_id, $file) {
-        $params_array['file'] = $file;
-        parent::add_component(__CLASS__, $class_id, $params_array);
-    }
-
-
-
-    static function get_all() {
-        return parent::get_all_components_metadata(__CLASS__);
-    }
-
-
-
-
-
-
-
-}
-
+// hook here to use the theme api
 do_action('td_global_after');
 
 
-require_once('td_global_blocks.php');
-require_once('td_menu.php');            //theme menu support
-require_once('td_social_icons.php');    // The social icons
-require_once('td_review.php');          // Review js buffer class      //@todo de vazut pt autoload
-require_once('td_js_buffer.php');       // page generator
-require_once('td_unique_posts.php');    //unique posts (uses hooks + do_action('td_wp_boost_new_module'); )
-require_once('td_data_source.php');      // data source
-require_once('td_page_views.php'); // page views counter
-require_once('td_module.php');           // module builder
-require_once('td_block.php');            // block builder
+require_once('td_global_blocks.php');   // no autoload -
+require_once('td_menu.php');            // theme menu support
+require_once('td_social_icons.php');    // no autoload (almost always needed) - The social icons
+require_once('td_js_buffer.php');       // no autoload - the theme always outputs JS form this buffer
+require_once('td_unique_posts.php');    // no autoload - unique posts (uses hooks + do_action('td_wp_boost_new_module'); )
+require_once('td_module.php');          // module builder
+require_once('td_block.php');           // block builder
 require_once('td_cake.php');
-require_once('td_widget_builder.php');  // widget builder
-require_once('td_first_install.php');  //the code that runs on the first install of the theme
-require_once("td_fonts.php"); //fonts support
-require_once("td_ajax.php"); // ajax
-require_once('td_video_support.php');  // video thumbnail support
-require_once('td_video_playlist_support.php'); //video playlist support
-require_once('td_css_buffer.php'); // css buffer class
-require_once('td_js_generator.php');  // ~ app config ~ css generator
-require_once('td_more_article_box.php');  //handles more articles box
-require_once('td_block_widget.php');  //used to make widgets from our blocks
-// background support - is not autoloaded
-require_once('td_background.php');
+require_once('td_first_install.php');   // no autoload - the code that runs on the first install of the theme
+require_once("td_fonts.php");           // no autoload - fonts support
+require_once('td_js_generator.php');    // no autoload - the theme always outputs JS
+require_once('td_block_widget.php');    // no autoload - used to make widgets from our blocks
+require_once('td_background.php');      // background support - is not autoloaded due to issues
 require_once('td_background_render.php');
 
 
-// Every class after this (that has td_ in the name) is auto loaded
+
 require_once('td_autoload_classes.php');  //used to autoload classes [modules, blocks]
-// add auto loading classes
+// Every class after this (that has td_ in the name) is auto loaded only when it's required
+td_api_autoload::add('td_log', td_global::$get_template_directory . '/includes/wp_booster/td_log.php');
 td_api_autoload::add('td_css_inline', td_global::$get_template_directory . '/includes/wp_booster/td_css_inline.php');
 td_api_autoload::add('td_login', td_global::$get_template_directory . '/includes/wp_booster/td_login.php');
 td_api_autoload::add('td_category_template', td_global::$get_template_directory . '/includes/wp_booster/td_category_template.php');
@@ -1467,16 +51,105 @@ td_api_autoload::add('td_template_layout', td_global::$get_template_directory . 
 td_api_autoload::add('td_css_compiler', td_global::$get_template_directory . '/includes/wp_booster/td_css_compiler.php');
 td_api_autoload::add('td_module_single_base', td_global::$get_template_directory . '/includes/wp_booster/td_module_single_base.php');
 td_api_autoload::add('td_smart_list', td_global::$get_template_directory . '/includes/wp_booster/td_smart_list.php');
+td_api_autoload::add('td_remote_cache', td_global::$get_template_directory . '/includes/wp_booster/td_remote_cache.php');
+td_api_autoload::add('td_remote_http', td_global::$get_template_directory . '/includes/wp_booster/td_remote_http.php');
+td_api_autoload::add('td_weather', td_global::$get_template_directory . '/includes/wp_booster/td_weather.php');
+td_api_autoload::add('td_remote_video', td_global::$get_template_directory . '/includes/wp_booster/td_remote_video.php');
+td_api_autoload::add('td_css_buffer', td_global::$get_template_directory . '/includes/wp_booster/td_css_buffer.php');
+td_api_autoload::add('td_data_source', td_global::$get_template_directory . '/includes/wp_booster/td_data_source.php');
+
+// aurora framework
+td_api_autoload::add('tdx_api_plugin', td_global::$get_template_directory . '/includes/wp_booster/aurora/tdx_api_plugin.php');
+td_api_autoload::add('tdx_api_panel', td_global::$get_template_directory . '/includes/wp_booster/aurora/tdx_api_panel.php');
+td_api_autoload::add('tdx_util', td_global::$get_template_directory . '/includes/wp_booster/aurora/tdx_util.php');
+td_api_autoload::add('tdx_options', td_global::$get_template_directory . '/includes/wp_booster/aurora/tdx_options.php');
 
 
 
+/* ----------------------------------------------------------------------------
+ * video thumbnail & featured video embeds support
+ */
+td_api_autoload::add('td_video_support', td_global::$get_template_directory . '/includes/wp_booster/td_video_support.php');
+add_action('save_post', array('td_video_support', 'on_save_post_get_video_thumb'), 12 );
 
-/*
-add_action('wp_footer', 'td_wp_footer_debug');
-function td_wp_footer_debug() {
-    td_api_base::_debug_show_autoloaded_components();
-}
-*/
+
+
+/* ----------------------------------------------------------------------------
+ * more articles box
+ */
+td_api_autoload::add('td_more_article_box', td_global::$get_template_directory . '/includes/wp_booster/td_more_article_box.php');
+add_action('wp_footer', array('td_more_article_box', 'on_wp_footer_render_box'));
+
+
+
+/* ----------------------------------------------------------------------------
+ * PageView support
+ */
+td_api_autoload::add('td_page_views', td_global::$get_template_directory . '/includes/wp_booster/td_page_views.php');
+add_filter('manage_posts_columns', array('td_page_views', 'on_manage_posts_columns_views'));
+add_action('manage_posts_custom_column', array('td_page_views', 'on_manage_posts_custom_column'), 5, 2);
+
+
+
+/* ----------------------------------------------------------------------------
+ * Review support
+ */
+td_api_autoload::add('td_review', td_global::$get_template_directory . '/includes/wp_booster/td_review.php');
+add_filter('save_post', array('td_review', 'on_save_post_update_review'), 11);
+
+
+
+/* ----------------------------------------------------------------------------
+ * Ajax support
+ */
+td_api_autoload::add('td_ajax', td_global::$get_template_directory . '/includes/wp_booster/td_ajax.php');
+// ajax: block ajax hooks
+add_action('wp_ajax_nopriv_td_ajax_block', array('td_ajax', 'on_ajax_block'));
+add_action('wp_ajax_td_ajax_block',        array('td_ajax', 'on_ajax_block'));
+
+// ajax: Renders loop pagination, for now used only on categories
+add_action('wp_ajax_nopriv_td_ajax_loop', array('td_ajax', 'on_ajax_loop'));
+add_action('wp_ajax_td_ajax_loop',        array('td_ajax', 'on_ajax_loop'));
+
+// ajax: site wide search
+add_action('wp_ajax_nopriv_td_ajax_search', array('td_ajax', 'on_ajax_search'));
+add_action('wp_ajax_td_ajax_search',        array('td_ajax', 'on_ajax_search'));
+
+// ajax: login window login
+add_action('wp_ajax_nopriv_td_mod_login', array('td_ajax', 'on_ajax_login'));
+add_action('wp_ajax_td_mod_login',        array('td_ajax', 'on_ajax_login'));
+
+// ajax: login window register
+add_action('wp_ajax_nopriv_td_mod_register', array('td_ajax', 'on_ajax_register'));
+add_action('wp_ajax_td_mod_register',        array('td_ajax', 'on_ajax_register'));
+
+// ajax: login window remember pass?
+add_action('wp_ajax_nopriv_td_mod_remember_pass', array('td_ajax', 'on_ajax_remember_pass'));
+add_action('wp_ajax_td_mod_remember_pass',        array('td_ajax', 'on_ajax_remember_pass'));
+
+// ajax: admin panel - new sidebar
+add_action('wp_ajax_nopriv_td_ajax_new_sidebar', array('td_ajax', 'on_ajax_new_sidebar'));
+add_action('wp_ajax_td_ajax_new_sidebar',        array('td_ajax', 'on_ajax_new_sidebar'));
+
+// ajax: admin panel - delete sidebar
+add_action('wp_ajax_nopriv_td_ajax_delete_sidebar', array('td_ajax', 'on_ajax_delete_sidebar'));
+add_action('wp_ajax_td_ajax_delete_sidebar',        array('td_ajax', 'on_ajax_delete_sidebar'));
+
+// ajax: update views - via ajax only when enable in panel
+add_action('wp_ajax_nopriv_td_ajax_update_views', array('td_ajax', 'on_ajax_update_views'));
+add_action('wp_ajax_td_ajax_update_views',        array('td_ajax', 'on_ajax_update_views'));
+
+// ajax: get views - via ajax only when enabled in panel
+add_action('wp_ajax_nopriv_td_ajax_get_views', array('td_ajax', 'on_ajax_get_views'));
+add_action('wp_ajax_td_ajax_get_views',        array('td_ajax', 'on_ajax_get_views'));
+
+
+
+//// @todo MUST
+//add_action('wp_footer', 'td_wp_footer_debug');
+//function td_wp_footer_debug() {
+//	td_api_base::_debug_show_autoloaded_components();
+//}
 
 
 
@@ -1484,7 +157,7 @@ if (TD_DEBUG_IOS_REDIRECT) {
     require_once('td_ios_redirect.php' );
 }
 
-
+// at this point it's not safe to update the Theme API because it's already used
 do_action('td_wp_booster_loaded'); //used by our plugins
 
 
@@ -1518,9 +191,16 @@ function load_js_composer_front() {
 add_action('wp_enqueue_scripts', 'load_front_css', 1001);   // 1001 priority because visual composer uses 1000
 function load_front_css() {
     if (TD_DEBUG_USE_LESS) {
-        wp_enqueue_style('td-theme', td_global::$get_template_directory_uri . '/td_less_style.css.php',  '', TD_THEME_VERSION, 'all' );
+        wp_enqueue_style('td-theme', td_global::$get_template_directory_uri . '/td_less_style.css.php?part=style.css_v2',  '', TD_THEME_VERSION, 'all' );
+        if (td_global::$is_woocommerce_installed === true) {
+            wp_enqueue_style('td-theme-woo', td_global::$get_template_directory_uri . '/td_less_style.css.php?part=woocommerce', '', TD_THEME_VERSION, 'all');
+        }
     } else {
         wp_enqueue_style('td-theme', get_stylesheet_uri(), '', TD_THEME_VERSION, 'all' );
+        if (td_global::$is_woocommerce_installed === true) {
+            wp_enqueue_style('td-theme-woo', td_global::$get_template_directory_uri . '/style-woocommerce.css',  '', TD_THEME_VERSION, 'all' );
+        }
+
     }
 }
 
@@ -1529,7 +209,36 @@ function load_front_css() {
  */
 function td_include_user_compiled_css() {
     if (!is_admin()) {
-        td_css_buffer::add_to_header(td_util::get_option('tds_user_compile_css'));
+
+	    // add the global css compiler
+	    if (TD_DEPLOY_MODE == 'dev') {
+		    $compiled_css = td_css_generator();   // get it live WARNING - it will always appear as autoloaded on DEV
+	    } else {
+		    $compiled_css = td_util::get_option('tds_user_compile_css');   // get it from the cache - do not compile at runtime
+	    }
+
+
+
+	    if (!empty($compiled_css)) {
+		    td_css_buffer::add_to_header($compiled_css);
+	    }
+
+
+
+	    // add the demo specific css compiler
+	    $demo_state = get_option(TD_THEME_NAME . '_demo_state');  // get the current loaded demo
+	    if (!empty($demo_state['demo_id'])) {
+		    $demo_id = $demo_state['demo_id'];
+
+		    if (td_global::$demo_list[$demo_id]['td_css_generator_demo'] === true) {
+			    require_once(td_global::$demo_list[$demo_id]['folder'] . 'td_css_generator_demo.php');
+			    $demo_compiled_css = td_css_demo_gen();
+			    if (!empty($demo_compiled_css)) {
+				    td_css_buffer::add_to_header(PHP_EOL . PHP_EOL . PHP_EOL .'/* Style generated by theme for demo: ' . $demo_id . ' */'  . PHP_EOL);
+				    td_css_buffer::add_to_header($demo_compiled_css);
+			    }
+		    }
+	    }
     }
 }
 add_action('wp_head', 'td_include_user_compiled_css', 10);
@@ -1587,6 +296,7 @@ function load_front_js() {
         $td_deploy_mode = 'demo';
     }
 
+
     switch ($td_deploy_mode) {
         default: //deploy
             wp_enqueue_script('td-site', td_global::$get_template_directory_uri . '/js/tagdiv_theme.js', array('jquery'), TD_THEME_VERSION, true);
@@ -1628,7 +338,12 @@ function load_wp_admin_css() {
     //load the panel font in wp-admin
     $td_protocol = is_ssl() ? 'https' : 'http';
     wp_enqueue_style('google-font-ubuntu', $td_protocol . '://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,latin-ext,cyrillic'); //used on content
-    wp_enqueue_style('td-wp-admin-td-panel-2', td_global::$get_template_directory_uri . '/includes/wp_booster/wp-admin/css/wp-admin.css', false, TD_THEME_VERSION, 'all' );
+	if (TD_DEPLOY_MODE == 'dev') {
+		wp_enqueue_style('td-wp-admin-td-panel-2', td_global::$get_template_directory_uri . '/td_less_style.css.php?part=wp-admin.css', false, TD_THEME_VERSION, 'all' );
+	} else {
+		wp_enqueue_style('td-wp-admin-td-panel-2', td_global::$get_template_directory_uri . '/includes/wp_booster/wp-admin/css/wp-admin.css', false, TD_THEME_VERSION, 'all' );
+	}
+
 
     //load the colorpicker
     wp_enqueue_style( 'wp-color-picker' );
@@ -1638,24 +353,54 @@ function load_wp_admin_css() {
 
 
 /* ----------------------------------------------------------------------------
- * js for wp-admin / backend   admin js
+ * farbtastic color picker CSS and JS for wp-admin / backend - loaded only in the widgets screen. Is used by our widget builder!
+ */
+function td_on_admin_print_scripts_farbtastic() {
+	wp_enqueue_script('farbtastic');
+}
+function td_on_admin_print_styles_farbtastic() {
+	wp_enqueue_style('farbtastic');
+}
+add_action('admin_print_scripts-widgets.php', 'td_on_admin_print_scripts_farbtastic');
+add_action('admin_print_styles-widgets.php', 'td_on_admin_print_styles_farbtastic');
+
+
+
+
+/* ----------------------------------------------------------------------------
+ * js for wp-admin / backend   admin js - we use this strange thing to make sure that our scripts are depended on each other
+ * and appear one after another exactly like we add them in td_global.php
  */
 add_action('admin_enqueue_scripts', 'load_wp_admin_js');
 function load_wp_admin_js() {
 
-// dev version - load each file separately
+
+	$current_page_slug = '';
+	if (isset($_GET['page'])) {
+		$current_page_slug = $_GET['page'];
+	}
+
+
+	// dev version - load each file separately
     $last_js_file_id = '';
-    foreach (td_global::$js_files_for_wp_admin as $js_file_id => $js_file) {
+    foreach (td_global::$js_files_for_wp_admin as $js_file_id => $js_file_params) {
+
+		// skip a file if it has custom page_slugs
+	    if (!empty($js_file_params['show_only_on_page_slugs']) and !in_array($current_page_slug, $js_file_params['show_only_on_page_slugs'])) {
+		     continue;
+	    }
+
         if ($last_js_file_id == '') {
-            wp_enqueue_script($js_file_id, td_global::$get_template_directory_uri . $js_file, array('jquery', 'wp-color-picker'), TD_THEME_VERSION, false); //first, load it with jQuery dependency
+            wp_enqueue_script($js_file_id, td_global::$get_template_directory_uri . $js_file_params['url'], array('jquery', 'wp-color-picker'), TD_THEME_VERSION, false); //first, load it with jQuery dependency
         } else {
-            wp_enqueue_script($js_file_id, td_global::$get_template_directory_uri . $js_file, array($last_js_file_id), TD_THEME_VERSION, false);  //not first - load with the last file dependency
+            wp_enqueue_script($js_file_id, td_global::$get_template_directory_uri . $js_file_params['url'], array($last_js_file_id), TD_THEME_VERSION, false);  //not first - load with the last file dependency
         }
         $last_js_file_id = $js_file_id;
     }
 
     wp_enqueue_script('thickbox');
     add_thickbox();
+
 }
 
 
@@ -1754,40 +499,6 @@ function hook_wp_head() {
 		}
         add_filter('body_class','td_hook_add_custom_body_class');
 	}
-
-	// if speed booster is active, the body animation classes are added into the head style, otherwise they are applied too late (the same is td-backstretch)
-//	if (defined('TD_SPEED_BOOSTER')) {
-//		echo '<style type="text/css">
-//			body.td-animation-stack-type0 .td-animation-stack .entry-thumb,
-//			body.td-animation-stack-type0 .post img {
-//			  opacity: 0;
-//			}
-//
-//			body.td-animation-stack-type1 .td-animation-stack .entry-thumb,
-//			body.td-animation-stack-type1 .post .entry-thumb,
-//			body.td-animation-stack-type1 .post img[class*="wp-image-"],
-//			body.td-animation-stack-type1 .post a.td-sml-link-to-image > img {
-//			  opacity: 0;
-//			  transform: scale(0.95);
-//			}
-//
-//			body.td-animation-stack-type2 .td-animation-stack .entry-thumb,
-//			body.td-animation-stack-type2 .post .entry-thumb,
-//			body.td-animation-stack-type2 .post img[class*="wp-image-"],
-//			body.td-animation-stack-type2 .post a.td-sml-link-to-image > img {
-//			  opacity: 0;
-//			  .transform(translate(0px,10px));
-//			}
-//
-//			.td-backstretch {
-//			    display: block;
-//			    max-width: none;
-//			    opacity: 0;
-//			    transition: opacity 2s ease 0s;
-//			}</style>';
-//	}
-
-
 
 	$tds_general_modal_image = td_util::get_option('tds_general_modal_image');
 
@@ -1952,7 +663,12 @@ function new_excerpt_more($text){
  */
 add_action( 'after_setup_theme', 'my_theme_add_editor_styles' );
 function my_theme_add_editor_styles() {
-    add_editor_style('td_less_editor-style.php');
+	if (TD_DEPLOY_MODE == 'dev') {
+		// we need the full url here due to a WP strange s*it with ?queries
+		add_editor_style(get_stylesheet_directory_uri() . '/td_less_style.css.php?part=editor-style');
+	} else {
+		add_editor_style(); // add the default style
+	}
 }
 
 
@@ -2023,6 +739,11 @@ function td_bottom_code() {
         echo $css_buffy;
     }
 
+    //get and paste user custom html
+    $td_custom_html = stripslashes(td_util::get_option('tds_custom_html'));
+    if(!empty($td_custom_html)) {
+        echo '<div class="td-container">' . $td_custom_html . '</div>';
+    }
 
     //get and paste user custom javascript
     $td_custom_javascript = stripslashes(td_util::get_option('tds_custom_javascript'));
@@ -2041,7 +762,7 @@ function td_bottom_code() {
             if($post->ID > 0) {
                 td_js_buffer::add_to_footer('
                 jQuery().ready(function jQuery_ready() {
-                    td_ajax_count.td_get_views_counts_ajax("post",' . json_encode('[' . $post->ID . ']') . ');
+                    tdAjaxCount.tdGetViewsCountsAjax("post",' . json_encode('[' . $post->ID . ']') . ');
                 });
             ');
             }
@@ -2052,7 +773,7 @@ function td_bottom_code() {
 
 
 	if (TD_DEBUG_USE_LESS) {
-		$style_sheet_path = td_global::$get_template_directory_uri . '/td_less_style.css.php';
+		$style_sheet_path = td_global::$get_template_directory_uri . '/td_less_style.css.php?part=style.css_v2';
 	} else {
 		$style_sheet_path = get_stylesheet_uri();
 	}
@@ -2412,10 +1133,6 @@ function td_vc_init() {
         vc_disable_frontend();
     }
 
-    if (class_exists('WPBakeryVisualComposer')) { //disable visual composer updater
-        $td_composer = WPBakeryVisualComposer::getInstance();
-        $td_composer->disableUpdater();
-    }
 }
 
 
@@ -2466,6 +1183,11 @@ function td_custom_gallery_settings_hook () {
                     return wp.media.template('gallery-settings')(view)
                         + wp.media.template('td-custom-gallery-setting')(view);
                 }
+//	            ,initialize: function() {
+//		            if (typeof this.model.get('td_select_gallery_slide') == 'undefined') {
+//			            this.model.set({td_select_gallery_slide: 'slide'});
+//		            }
+//	            }
             });
 
             //console.log();
@@ -2632,17 +1354,15 @@ function td_change_backbone_js_hook() {
 /* ----------------------------------------------------------------------------
  * TagDiv gallery - front end hooks
  */
-add_filter('post_gallery', 'my_gallery_shortcode', 10, 4);
+add_filter('post_gallery', 'td_gallery_shortcode', 10, 4);
 /**
  * @param string $output - is empty !!!
  * @param $atts
  * @param bool $content
- * @param bool $tag
  * @return mixed
  */
-function my_gallery_shortcode($output = '', $atts, $content = false, $tag = false) {
+function td_gallery_shortcode($output = '', $atts, $content = false) {
 
-    //print_r($atts);
     $buffy = '';
 
     //check for gallery  = slide
@@ -2908,7 +1628,7 @@ function my_gallery_shortcode($output = '', $atts, $content = false, $tag = fals
                         * Resize the iosSlider when the page is resided (fixes bug on Android devices)
                         */
                         function td_gallery_resize_update_vars_' . $gallery_slider_unique_id . '(args) {
-                            if(td_detect.is_android) {
+                            if(tdDetect.isAndroid) {
                                 setTimeout(function(){
                                     jQuery("#' . $gallery_slider_unique_id . ' .td-doubleSlider-1").iosSlider("update");
                                 }, 1500);
@@ -2931,11 +1651,11 @@ function my_gallery_shortcode($output = '', $atts, $content = false, $tag = fals
 /* ----------------------------------------------------------------------------
  * filter the gallery shortcode
  */
-add_filter('shortcode_atts_gallery', 'my_gallery_atts_modifier', 1); //run with 1 priority, allow anyone to overwrite our hook.
+add_filter('shortcode_atts_gallery', 'td_gallery_atts_modifier', 1); //run with 1 priority, allow anyone to overwrite our hook.
 /**
  * @todo trebuie fixuite toate tipurile de imagini din gallerie in functie de setarile template-ului
  */
-function my_gallery_atts_modifier($out) {
+function td_gallery_atts_modifier($out) {
 
     // td_global::$cur_single_template_sidebar_pos; //is set in single.php @todo set it also on the page template
     // link to files instead of no link or attachement. The file is used by magnific pupup
@@ -3044,6 +1764,20 @@ function td_modify_main_query_for_category_page($query) {
     //checking for category page and main query
     if(!is_admin() and is_category() and $query->is_main_query()) {
 
+        // get the category object - with or without permalinks
+        if (empty($query->query_vars['cat'])) {
+            td_global::$current_category_obj = get_category_by_path(get_query_var('category_name'), false);  // when we have permalinks, we have to get the category object like this.
+        } else {
+            td_global::$current_category_obj = get_category($query->query_vars['cat']);
+        }
+
+
+        // we are on a category page with an ID that doesn't exists - wp will show a 404 and we do nothing
+        if (is_null(td_global::$current_category_obj)) {
+            return;
+        }
+
+
         //get the number of page where on
         $paged = get_query_var('paged');
 
@@ -3052,16 +1786,6 @@ function td_modify_main_query_for_category_page($query) {
 
         //get the limit of posts on the category page
         $limit = get_option('posts_per_page');
-
-        // get the category object - with or without permalinks
-        if (empty($query->query_vars['cat'])) {
-            td_global::$current_category_obj = get_category_by_path(get_query_var('category_name'), false);  // when we have permalinks, we have to get the category object like this.
-        } else {
-            td_global::$current_category_obj = get_category($query->query_vars['cat']);
-        }
-
-        //offset is hardcoded because of big grid
-        $offset = td_api_category_top_posts_style::_helper_get_posts_shown_in_the_loop();
 
 
         //echo $filter_by;
@@ -3085,7 +1809,7 @@ function td_modify_main_query_for_category_page($query) {
                 break;
 
             case 'review_high':
-                $query->set('meta_key', td_review::$td_review_key);
+                $query->set('meta_key', 'td_review_key');
                 $query->set('orderby', 'meta_value_num');
                 $query->set('order', 'DESC');
                 break;
@@ -3095,12 +1819,17 @@ function td_modify_main_query_for_category_page($query) {
                 break;
         }//end switch
 
+
+        // how many posts are we showing in the big grid for this category
+        $offset = td_api_category_top_posts_style::_helper_get_posts_shown_in_the_loop();
+
+
 	    // offset + custom pagination - if we have offset, WordPress overwrites the pagination and works with offset + limit
 	    if(empty($query->is_feed)) {
-		    if ( ! empty( $offset ) and $paged > 1 ) {
-			    $query->set( 'offset', $offset + ( ( $paged - 1 ) * $limit ) );
+		    if ( $paged > 1 ) {
+			    $query->set( 'offset', intval($offset) + ( ( $paged - 1 ) * $limit ) );
 		    } else {
-			    $query->set( 'offset', $offset );
+			    $query->set( 'offset', intval($offset) );
 		    }
 	    }
         //print_r($query);
@@ -3232,18 +1961,30 @@ function td_init_booster() {
     check to see if we are on the backend
  */
 if (is_admin()) {
-    // the two files are required by wp_admin -> to make the page / posts metaboxes
-    require_once('wp-admin/panel/td_panel_generator.php');
-    require_once('wp-admin/panel/td_panel_data_source.php');
+
 
     // demo inmporter
     require_once('wp-admin/panel/td_demo_installer.php');
     require_once('wp-admin/panel/td_demo_util.php');
 
+
+
+    /*  ----------------------------------------------------------------------------
+        The theme panel + plugins panels
+     */
+    require_once('wp-admin/panel/panel_core/td_panel_core.php');
+    require_once('wp-admin/panel/panel_core/td_panel_generator.php');
+    require_once('wp-admin/panel/panel_core/td_panel_data_source.php');
+
     if (current_user_can('switch_themes')) {
-        // the panel
+        // add the theme panel only if we have permissions
         require_once('wp-admin/panel/td_panel.php');
+        require_once('wp-admin/panel/td_panel_woo.php'); //add the woocommerce panel
     }
+
+
+
+
 
 
     /**
@@ -3343,53 +2084,65 @@ if (is_admin()) {
  * established by wordpress and woocommerce plugin
  */
 add_filter( 'template_include', 'td_template_include_filter');
-function td_template_include_filter( $template_path ) {
+function td_template_include_filter( $wordpress_template_path ) {
 
-	if (is_single()
-	    and (($template_path == TEMPLATEPATH . '/single.php')
-	         or ($template_path == STYLESHEETPATH . '/single.php'))) {
+    // intercept the WordPress requested template, and if it's single we put our own.
+	if (is_single() and
+        (($wordpress_template_path == TEMPLATEPATH . '/single.php') or ($wordpress_template_path == STYLESHEETPATH . '/single.php'))) {
 
 		global $post;
 
-		$td_post_theme_settings = get_post_meta($post->ID, 'td_post_theme_settings', true);
+        // if we are on a custom post type, leave the defaul loaded wordpress template
+        if ($post->post_type != 'post') {
+            return $wordpress_template_path;
+        }
 
-		if (empty($td_post_theme_settings['td_post_template'])) {
+        // read the global setting
+        $single_template_id = td_util::get_option('td_default_site_post_template');
 
-			$td_default_site_post_template = td_util::get_option('td_default_site_post_template');
+        // check if we have a specific template
+        $td_post_theme_settings = get_post_meta($post->ID, 'td_post_theme_settings', true);
+        if (!empty($td_post_theme_settings['td_post_template'])) {
+            $single_template_id = $td_post_theme_settings['td_post_template'];
+        }
 
-			if (!empty($td_default_site_post_template)) {
-				$td_post_theme_settings['td_post_template'] = $td_default_site_post_template;
-			}
-		}
+        if (!empty($single_template_id)) {
+            // try to find the template in the API
+            $single_template_path = '';
+            try {
+                $single_template_path = td_api_single_template::get_key($single_template_id, 'file');
+            } catch (ErrorException $ex) {
+                td_util::error(__FILE__, "The template $single_template_id isn't set. Did you disable a tagDiv plugin?"); // this does not stop execution
+            }
 
-		if (!empty($td_post_theme_settings['td_post_template'])) {
-
-			//the user has selected a different template & we make sure we only load our templates - the list of allowed templates is in includes/wp_booster/td_global.php
-			//td_api_single_template::_helper_show_single_template(td_global::$td_template_var['td_post_theme_settings']['td_post_template']);
-
-			try {
-				$template_id = $td_post_theme_settings['td_post_template'];
-				$single_template_path = td_api_single_template::get_key($template_id, 'file');
-			} catch (ErrorException $ex) {
-				td_util::error(__FILE__, "The template $template_id isn't set. Did you disable a tagDiv plugin?"); // this does not stop execution
-			}
-
-			// load the template
-			if (!empty($single_template_path) and file_exists($single_template_path)) {
-				$template_path = $single_template_path;
-			} else {
-				td_util::error(__FILE__, "The path $single_template_path of the $template_id template not found. Did you disable a tagDiv plugin?");  // this does not stop execution
-			}
-		}
+            // we have the file in the API, now we make sure that the file exists on disk
+            if (!empty($single_template_path) and file_exists($single_template_path)) {
+                $wordpress_template_path = $single_template_path;
+            } else {
+                td_util::error(__FILE__, "The path $single_template_path of the $single_template_id template not found. Did you disable a tagDiv plugin?");  // this does not stop execution
+            }
+        }
 
 	} else if (td_global::$is_woocommerce_installed
 	           and is_single()
-               and (($template_path == TEMPLATEPATH . '/woocommerce/single-product.php')
-                    or ($template_path == STYLESHEETPATH . '/woocommerce/single-product.php'))) {
+               and (($wordpress_template_path == TEMPLATEPATH . '/woocommerce/single-product.php')
+                    or ($wordpress_template_path == STYLESHEETPATH . '/woocommerce/single-product.php'))) {
 
 
 		//echo 'SINGLE PRODUCT detected<br>';
 	}
 
-	return $template_path;
+	return $wordpress_template_path;
+}
+
+
+add_filter('redirect_canonical', 'td_fix_wp_441_pagination', 10, 2);
+function td_fix_wp_441_pagination($redirect_url, $requested_url) {
+	global $wp_query;
+
+	if (is_page() && !is_feed() && isset($wp_query->queried_object) && get_page_template_slug($wp_query->queried_object->ID) == 'page-pagebuilder-latest.php') {
+		return false;
+	}
+
+	return $redirect_url;
 }

@@ -75,21 +75,21 @@ class td_block_homepage_full_1 extends td_block {
             ?>
             <script>
                 // add the template
-                jQuery('.td-header-wrap').after(jQuery('#<?php echo $this->block_uid ?>_tmpl').html());
+                jQuery( '.td-header-wrap' ).after( jQuery( '#<?php echo $this->block_uid ?>_tmpl' ).html() );
 
                 // make the wrapper and the image -> and add the image inside
-                var td_homepage_full_bg_image_wrapper = jQuery('<div class="backstretch"></div>');
-                var td_homepage_full_bg_image = jQuery('<img class="td-backstretch not-parallax" src="<?php echo $td_post_featured_image ?>"/>');
+                var td_homepage_full_bg_image_wrapper = jQuery( '<div class="backstretch"></div>' );
+                var td_homepage_full_bg_image = jQuery( '<img class="td-backstretch not-parallax" src="<?php echo $td_post_featured_image ?>"/>' );
                 td_homepage_full_bg_image_wrapper.append(td_homepage_full_bg_image);
 
                 // add to body
-                jQuery('body').prepend(td_homepage_full_bg_image_wrapper);
+                jQuery('body').prepend( td_homepage_full_bg_image_wrapper );
 
                 // run the backstracher
-                var td_backstr_item = new td_backstr.item();
+                var td_backstr_item = new tdBackstr.item();
                 td_backstr_item.wrapper_image_jquery_obj = td_homepage_full_bg_image_wrapper;
                 td_backstr_item.image_jquery_obj = td_homepage_full_bg_image;
-                td_backstr.add_item(td_backstr_item);
+                tdBackstr.add_item( td_backstr_item );
 
             </script>
             <?php

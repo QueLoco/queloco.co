@@ -55,6 +55,9 @@ require_once "td_view_header.php";
 
 $theme_plugins = TGM_Plugin_Activation::$instance->plugins;
 
+//add the plugin info list
+$theme_plugins = array_merge($theme_plugins, td_global::$theme_plugins_info_list);
+
 ?>
 
 
@@ -82,13 +85,17 @@ $wp_plugin_list = get_plugins();
         $tmp_class = 'td-plugin-not-installed';
         $required_label = $theme_plugin['required_label'];
 
-        if (is_plugin_active( $theme_plugin['file_path'])) {
-            $tmp_class = 'td-plugin-active';
-            $required_label = 'active';
+        //exclude revslider from active/inactive check
+        if ($theme_plugin['slug'] != 'revslider') {
+            if (is_plugin_active( $theme_plugin['file_path'])) {
+                $tmp_class = 'td-plugin-active';
+                $required_label = 'active';
+            }
+            else if (isset($wp_plugin_list[$theme_plugin['file_path']])) {
+                $tmp_class = 'td-plugin-inactive';
+            }
         }
-        else if (isset($wp_plugin_list[$theme_plugin['file_path']])) {
-            $tmp_class = 'td-plugin-inactive';
-        }
+
 
 
         //echo '<br>';
@@ -116,43 +123,48 @@ $wp_plugin_list = get_plugins();
             </div>
 
             <div class="theme-actions">
-                <a class="button button-primary td-button-install-plugin" href="<?php
-                echo esc_url( wp_nonce_url(
-                    add_query_arg(
-                        array(
-                            'page'		  	=> urlencode(TGM_Plugin_Activation::$instance->menu),
-                            'plugin'		=> urlencode($theme_plugin['slug']),
-                            'plugin_name'   => urlencode($theme_plugin['name']),
-                            'plugin_source' => urlencode($theme_plugin['source']),
-                            'tgmpa-install' => 'install-plugin',
-                            'return_url' => 'td_theme_plugins'
+                <?php
+                //don't show buttons for revslider plugin - removed from the theme to maintain the theme size under 8MB
+                if ($theme_plugin['slug'] != 'revslider') { ?>
+                    <a class="button button-primary td-button-install-plugin" href="<?php
+                    echo esc_url( wp_nonce_url(
+                        add_query_arg(
+                            array(
+                                'page'		  	=> urlencode(TGM_Plugin_Activation::$instance->menu),
+                                'plugin'		=> urlencode($theme_plugin['slug']),
+                                'plugin_name'   => urlencode($theme_plugin['name']),
+                                'plugin_source' => urlencode($theme_plugin['source']),
+                                'tgmpa-install' => 'install-plugin',
+                                'return_url' => 'td_theme_plugins'
+                            ),
+                            admin_url('themes.php')
                         ),
-                        admin_url('themes.php')
-                    ),
-                    'tgmpa-install'
-                ));
-                ?>">Install</a>
-                <a class="button button-secondary td-button-uninstall-plugin" href="<?php
-                echo esc_url(
-                    add_query_arg(
-                        array(
-                            'page'		  	            => urlencode('td_theme_plugins'),
-                            'td_deactivate_plugin_slug'	=> urlencode($theme_plugin['slug']),
-                        ),
-                        admin_url('admin.php')
+                        'tgmpa-install'
                     ));
-                ?>"">Deactivate</a>
-
-                <a class="button button-primary td-button-activate-plugin" href="<?php
-                echo esc_url(
-                    add_query_arg(
-                        array(
-                            'page'		  	            => urlencode('td_theme_plugins'),
-                            'td_activate_plugin_slug'	=> urlencode($theme_plugin['slug']),
-                        ),
-                        admin_url('admin.php')
-                    ));
-                ?>"">Activate</a>
+                    ?>">Install</a>
+                    <a class="button button-secondary td-button-uninstall-plugin" href="<?php
+                    echo esc_url(
+                        add_query_arg(
+                            array(
+                                'page'		  	            => urlencode('td_theme_plugins'),
+                                'td_deactivate_plugin_slug'	=> urlencode($theme_plugin['slug']),
+                            ),
+                            admin_url('admin.php')
+                        ));
+                    ?>"">Deactivate</a>
+                    <a class="button button-primary td-button-activate-plugin" href="<?php
+                    echo esc_url(
+                        add_query_arg(
+                            array(
+                                'page'		  	            => urlencode('td_theme_plugins'),
+                                'td_activate_plugin_slug'	=> urlencode($theme_plugin['slug']),
+                            ),
+                            admin_url('admin.php')
+                        ));
+                    ?>"">Activate</a>
+                    <?php
+                }
+                ?>
             </div>
         </div>
 

@@ -290,7 +290,7 @@ msgid "User or email already exists!"
 msgstr "Ο χρήστης ή το email υπάρχει ήδη!"
 
 #: no reference:
-msgid "Please check you email (index or spam folder), the password was sent there."
+msgid "Please check your email (index or spam folder), the password was sent there."
 msgstr "Παρακαλούμε ελέγξτε το email σας (φάκελος εισερχομένων ή spam), ο κωδικός πρόσβασης στάλθηκε εκεί."
 
 #: no reference:
